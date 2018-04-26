@@ -64,10 +64,6 @@ main() {
                     exit 1
                 fi
                 ;;
-            --) # End of all options.
-                shift
-                break
-                ;;
             -?*)
                 echo "WARN: Unknown option (ignored): $1" >&2
                 ;;

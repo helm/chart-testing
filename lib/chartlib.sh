@@ -316,8 +316,8 @@ chartlib::lint_chart_with_all_configs() {
 # in the 'ci' subdirectory. If no custom values files are found, the chart
 # is installed with defaults. If $BUILD_ID is set, it is used as
 # name for the namespace to install the chart in. Otherwise, the chart
-# name is taken a the namespace name. Namespace and release are suffixed with
-# an index. Release and the namespaces are automatically deleted afterwards.
+# name is taken as the namespace name. Namespace and release are suffixed with
+# an index. Releases and namespaces are automatically deleted afterwards.
 # Args:
 #   $1 The chart directory
 chartlib::install_chart_with_all_configs() {
