@@ -23,12 +23,12 @@ shopt -s nullglob
 readonly REMOTE="${REMOTE:-origin}"
 readonly TARGET_BRANCH="${TARGET_BRANCH:-master}"
 
-read -ra CHART_DIRS <<< "${CHART_DIRS:-.}"
+read -ra CHART_DIRS <<< "${CHART_DIRS:-charts}"
 readonly CHART_DIRS
 
-EXCLUDED_CHART_DIRS=()
-read -ra EXCLUDED_CHART_DIRS <<< "${EXCLUDED_CHART_DIRS:-}"
-readonly EXCLUDED_CHART_DIRS
+EXCLUDED_CHARTS=()
+read -ra EXCLUDED_CHARTS <<< "${EXCLUDED_CHARTS:-}"
+readonly EXCLUDED_CHARTS
 
 CHART_REPOS=()
 read -ra CHART_REPOS <<< "${CHART_REPOS:-}"
@@ -44,7 +44,7 @@ echo 'Environment:'
 echo "REMOTE=$REMOTE"
 echo "TARGET_BRANCH=$TARGET_BRANCH"
 echo "CHART_DIRS=${CHART_DIRS[*]}"
-echo "EXCLUDED_CHART_DIRS=${EXCLUDED_CHART_DIRS[*]}"
+echo "EXCLUDED_CHARTS=${EXCLUDED_CHARTS[*]}"
 echo "CHART_REPOS=${CHART_REPOS[*]}"
 echo "TIMEOUT=$TIMEOUT"
 echo "LINT_CONF=$LINT_CONF"
@@ -52,9 +52,9 @@ echo "CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo '-----------------------------------------------------------------------'
 
 
-# Determines chart directories that have changes against the
+# Detects chart directories that have changes against the
 # target branch ("$REMOTE/$TARGET_BRANCH").
-chartlib::determine_changed_directories() {
+chartlib::detect_changed_directories() {
     local merge_base
     merge_base="$(git merge-base "$REMOTE/$TARGET_BRANCH" HEAD)"
 
@@ -63,7 +63,7 @@ chartlib::determine_changed_directories() {
 
     while read -r dir; do
         local excluded=
-        for excluded_dir in "${EXCLUDED_CHART_DIRS[@]}"; do
+        for excluded_dir in "${EXCLUDED_CHARTS[@]}"; do
             if [[ "$dir" == "$excluded_dir" ]]; then
                 excluded=true
                 break
@@ -241,15 +241,15 @@ chartlib::lint_chart_with_single_config() {
     local values_file="${2:-}"
 
     if [[ -n "$values_file" ]]; then
-        echo "Using custom values file '$values_file'..." >&3
+        echo "Using custom values file '$values_file'..."
 
         echo "Linting chart '$chart_dir'..."
-        helm lint --values "$values_file" . >&3
+        helm lint "$chart_dir" --values "$values_file"
     else
-        echo "Chart does not provide test values. Using defaults..." >&3
+        echo "Chart does not provide test values. Using defaults..."
 
         echo "Linting chart '$chart_dir'..."
-        helm lint >&3
+        helm lint "$chart_dir"
     fi
 }
 
@@ -282,12 +282,12 @@ chartlib::install_chart_with_single_config() {
             echo "Using custom values file '$values_file'..." >&3
 
             echo "Installing chart '$chart_dir'..."
-            helm install --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" --values "$values_file" . >&3
+            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" --values "$values_file" >&3
         else
             echo "Chart does not provide test values. Using defaults..." >&3
 
             echo "Installing chart '$chart_dir'..."
-            helm install --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" . >&3
+            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" >&3
         fi
 
         helm test "$release" >&3
@@ -301,10 +301,8 @@ chartlib::install_chart_with_single_config() {
 chartlib::lint_chart_with_all_configs() {
     local chart_dir="${1?Chart directory is required}"
 
-    pushd "$chart_dir" > /dev/null
-
     has_test_values=
-    for values_file in ./ci/*-values.yaml; do
+    for values_file in "$chart_dir"/ci/*-values.yaml; do
         has_test_values=true
         chartlib::lint_chart_with_single_config "$chart_dir" "$values_file"
     done
@@ -312,8 +310,6 @@ chartlib::lint_chart_with_all_configs() {
     if [[ -z "$has_test_values" ]]; then
         chartlib::lint_chart_with_single_config "$chart_dir"
     fi
-
-    popd > /dev/null
 }
 
 # Installs a chart for all custom values files matching '*.values.yaml'
@@ -333,10 +329,8 @@ chartlib::install_chart_with_all_configs() {
 
     local namespace="${BUILD_ID:-"$release"}"
 
-    pushd "$chart_dir" > /dev/null
-
     has_test_values=
-    for values_file in ./ci/*-values.yaml; do
+    for values_file in "$chart_dir"/ci/*-values.yaml; do
         has_test_values=true
         chartlib::install_chart_with_single_config "$chart_dir" "$release-$index" "$namespace-$index" "$values_file"
         ((index += 1))
@@ -345,8 +339,6 @@ chartlib::install_chart_with_all_configs() {
     if [[ -z "$has_test_values" ]]; then
         chartlib::install_chart_with_single_config "$chart_dir" "$release" "$namespace"
     fi
-
-    popd > /dev/null
 }
 
 # Prints log for all pods in the specified namespace.

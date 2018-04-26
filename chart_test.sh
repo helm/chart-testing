@@ -96,7 +96,7 @@ main() {
 
     pushd "$REPO_ROOT" > /dev/null
 
-    read -ra changed_dirs <<< "$(chartlib::determine_changed_directories)"
+    read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
 
     if [[ -n "${changed_dirs[*]}" ]]; then
         echo "Charts to be installed and tested: ${changed_dirs[*]}"
@@ -137,7 +137,11 @@ main() {
             chartlib::error "Script terminated with error(s)."
             exit 1
         fi
+    else
+        echo 'No chart changes detected.'
     fi
+
+    echo 'Done.'
 
     popd > /dev/null
 }
