@@ -4,7 +4,7 @@ Bash library for linting and testing Helm charts. Comes prepackaged as Docker im
 
 [chartlib.sh](lib/chartlib.sh) is a Bash library with useful function for linting and testing charts. It is well documented and should be easily usable. The script is meant to be sourced and can be configured via environment variables.
 
-As a convenience, [chartlib.sh](chart_test.sh) is provided. It supports linting and testing charts that have changed against a target branch.
+As a convenience, [chart_test.sh](chart_test.sh) is provided. It supports linting and testing charts that have changed against a target branch.
 
 ## Prerequisites
 
