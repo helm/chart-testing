@@ -27,19 +27,6 @@ RUN apk --no-cache add \
     py-crcmod \
     py-pip
 
-RUN STABLE=$(curl -Ls https://storage.googleapis.com/kubernetes-release/release/stable.txt) && \
-    curl -LO https://storage.googleapis.com/kubernetes-release/release/$STABLE/bin/linux/amd64/kubectl && \
-    chmod +x kubectl && \
-    mv kubectl /usr/local/bin/
-
-# Install Helm
-ARG HELM_VERSION=2.8.2
-RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-v$HELM_VERSION-linux-amd64.tar.gz" && \
-    mkdir -p "/usr/local/helm-$HELM_VERSION" && \
-    tar -xzf "helm-v$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
-    ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm && \
-    rm -f "helm-v$HELM_VERSION-linux-amd64.tar.gz"
-
 # Install YQ command line reader
 ARG YQ_VERSION=2.5.0
 RUN pip install "yq==$YQ_VERSION"
@@ -57,6 +44,20 @@ RUN pip install "yamllint==$YAML_LINT_VERSION"
 # Install Yamale YAML schema validator
 ARG YAMALE_VERSION=1.7.0
 RUN pip install "yamale==$YAMALE_VERSION"
+
+# Install kubectl
+ARG KUBECTL_VERSION=1.10.2
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mv kubectl /usr/local/bin/
+
+# Install Helm
+ARG HELM_VERSION=2.8.2
+RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-v$HELM_VERSION-linux-amd64.tar.gz" && \
+    mkdir -p "/usr/local/helm-$HELM_VERSION" && \
+    tar -xzf "helm-v$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
+    ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm && \
+    rm -f "helm-v$HELM_VERSION-linux-amd64.tar.gz"
 
 COPY etc /testing/etc/
 COPY lib /testing/lib/
