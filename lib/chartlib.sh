@@ -38,6 +38,8 @@ readonly TIMEOUT="${TIMEOUT:-300}"
 readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
 
+readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
+
 
 echo '-----------------------------------------------------------------------'
 echo 'Environment:'
@@ -49,6 +51,7 @@ echo "CHART_REPOS=${CHART_REPOS[*]}"
 echo "TIMEOUT=$TIMEOUT"
 echo "LINT_CONF=$LINT_CONF"
 echo "CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
+echo "VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo '-----------------------------------------------------------------------'
 
 
@@ -177,8 +180,7 @@ chartlib::validate_maintainers() {
         fi
     else
         if [[ -z "$maintainers" ]]; then
-            chartlib::error "No maintainers found in 'Chart.yaml'."
-            return 1
+            echo "No maintainers found in 'Chart.yaml'."
         fi
     fi
 
@@ -224,7 +226,10 @@ chartlib::validate_chart() {
     chartlib::lint_yaml_file "$chart_dir/Chart.yaml" || error=true
     chartlib::lint_yaml_file "$chart_dir/values.yaml" || error=true
     chartlib::validate_chart_yaml "$chart_dir" || error=true
-    chartlib::validate_maintainers "$chart_dir" || error=true
+
+    if [[ "$VALIDATE_MAINTAINERS" == true ]]; then
+        chartlib::validate_maintainers "$chart_dir" || error=true
+    fi
 
     if [[ -n "$error" ]]; then
         chartlib::error 'Chart validation failed.'
@@ -291,7 +296,7 @@ chartlib::install_chart_with_single_config() {
         fi
 
         helm test "$release" >&3
-    );
+    )
 }
 
 # Lints a chart for all custom values files matching '*.values.yaml'

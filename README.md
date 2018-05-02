@@ -16,7 +16,7 @@ It is recommended to use the provided Docker image. It comes with all necessary 
 * vert (https://github.com/Masterminds/vert)
 * yamllint (https://github.com/adrienverge/yamllint)
 * yamale (https://github.com/23andMe/Yamale)
-* kubectl
+* kubectl (https://kubernetes.io/docs/reference/kubectl/overview/)
 * Tooling for your cluster
 
 Note that older Bash versions may no work!
@@ -50,8 +50,9 @@ The following environment variables can be set to configure [chartlib.sh](lib/ch
 | `TIMEOUT` | Timeout for chart installation in seconds | `300` |
 | `LINT_CONF` | Config file for YAML linter | `/testing/etc/lintconf.yaml` (path of default config file in Docker image) |
 | `CHART_YAML_SCHEMA` | YAML schema for `Chart.yaml` | `/testing/etc/chart_schema.yaml` (path of default schema file in Docker image) |
+| `VALIDATE_MAINTAINERS`| If `true`, maintainer names in `Chart.yaml` are validated to be existing Github accounts | `true` |
 
-CHART_DIRS, EXCLUDED_CHARTS, and CHART_REPOS may be set as a string with values separated by a space or as a Bash array.
+`CHART_DIRS`, `EXCLUDED_CHARTS`, and `CHART_REPOS` may be set as strings with values separated by spaces or as Bash arrays.
 
 ## Usage
 
@@ -87,6 +88,7 @@ CHART_REPOS=
 TIMEOUT=600
 LINT_CONF=/testing/etc/lintconf.yaml
 CHART_YAML_SCHEMA=/testing/etc/chart_schema.yaml
+VALIDATE_MAINTAINERS=true
 -----------------------------------------------------------------------
 Charts to be installed and tested: stable/dummy
 Initializing Helm client...
