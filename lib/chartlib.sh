@@ -294,8 +294,8 @@ chartlib::install_chart_with_single_config() {
             helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" >&3
         fi
 
-        echo "Testing chart '$chart_dir'..."
-        helm test "$release" >&3
+        echo "Testing chart '$chart_dir' in namespace '$namespace'..."
+        helm test "$release" --cleanup --timeout "$TIMEOUT" >&3
 
     ); then
 
@@ -419,7 +419,7 @@ chartlib::delete_release() {
     local release="${1?Release is required}"
 
     echo "Deleting release '$release'..."
-    helm delete --purge "$release" --cleanup --timeout "$TIMEOUT"
+    helm delete --purge "$release" --timeout "$TIMEOUT"
 }
 
 # Deletes a namespace.
@@ -430,6 +430,35 @@ chartlib::delete_namespace() {
 
     echo "Deleting namespace '$namespace'..."
     kubectl delete namespace "$namespace"
+
+    echo -n "Waiting for namespace '$namespace' to terminate..."
+
+    local max_retries=30
+    local retry=0
+    local sleep_time_sec=2
+    while ((retry < max_retries)); do
+        sleep "$sleep_time_sec"
+        ((retry++))
+
+        if ! kubectl get namespace "$namespace" &> /dev/null; then
+            echo
+            echo "Namespace '$namespace' terminated."
+            return 0
+        fi
+
+        echo -n '.'
+    done
+
+    echo
+
+    chartlib:error "Namespace '$namespace' not terminated after $((max_retries * sleep_time_sec)) s. Force-deleting pods..."
+    kubectl delete pods --namespace "$namespace" --all --force --grace-period 0 || true
+    sleep 3
+
+    if ! kubectl get namespace "$namespace" &> /dev/null; then
+        echo "Force-deleting namespace '$namespace'..."
+        kubectl delete namespace "$namespace" --ignore-not-found --force --grace-period 0 || true
+    fi
 }
 
 # Logs an error.
