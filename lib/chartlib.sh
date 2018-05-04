@@ -338,9 +338,10 @@ chartlib::install_chart_with_all_configs() {
     release=$(yq -r .name < "$chart_dir/Chart.yaml")
 
     local random_suffix
-    random_suffix=$(tr -dc a-z0-9 < /dev/urandom | fold -w 8 | head -n 1)
+    random_suffix=$(tr -dc a-z0-9 < /dev/urandom | fold -w 16 | head -n 1)
 
     local namespace="${BUILD_ID:-"$release"}-$random_suffix"
+    local release="$release-$random_suffix"
 
     has_test_values=
     for values_file in "$chart_dir"/ci/*-values.yaml; do
