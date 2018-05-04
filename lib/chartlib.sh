@@ -414,7 +414,7 @@ chartlib::delete_release() {
     local release="${1?Release is required}"
 
     echo "Deleting release '$release'..."
-    helm delete --purge "$release"
+    helm delete --purge "$release" --cleanup --timeout "$TIMEOUT"
 }
 
 # Deletes a namespace.
