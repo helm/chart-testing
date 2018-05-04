@@ -284,15 +284,13 @@ chartlib::install_chart_with_single_config() {
         echo "Building dependencies for chart '$chart_dir'..."
         helm dependency build "$chart_dir"
 
+        echo "Installing chart '$chart_dir' into namespace '$namespace'..."
+
         if [[ -n "$values_file" ]]; then
             echo "Using custom values file '$values_file'..." >&3
-
-            echo "Installing chart '$chart_dir'..."
             helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" --values "$values_file" >&3
         else
             echo "Chart does not provide test values. Using defaults..." >&3
-
-            echo "Installing chart '$chart_dir'..."
             helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" >&3
         fi
 
