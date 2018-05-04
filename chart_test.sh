@@ -103,7 +103,7 @@ main() {
         for chart_dir in "${changed_dirs[@]}"; do
             echo ''
             echo '-----------------------------------------------------------------------'
-            echo "Processing chart '$chart_dir'..."
+            echo " Processing chart '$chart_dir'..."
             echo '-----------------------------------------------------------------------'
             echo ''
 

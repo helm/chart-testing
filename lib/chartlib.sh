@@ -41,19 +41,20 @@ readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
 
 
+echo
 echo '-----------------------------------------------------------------------'
-echo 'Environment:'
-echo "REMOTE=$REMOTE"
-echo "TARGET_BRANCH=$TARGET_BRANCH"
-echo "CHART_DIRS=${CHART_DIRS[*]}"
-echo "EXCLUDED_CHARTS=${EXCLUDED_CHARTS[*]}"
-echo "CHART_REPOS=${CHART_REPOS[*]}"
-echo "TIMEOUT=$TIMEOUT"
-echo "LINT_CONF=$LINT_CONF"
-echo "CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
-echo "VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
+echo ' Environment:'
+echo " REMOTE=$REMOTE"
+echo " TARGET_BRANCH=$TARGET_BRANCH"
+echo " CHART_DIRS=${CHART_DIRS[*]}"
+echo " EXCLUDED_CHARTS=${EXCLUDED_CHARTS[*]}"
+echo " CHART_REPOS=${CHART_REPOS[*]}"
+echo " TIMEOUT=$TIMEOUT"
+echo " LINT_CONF=$LINT_CONF"
+echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
+echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo '-----------------------------------------------------------------------'
-
+echo
 
 # Detects chart directories that have changes against the
 # target branch ("$REMOTE/$TARGET_BRANCH").
@@ -274,7 +275,7 @@ chartlib::install_chart_with_single_config() {
     # Capture subshell output
     exec 3>&1
 
-    (
+    if ! (
         set -o errexit
 
         # Run in subshell so we can use a trap within the function.
@@ -297,7 +298,12 @@ chartlib::install_chart_with_single_config() {
 
         echo "Testing chart '$chart_dir'..."
         helm test "$release" >&3
-    )
+
+    ); then
+
+        chartlib::error "Chart installation failed: $chart_dir"
+        return 1
+    fi
 }
 
 # Lints a chart for all custom values files matching '*.values.yaml'
