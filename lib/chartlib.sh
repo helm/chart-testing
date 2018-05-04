@@ -295,6 +295,7 @@ chartlib::install_chart_with_single_config() {
             helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" >&3
         fi
 
+        echo "Testing chart '$chart_dir'..."
         helm test "$release" >&3
     )
 }
@@ -357,29 +358,51 @@ chartlib::print_pod_details_and_logs() {
 
     kubectl get pods --show-all --no-headers --namespace "$namespace" | awk '{ print $1 }' | while read -r pod; do
             if [[ -n "$pod" ]]; then
-                printf '===Details from pod %s:===\n' "$pod"
+                printf '\n================================================================================\n'
+                printf ' Details from pod %s\n' "$pod"
+                printf '================================================================================\n'
 
-                printf '...Description of pod %s:...\n' "$pod"
+                printf '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+                printf ' Description of pod %s\n' "$pod"
+                printf '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+
                 kubectl describe pod --namespace "$namespace" "$pod" || true
-                printf '...End of description for pod %s...\n\n' "$pod"
+
+                printf '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+                printf ' End of description for pod %s\n' "$pod"
+                printf '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
 
                 local init_containers
                 init_containers=$(kubectl get pods --show-all --output jsonpath="{.spec.initContainers[*].name}" --namespace "$namespace" "$pod")
                 for container in $init_containers; do
-                    printf -- '---Logs from init container %s in pod %s:---\n' "$container" "$pod"
+                    printf -- '\n--------------------------------------------------------------------------------\n'
+                    printf ' Logs of init container %s in pod %s\n' "$container" "$pod"
+                    printf -- '--------------------------------------------------------------------------------\n\n'
+
                     kubectl logs --namespace "$namespace" --container "$container" "$pod" || true
-                    printf -- '---End of logs for init container %s in pod %s---\n\n' "$container" "$pod"
+
+                    printf -- '\n--------------------------------------------------------------------------------\n'
+                    printf ' End of logs of init container %s in pod %s\n' "$container" "$pod"
+                    printf -- '--------------------------------------------------------------------------------\n'
                 done
 
                 local containers
                 containers=$(kubectl get pods --show-all --output jsonpath="{.spec.containers[*].name}" --namespace "$namespace" "$pod")
                 for container in $containers; do
-                    printf -- '---Logs from container %s in pod %s:---\n' "$container" "$pod"
+                    printf '\n--------------------------------------------------------------------------------\n'
+                    printf -- ' Logs of container %s in pod %s\n' "$container" "$pod"
+                    printf -- '--------------------------------------------------------------------------------\n\n'
+
                     kubectl logs --namespace "$namespace" --container "$container" "$pod" || true
-                    printf -- '---End of logs for container %s in pod %s---\n\n' "$container" "$pod"
+
+                    printf -- '\n--------------------------------------------------------------------------------\n'
+                    printf ' End of logs of container %s in pod %s\n' "$container" "$pod"
+                    printf -- '--------------------------------------------------------------------------------\n'
                 done
 
-                printf '===End of details for pod %s===\n' "$pod"
+                printf '\n================================================================================\n'
+                printf ' End of details for pod %s\n' "$pod"
+                printf '================================================================================\n\n'
             fi
         done
 }
