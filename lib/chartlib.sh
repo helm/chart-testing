@@ -284,6 +284,11 @@ chartlib::install_chart_with_single_config() {
             helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" >&3
         fi
 
+        # For deployments --wait may not be sufficient because it looks at 'maxUnavailable' which is 0 by default.
+        for deployment in $(kubectl get deployment --namespace "$namespace" -o jsonpath='{.items[*].metadata.name}'); do
+            kubectl rollout status "deployment/$deployment" --namespace "$namespace"
+        done
+
         echo "Testing chart '$chart_dir' in namespace '$namespace'..."
         helm test "$release" --cleanup --timeout "$TIMEOUT" >&3
 
