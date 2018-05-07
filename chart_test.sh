@@ -92,6 +92,8 @@ main() {
 
     pushd "$REPO_ROOT" > /dev/null
 
+    local exit_code=0
+
     read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
 
     if [[ -n "${changed_dirs[*]}" ]]; then
@@ -99,47 +101,52 @@ main() {
 
         chartlib::init_helm
 
-        local error=
+        local summary=()
+
         for chart_dir in "${changed_dirs[@]}"; do
             echo ''
-            echo '-----------------------------------------------------------------------'
+            echo '--------------------------------------------------------------------------------'
             echo " Processing chart '$chart_dir'..."
-            echo '-----------------------------------------------------------------------'
+            echo '--------------------------------------------------------------------------------'
             echo ''
 
-            local local_error=
+            local error=
 
             if [[ -z "$no_lint" ]]; then
                 if ! chartlib::validate_chart "$chart_dir"; then
-                    local_error=true
+                    error=true
                 fi
                 if ! chartlib::lint_chart_with_all_configs "$chart_dir"; then
-                    local_error=true
+                    error=true
                 fi
             fi
 
-            if [[ -z "$no_install" && -z "$local_error" ]]; then
+            if [[ -z "$no_install" && -z "$error" ]]; then
                 if ! chartlib::install_chart_with_all_configs "$chart_dir"; then
-                    local_error=true
+                    error=true
                 fi
             fi
 
-            if [[ -n "$local_error" ]]; then
-                error=true
+            if [[ -z "$error" ]]; then
+                summary+=(" ✔︎ $chart_dir")
+            else
+                summary+=(" ✖︎ $chart_dir")
+                exit_code=1
             fi
         done
-
-        if [[ -n "$error" ]]; then
-            chartlib::error "Script terminated with error(s)."
-            exit 1
-        fi
     else
-        echo 'No chart changes detected.'
+        summary+=('No chart changes detected.')
     fi
 
-    echo 'Done.'
+    echo '--------------------------------------------------------------------------------'
+    for line in "${summary[@]}"; do
+        echo "$line"
+    done
+    echo '--------------------------------------------------------------------------------'
 
     popd > /dev/null
+
+    exit "$exit_code"
 }
 
 main "$@"
