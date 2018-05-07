@@ -14,9 +14,6 @@
 
 FROM bash:4.4
 
-RUN addgroup -g 1000 testing && \
-    adduser -u 1000 -G testing -s /usr/local/bin/bash -D testing
-
 RUN apk --no-cache add \
     curl \
     git \
@@ -64,5 +61,3 @@ COPY lib /testing/lib/
 COPY chart_test.sh /testing/
 
 RUN ln -s /testing/chart_test.sh /usr/local/bin/chart_test.sh
-
-USER testing
