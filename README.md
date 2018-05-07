@@ -44,15 +44,15 @@ The following environment variables can be set to configure [chartlib.sh](lib/ch
 | - | - | - |
 | `REMOTE` | The name of the Git remote to check against for changed charts | `origin` |
 | `TARGET_BRANCH` | The name of the Git target branch to check against for changed charts | `master` |
-| `CHART_DIRS` | Directories relative to the repo root containing charts | `charts` |
-| `EXCLUDED_CHARTS` | Directories of charts that should be skipped | |
-| `CHART_REPOS` | Additional chart repos to add (`<name>=<url>`) | |
+| `CHART_DIRS` | Array of directories relative to the repo root containing charts | `(charts)` |
+| `EXCLUDED_CHARTS` | Array of directories of charts that should be skipped | `()` |
+| `CHART_REPOS` | Array of additional chart repos to add (`<name>=<url>`) | `()` |
 | `TIMEOUT` | Timeout for chart installation in seconds | `300` |
 | `LINT_CONF` | Config file for YAML linter | `/testing/etc/lintconf.yaml` (path of default config file in Docker image) |
 | `CHART_YAML_SCHEMA` | YAML schema for `Chart.yaml` | `/testing/etc/chart_schema.yaml` (path of default schema file in Docker image) |
 | `VALIDATE_MAINTAINERS`| If `true`, maintainer names in `Chart.yaml` are validated to be existing Github accounts | `true` |
 
-`CHART_DIRS`, `EXCLUDED_CHARTS`, and `CHART_REPOS` may be set as strings with values separated by spaces or as Bash arrays.
+Note that `CHART_DIRS`, `EXCLUDED_CHARTS`, and `CHART_REPOS` must be configured as Bash arrays.
 
 ## Usage
 

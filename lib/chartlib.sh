@@ -22,24 +22,13 @@ shopt -s nullglob
 
 readonly REMOTE="${REMOTE:-origin}"
 readonly TARGET_BRANCH="${TARGET_BRANCH:-master}"
-
-read -ra CHART_DIRS <<< "${CHART_DIRS:-charts}"
-readonly CHART_DIRS
-
-EXCLUDED_CHARTS=()
-read -ra EXCLUDED_CHARTS <<< "${EXCLUDED_CHARTS:-}"
-readonly EXCLUDED_CHARTS
-
-CHART_REPOS=()
-read -ra CHART_REPOS <<< "${CHART_REPOS:-}"
-readonly CHART_REPOS
-
+readonly CHART_DIRS=("${CHART_DIRS[@]:-${CHART_DIRS[@]}}")
+readonly EXCLUDED_CHARTS=("${EXCLUDED_CHARTS[@]:-${EXCLUDED_CHARTS[@]}}")
+readonly CHART_REPOS=("${CHART_REPOS[@]:-${CHART_REPOS[@]}}")
 readonly TIMEOUT="${TIMEOUT:-300}"
 readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
-
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
-
 
 echo
 echo '-----------------------------------------------------------------------'
@@ -55,6 +44,7 @@ echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo '-----------------------------------------------------------------------'
 echo
+
 
 # Detects chart directories that have changes against the
 # target branch ("$REMOTE/$TARGET_BRANCH").
