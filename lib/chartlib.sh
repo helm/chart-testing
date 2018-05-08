@@ -31,7 +31,7 @@ readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
 
 echo
-echo '-----------------------------------------------------------------------'
+echo '--------------------------------------------------------------------------------'
 echo ' Environment:'
 echo " REMOTE=$REMOTE"
 echo " TARGET_BRANCH=$TARGET_BRANCH"
@@ -42,7 +42,7 @@ echo " TIMEOUT=$TIMEOUT"
 echo " LINT_CONF=$LINT_CONF"
 echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
-echo '-----------------------------------------------------------------------'
+echo '--------------------------------------------------------------------------------'
 echo
 
 
@@ -277,22 +277,22 @@ chartlib::install_chart_with_single_config() {
         echo "Installing chart '$chart_dir' into namespace '$namespace'..."
 
         if [[ -n "$values_file" ]]; then
-            echo "Using custom values file '$values_file'..." >&3
-            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" --values "$values_file" >&3
+            echo "Using custom values file '$values_file'..."
+            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" --values "$values_file"
         else
-            echo "Chart does not provide test values. Using defaults..." >&3
-            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" >&3
+            echo "Chart does not provide test values. Using defaults..."
+            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT"
         fi
 
         # For deployments --wait may not be sufficient because it looks at 'maxUnavailable' which is 0 by default.
-        for deployment in $(kubectl get deployment --namespace "$namespace" -o jsonpath='{.items[*].metadata.name}'); do
+        for deployment in $(kubectl get deployment --namespace "$namespace" --output jsonpath='{.items[*].metadata.name}'); do
             kubectl rollout status "deployment/$deployment" --namespace "$namespace"
         done
 
         echo "Testing chart '$chart_dir' in namespace '$namespace'..."
-        helm test "$release" --cleanup --timeout "$TIMEOUT" >&3
+        helm test "$release" --cleanup --timeout "$TIMEOUT"
 
-    ); then
+    ) >&3; then
 
         chartlib::error "Chart installation failed: $chart_dir"
         return 1
@@ -357,54 +357,54 @@ chartlib::print_pod_details_and_logs() {
     local namespace="${1?Namespace is required}"
 
     kubectl get pods --show-all --no-headers --namespace "$namespace" | awk '{ print $1 }' | while read -r pod; do
-            if [[ -n "$pod" ]]; then
-                printf '\n================================================================================\n'
-                printf ' Details from pod %s\n' "$pod"
-                printf '================================================================================\n'
+        if [[ -n "$pod" ]]; then
+            printf '\n================================================================================\n'
+            printf ' Details from pod %s\n' "$pod"
+            printf '================================================================================\n'
 
-                printf '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
-                printf ' Description of pod %s\n' "$pod"
-                printf '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+            printf '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+            printf ' Description of pod %s\n' "$pod"
+            printf '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
 
-                kubectl describe pod --namespace "$namespace" "$pod" || true
+            kubectl describe pod --namespace "$namespace" "$pod" || true
 
-                printf '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
-                printf ' End of description for pod %s\n' "$pod"
-                printf '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+            printf '\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
+            printf ' End of description for pod %s\n' "$pod"
+            printf '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'
 
-                local init_containers
-                init_containers=$(kubectl get pods --show-all --output jsonpath="{.spec.initContainers[*].name}" --namespace "$namespace" "$pod")
-                for container in $init_containers; do
-                    printf -- '\n--------------------------------------------------------------------------------\n'
-                    printf ' Logs of init container %s in pod %s\n' "$container" "$pod"
-                    printf -- '--------------------------------------------------------------------------------\n\n'
+            local init_containers
+            init_containers=$(kubectl get pods --show-all --output jsonpath="{.spec.initContainers[*].name}" --namespace "$namespace" "$pod")
+            for container in $init_containers; do
+                printf -- '\n--------------------------------------------------------------------------------\n'
+                printf ' Logs of init container %s in pod %s\n' "$container" "$pod"
+                printf -- '--------------------------------------------------------------------------------\n\n'
 
-                    kubectl logs --namespace "$namespace" --container "$container" "$pod" || true
+                kubectl logs --namespace "$namespace" --container "$container" "$pod" || true
 
-                    printf -- '\n--------------------------------------------------------------------------------\n'
-                    printf ' End of logs of init container %s in pod %s\n' "$container" "$pod"
-                    printf -- '--------------------------------------------------------------------------------\n'
-                done
+                printf -- '\n--------------------------------------------------------------------------------\n'
+                printf ' End of logs of init container %s in pod %s\n' "$container" "$pod"
+                printf -- '--------------------------------------------------------------------------------\n'
+            done
 
-                local containers
-                containers=$(kubectl get pods --show-all --output jsonpath="{.spec.containers[*].name}" --namespace "$namespace" "$pod")
-                for container in $containers; do
-                    printf '\n--------------------------------------------------------------------------------\n'
-                    printf -- ' Logs of container %s in pod %s\n' "$container" "$pod"
-                    printf -- '--------------------------------------------------------------------------------\n\n'
+            local containers
+            containers=$(kubectl get pods --show-all --output jsonpath="{.spec.containers[*].name}" --namespace "$namespace" "$pod")
+            for container in $containers; do
+                printf '\n--------------------------------------------------------------------------------\n'
+                printf -- ' Logs of container %s in pod %s\n' "$container" "$pod"
+                printf -- '--------------------------------------------------------------------------------\n\n'
 
-                    kubectl logs --namespace "$namespace" --container "$container" "$pod" || true
+                kubectl logs --namespace "$namespace" --container "$container" "$pod" || true
 
-                    printf -- '\n--------------------------------------------------------------------------------\n'
-                    printf ' End of logs of container %s in pod %s\n' "$container" "$pod"
-                    printf -- '--------------------------------------------------------------------------------\n'
-                done
+                printf -- '\n--------------------------------------------------------------------------------\n'
+                printf ' End of logs of container %s in pod %s\n' "$container" "$pod"
+                printf -- '--------------------------------------------------------------------------------\n'
+            done
 
-                printf '\n================================================================================\n'
-                printf ' End of details for pod %s\n' "$pod"
-                printf '================================================================================\n\n'
-            fi
-        done
+            printf '\n================================================================================\n'
+            printf ' End of details for pod %s\n' "$pod"
+            printf '================================================================================\n\n'
+        fi
+    done
 }
 
 # Deletes a release.
