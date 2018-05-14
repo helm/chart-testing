@@ -236,6 +236,9 @@ chartlib::lint_chart_with_single_config() {
     local chart_dir="${1?Chart directory is required}"
     local values_file="${2:-}"
 
+    echo "Building dependencies for chart '$chart_dir'..."
+    helm dependency build "$chart_dir"
+
     if [[ -n "$values_file" ]]; then
         echo "Using custom values file '$values_file'..."
 
