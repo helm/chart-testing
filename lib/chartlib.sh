@@ -451,7 +451,7 @@ chartlib::delete_namespace() {
 
     echo
 
-    chartlib:error "Namespace '$namespace' not terminated after $((max_retries * sleep_time_sec)) s."
+    chartlib::error "Namespace '$namespace' not terminated after $((max_retries * sleep_time_sec)) s."
 
     echo "Force-deleting pods..."
     kubectl delete pods --namespace "$namespace" --all --force --grace-period 0 || true
