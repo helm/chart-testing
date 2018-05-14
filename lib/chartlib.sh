@@ -435,7 +435,7 @@ chartlib::delete_namespace() {
 
     local max_retries=30
     local retry=0
-    local sleep_time_sec=2
+    local sleep_time_sec=3
     while ((retry < max_retries)); do
         sleep "$sleep_time_sec"
         ((retry++))
