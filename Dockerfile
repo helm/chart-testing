@@ -49,7 +49,7 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v$KUBECT
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG HELM_VERSION=2.8.2
+ARG HELM_VERSION=2.9.1
 RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-v$HELM_VERSION-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$HELM_VERSION" && \
     tar -xzf "helm-v$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
