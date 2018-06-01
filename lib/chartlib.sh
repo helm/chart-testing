@@ -311,7 +311,7 @@ chartlib::install_chart_with_single_config() {
 chartlib::lint_chart_with_all_configs() {
     local chart_dir="${1?Chart directory is required}"
 
-    has_test_values=
+    local has_test_values=
     for values_file in "$chart_dir"/ci/*-values.yaml; do
         has_test_values=true
         chartlib::lint_chart_with_single_config "$chart_dir" "$values_file"
@@ -343,7 +343,7 @@ chartlib::install_chart_with_all_configs() {
     local namespace="${BUILD_ID:-"$release"}-$random_suffix"
     local release="$release-$random_suffix"
 
-    has_test_values=
+    local has_test_values=
     for values_file in "$chart_dir"/ci/*-values.yaml; do
         has_test_values=true
         chartlib::install_chart_with_single_config "$chart_dir" "$release-$index" "$namespace-$index" "$values_file"
