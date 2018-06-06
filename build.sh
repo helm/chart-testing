@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2018 The Kubernetes Authors. All rights reserved.
+# Copyright 2018 The Helm Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=v1.0.1
+readonly IMAGE_TAG=v1.0.2
 readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
