@@ -18,8 +18,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=v1.0.2
-readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
+readonly IMAGE_TAG=v1.0.3
+readonly IMAGE_REPOSITORY="eu.gcr.io/oxalide-lesechos-service/chart-testing"
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 show_help() {
