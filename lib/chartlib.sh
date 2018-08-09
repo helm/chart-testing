@@ -26,6 +26,7 @@ readonly TIMEOUT="${TIMEOUT:-300}"
 readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
+readonly GCS_PLUGIN_ENABLED="${GCS_PLUGIN_ENABLED:-false}"
 
 # Special handling for arrays
 [[ -z "${CHART_DIRS[*]}" ]] && CHART_DIRS=(charts); readonly CHART_DIRS
@@ -44,6 +45,7 @@ echo " TIMEOUT=$TIMEOUT"
 echo " LINT_CONF=$LINT_CONF"
 echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
+echo " GCS_PLUGIN_ENABLED=$GCS_PLUGIN_ENABLED"
 echo '--------------------------------------------------------------------------------'
 echo
 
@@ -79,10 +81,21 @@ chartlib::init_helm() {
 
     helm init --client-only
 
+    if [[ "$GCS_PLUGIN_ENABLED" == true ]]; then
+        echo "GCS plugin enable."
+        helm plugin install https://github.com/viglesiasce/helm-gcs.git --version v0.2.0
+    else
+        echo "GCS plugin disable."
+    fi
+
     for repo in "${CHART_REPOS[@]}"; do
         local name="${repo%=*}"
         local url="${repo#*=}"
 
+        if [[ "$GCS_PLUGIN_ENABLED" == true ]]; then
+            helm gcs init "$url"
+        fi
+        
         helm repo add "$name" "$url"
     done
 }
