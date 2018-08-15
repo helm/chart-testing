@@ -92,6 +92,13 @@ main() {
 
     pushd "$REPO_ROOT" > /dev/null
 
+    for dir in "${CHART_DIRS[@]}"; do
+        if [[ ! -d "$dir" ]]; then
+            chartlib::error "Configured charts directory '$dir' does not exist"
+            exit 1
+        fi
+    done
+
     local exit_code=0
 
     read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
