@@ -51,6 +51,7 @@ The following environment variables can be set to configure [chartlib.sh](lib/ch
 | `LINT_CONF` | Config file for YAML linter | `/testing/etc/lintconf.yaml` (path of default config file in Docker image) |
 | `CHART_YAML_SCHEMA` | YAML schema for `Chart.yaml` | `/testing/etc/chart_schema.yaml` (path of default schema file in Docker image) |
 | `VALIDATE_MAINTAINERS`| If `true`, maintainer names in `Chart.yaml` are validated to be existing Github accounts | `true` |
+| `GITHUB_INSTANCE`| Url of Github instance for maintainer validation | `https://github.com` |
 
 Note that `CHART_DIRS`, `EXCLUDED_CHARTS`, and `CHART_REPOS` must be configured as Bash arrays.
 
