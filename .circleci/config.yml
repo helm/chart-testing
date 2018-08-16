@@ -10,3 +10,5 @@ jobs:
           command: |
             shellcheck -x lib/chartlib.sh
             shellcheck -x chart_test.sh
+            shellcheck -x examples/docker-for-mac/my_test.sh
+            shellcheck -x examples/gke/my_test.sh
