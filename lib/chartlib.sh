@@ -379,7 +379,7 @@ chartlib::install_chart_with_all_configs() {
     random_suffix=$(tr -dc a-z0-9 < /dev/urandom | fold -w 16 | head -n 1)
 
     local release_trimmed
-    release_trimmed=$(echo $release-$random_suffix | cut -c-29)
+    release_trimmed=$(echo "$release"-"$random_suffix" | cut -c-29)
 
     local namespace="${BUILD_ID:-"$release"}-$random_suffix"
     local release="$release_trimmed"
