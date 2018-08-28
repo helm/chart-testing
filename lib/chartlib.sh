@@ -378,8 +378,11 @@ chartlib::install_chart_with_all_configs() {
     local random_suffix
     random_suffix=$(tr -dc a-z0-9 < /dev/urandom | fold -w 16 | head -n 1)
 
+    local release_trimmed
+    release_trimmed=$(echo $release-$random_suffix | cut -c-29)
+
     local namespace="${BUILD_ID:-"$release"}-$random_suffix"
-    local release="$(echo $release-$random_suffix | cut -c-29)"
+    local release="$release_trimmed"
 
     local has_test_values=
     for values_file in "$chart_dir"/ci/*-values.yaml; do
