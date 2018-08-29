@@ -372,12 +372,13 @@ chartlib::install_chart_with_all_configs() {
     local chart_dir="${1?Chart directory is required}"
     local index=0
 
+    # Generate suffix 10 long and cut release name to 16 long, as in case of long release name
+    # it was causing StatefulSet with long names to create pods
+    # bug https://github.com/kubernetes/kubernetes/issues/64023
     local release
-    release=$(yq -r .name < "$chart_dir/Chart.yaml")
+    release=$(yq -r .name < "$chart_dir/Chart.yaml" | cut -c-16)
 
     local random_suffix
-    # Generate suffix 10 long as 16 long was causing StatefulSet with long names to create pods
-    # bug https://github.com/kubernetes/kubernetes/issues/64023
     random_suffix=$(tr -dc a-z0-9 < /dev/urandom | fold -w 10 | head -n 1)
 
     local namespace="${BUILD_ID:-"$release"}-$random_suffix"
