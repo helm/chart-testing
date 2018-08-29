@@ -26,6 +26,7 @@ readonly TIMEOUT="${TIMEOUT:-300}"
 readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
+readonly GITHUB_INSTANCE="${GITHUB_INSTANCE:-https://github.com}"
 
 # Special handling for arrays
 [[ -z "${CHART_DIRS[*]}" ]] && CHART_DIRS=(charts); readonly CHART_DIRS
@@ -44,6 +45,7 @@ echo " TIMEOUT=$TIMEOUT"
 echo " LINT_CONF=$LINT_CONF"
 echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
+echo " GITHUB_INSTANCE=$GITHUB_INSTANCE"
 echo '--------------------------------------------------------------------------------'
 echo
 
@@ -179,7 +181,7 @@ chartlib::validate_maintainers() {
 
     while read -r name; do
         echo "Verifying maintainer '$name'..."
-        if [[ $(curl --silent --output /dev/null --write-out "%{http_code}" --fail --head "https://github.com/$name") -ne 200 ]]; then
+        if [[ $(curl --silent --output /dev/null --write-out "%{http_code}" --fail --head "$GITHUB_INSTANCE/$name") -ne 200 ]]; then
             chartlib::error "'$name' is not a valid GitHub account. Please use a valid Github account to help us communicate with maintainers in PRs/issues."
             return 1
         fi
