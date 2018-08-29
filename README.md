@@ -1,14 +1,19 @@
 # Chart Testing
 
-Bash library for linting and testing Helm charts. Comes prepackaged as Docker image for easy use.
+Bash library for linting and testing Helm charts.
+Comes prepackaged as Docker image for easy use.
 
-[chartlib.sh](lib/chartlib.sh) is a Bash library with useful function for linting and testing charts. It is well documented and should be easily usable. The script is meant to be sourced and can be configured via environment variables.
+[chartlib.sh](lib/chartlib.sh) is a Bash library with useful function for linting and testing charts.
+It is well documented and should be easily usable.
+The script is meant to be sourced and can be configured via environment variables.
 
-As a convenience, [chart_test.sh](chart_test.sh) is provided. It supports linting and testing charts that have changed against a target branch.
+As a convenience, [chart_test.sh](chart_test.sh) is provided.
+It supports linting and testing charts that have changed against a target branch.
 
 ## Prerequisites
 
-It is recommended to use the provided Docker image. It comes with all necessary tools installed.
+It is recommended to use the provided Docker image.
+It comes with all necessary tools installed.
 
 * Bash 4.4 (https://tiswww.case.edu/php/chet/bash/bashtop.html)
 * Helm (http://helm.sh)
@@ -23,7 +28,8 @@ Note that older Bash versions may no work!
 
 ## Installation
 
-Clone the repository and add it to the `PATH`. The script must be run in the root directory of a Git repository.
+Clone the repository and add it to the `PATH`.
+The script must be run in the root directory of a Git repository.
 
 ```shell
 $ chart_test.sh --help
@@ -38,7 +44,8 @@ Usage: chart_test.sh <options>
 
 ## Configuration
 
-The following environment variables can be set to configure [chartlib.sh](lib/chartlib.sh). Note that this must be done before the script is sourced.
+The following environment variables can be set to configure [chartlib.sh](lib/chartlib.sh).
+Note that this must be done before the script is sourced.
 
 | Variable | Description | Default |
 | - | - | - |
@@ -56,9 +63,12 @@ Note that `CHART_DIRS`, `EXCLUDED_CHARTS`, and `CHART_REPOS` must be configured 
 
 ## Usage
 
-The library is meant to be used for linting and testing pull requests. It automatically detects charts changed against the target branch. The environment variables mentioned in the configuration section above can be set in a config file for `chart_test.sh`.
+The library is meant to be used for linting and testing pull requests.
+It automatically detects charts changed against the target branch.
+The environment variables mentioned in the configuration section above can be set in a config file for `chart_test.sh`.
 
-By default, changes are detected against `origin/master`. Depending on your CI setup, it may be necessary to configure and fetch a separate remote for this.
+By default, changes are detected against `origin/master`.
+Depending on your CI setup, it may be necessary to configure and fetch a separate remote for this.
 
 ```shell
 REMOTE=myremote
@@ -131,9 +141,14 @@ Done.
 
 ### Installing and Testing Charts
 
-Installing a chart requires access to a Kubernetes cluster. You may have to create your own Docker image that extends from `gcr.io/kubernetes-charts-ci/chart-testing:v1.0.3` in order to install additional tools (e. g. `google-cloud-sdk` for GKE). You could run a container in the background, run the required steps to authenticatre and initialize the `kubectl` context before you, and eventually run `chart_test.sh`.
+Installing a chart requires access to a Kubernetes cluster.
+You may have to create your own Docker image that extends from `gcr.io/kubernetes-charts-ci/chart-testing:v1.0.3` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
+You could run a container in the background, run the required steps to authenticatre and initialize the `kubectl` context before you, and eventually run `chart_test.sh`.
 
-Charts are installed into newly created namespaces that will be deleted again afterwards. By default, they are named by the chart, which may not be a good idea, especially when multiple PR jobs could be running for the same chart. `chart_lib.sh` looks for an environment variable `BUILD_ID` and uses it to name the namespace. Make sure you set it based on the pull request number.
+Charts are installed into newly created namespaces that will be deleted again afterwards.
+By default, they are named by the chart, which may not be a good idea, especially when multiple PR jobs could be running for the same chart.
+`chart_lib.sh` looks for an environment variable `BUILD_ID` and uses it to name the namespace.
+Make sure you set it based on the pull request number.
 
 ```shell
 docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.3 chart_test.sh --no-lint --config .mytestenv
@@ -141,4 +156,12 @@ docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts
 
 #### GKE Example
 
-An example for GKE is available in the [examples/gke](examples/gke) directory. A custom `Dockerfile` additionally installs the `google-cloud-sdk` and a custom shell script puts everything together.
+An example for GKE is available in the [examples/gke](examples/gke) directory.
+A custom `Dockerfile` additionally installs the `google-cloud-sdk` and a custom shell script puts everything together.
+
+
+#### Docker for Mac Example
+
+An example for Docker for Mac is available in the [examples/docker-for-mac](examples/docker-for-mac) directory.
+This script can be run as is in the [charts](https://github.com/helm/charts) repo.
+Make sure `Show system containers` is active for Docker's Kubernetes distribution, so the script can find the API server and configure `kubectl` so it can access the API server from within the container.
