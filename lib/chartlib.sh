@@ -376,13 +376,12 @@ chartlib::install_chart_with_all_configs() {
     release=$(yq -r .name < "$chart_dir/Chart.yaml")
 
     local random_suffix
-    random_suffix=$(tr -dc a-z0-9 < /dev/urandom | fold -w 16 | head -n 1)
-
-    local release_trimmed
-    release_trimmed=$(echo "$release"-"$random_suffix" | cut -c-29)
+    # Generate suffix 10 long as 16 long was causing StatefulSet with long names to create pods
+    # bug https://github.com/kubernetes/kubernetes/issues/64023
+    random_suffix=$(tr -dc a-z0-9 < /dev/urandom | fold -w 10 | head -n 1)
 
     local namespace="${BUILD_ID:-"$release"}-$random_suffix"
-    local release="$release_trimmed"
+    local release="$release-$random_suffix"
 
     local has_test_values=
     for values_file in "$chart_dir"/ci/*-values.yaml; do
