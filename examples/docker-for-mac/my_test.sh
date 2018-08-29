@@ -55,7 +55,7 @@ configure_kubectl() {
     apiserver_id=$(lookup_apiserver_container_id)
 
     if [[ -z "$apiserver_id" ]]; then
-        echo "ERROR: API-Server container not found. Make sure 'Show system containers' is enabled!" >&2
+        echo "ERROR: API-Server container not found. Make sure 'Show system containers' is enabled in Docker4Mac 'Preferences'!" >&2
         exit 1
     fi
 
