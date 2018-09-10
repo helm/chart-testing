@@ -18,6 +18,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+readonly IMAGE_TAG=v1.0.3
+readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
+
 main() {
     local testcontainer_id
     testcontainer_id=$(create_testcontainer)
@@ -42,7 +45,7 @@ get_apiserver_arg() {
 create_testcontainer() {
     docker container run --interactive --tty --detach \
         --volume "$(pwd):/workdir" --workdir /workdir \
-        gcr.io/kubernetes-charts-ci/chart-testing:v1.0.3 cat
+        "$IMAGE_REPOSITORY:$IMAGE_TAG" cat
 }
 
 configure_kubectl() {
@@ -52,7 +55,7 @@ configure_kubectl() {
     apiserver_id=$(lookup_apiserver_container_id)
 
     if [[ -z "$apiserver_id" ]]; then
-        echo "ERROR: API-Server container not found. Make sure 'Show system containers' is enabled!" >&2
+        echo "ERROR: API-Server container not found. Make sure 'Show system containers' is enabled in Docker4Mac 'Preferences'!" >&2
         exit 1
     fi
 
@@ -72,6 +75,8 @@ run_test() {
     git remote add k8s https://github.com/helm/charts.git &> /dev/null || true
     git fetch k8s
     docker exec "$testcontainer_id" chart_test.sh --config test/.testenv
+
+    echo "Done Testing!"
 }
 
 main
