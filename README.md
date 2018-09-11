@@ -83,7 +83,7 @@ chart-test.sh
 ### Linting Charts
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.3 chart_test.sh --no-install --config .mytestenv
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4 chart_test.sh --no-install --config .mytestenv
 ```
 
 *Sample Output*
@@ -143,7 +143,7 @@ Done.
 ### Installing and Testing Charts
 
 Installing a chart requires access to a Kubernetes cluster.
-You may have to create your own Docker image that extends from `gcr.io/kubernetes-charts-ci/chart-testing:v1.0.3` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
+You may have to create your own Docker image that extends from `gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
 You could run a container in the background, run the required steps to authenticatre and initialize the `kubectl` context before you, and eventually run `chart_test.sh`.
 
 Charts are installed into newly created namespaces that will be deleted again afterwards.
@@ -152,7 +152,7 @@ By default, they are named by the chart, which may not be a good idea, especiall
 Make sure you set it based on the pull request number.
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.3 chart_test.sh --no-lint --config .mytestenv
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4 chart_test.sh --no-lint --config .mytestenv
 ```
 
 #### GKE Example
