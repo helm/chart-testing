@@ -24,8 +24,6 @@ RUN apk --no-cache add \
     py-crcmod \
     py-pip
 
-ENV HOME /tmp
-
 # Install YQ command line reader
 ARG YQ_VERSION=2.5.0
 RUN pip install "yq==$YQ_VERSION"
@@ -63,4 +61,4 @@ COPY lib /testing/lib/
 COPY chart_test.sh /testing/
 
 RUN ln -s /testing/chart_test.sh /usr/local/bin/chart_test.sh
-USER nobody
+

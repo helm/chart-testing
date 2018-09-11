@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=v1.0.4
+readonly IMAGE_TAG=v1.0.5
 readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 
 main() {
@@ -43,7 +43,7 @@ get_apiserver_arg() {
 }
 
 create_testcontainer() {
-    docker container run --user 1000:1000 --interactive --tty --detach \
+    docker container run --interactive --tty --detach \
         --volume "$(pwd):/workdir" --workdir /workdir \
         "$IMAGE_REPOSITORY:$IMAGE_TAG" cat
 }
@@ -65,8 +65,7 @@ configure_kubectl() {
     local port
     port=$(get_apiserver_arg "$apiserver_id" --secure-port)
 
-    docker cp "$HOME/.kube" "$testcontainer_id:/tmp/.kube"
-    docker exec --user root "$testcontainer_id" chown -R 1000:1000 /tmp
+    docker cp "$HOME/.kube" "$testcontainer_id:/root/.kube"
     docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster "--server=https://$ip:$port"
     docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster --insecure-skip-tls-verify=true
     docker exec "$testcontainer_id" kubectl config use-context docker-for-desktop
