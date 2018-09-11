@@ -64,7 +64,7 @@ chartlib::read_directories() {
         if [[ -z "$excluded" && -d "$dir" ]]; then
             changed_dirs=("${changed_dirs[@]}" "$dir")
         fi
-    done < <(ls -d1 "${CHART_DIRS[@]}"/* | awk -F/ '{ print $1"/"$2 }' | uniq)
+    done < <(find "${CHART_DIRS[@]}" -mindepth 1 -maxdepth 1 -type d | awk -F/ '{ print $1"/"$2 }' | uniq)
 
     echo "${changed_dirs[@]}"
 }
