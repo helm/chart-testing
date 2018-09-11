@@ -39,7 +39,7 @@ EOF
 main() {
     local no_lint=
     local no_install=
-    local force=
+    local force=false
     local chart=
     local config=
     local verbose=
@@ -124,10 +124,11 @@ main() {
 
     local exit_code=0
 
-    if [[ -n "$force" ]]; then
+    if [[ "$force" = true ]]; then
         read -ra changed_dirs <<< "$(chartlib::read_directories)"
     elif [[ -n "$chart" ]]; then
         read -ra changed_dirs <<< "$(echo "$chart")"
+        # Set force to true so chart version bump check will be skipped
         force=true
     else
         read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
