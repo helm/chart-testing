@@ -389,7 +389,9 @@ chartlib::install_chart_with_all_configs() {
     local has_test_values=
     for values_file in "$chart_dir"/ci/*-values.yaml; do
         has_test_values=true
-        chartlib::install_chart_with_single_config "$chart_dir" "$release-$index" "$namespace-$index" "$values_file"
+        if ! chartlib::install_chart_with_single_config "$chart_dir" "$release-$index" "$namespace-$index" "$values_file"; then
+            return 1
+        fi
         ((index += 1))
     done
 
