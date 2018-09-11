@@ -29,6 +29,8 @@ Usage: $(basename "$0") <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
+    --force           Force charts linting/installation
+    --chart           Lint/install a standalone chart (ignored if --force is used)
     --config          Path to the config file (optional)
     --                End of all options
 EOF
@@ -37,6 +39,8 @@ EOF
 main() {
     local no_lint=
     local no_install=
+    local force=
+    local chart=
     local config=
     local verbose=
 
@@ -54,6 +58,18 @@ main() {
                 ;;
             --no-lint)
                 no_lint=true
+                ;;
+            --force)
+                force=true
+                ;;
+            --chart)
+                if [ -n "$2" ]; then
+                    chart="$2"
+                    shift
+                else
+                    echo "ERROR: '--chart' cannot be empty." >&2
+                    exit 1
+                fi
                 ;;
             --config)
                 if [ -n "$2" ]; then
@@ -92,6 +108,13 @@ main() {
 
     pushd "$REPO_ROOT" > /dev/null
 
+    if [[ -n "$chart" ]]; then
+        if [[ ! -d "$chart" ]]; then
+            chartlib::error "Configured chart '$chart' does not exist"
+            exit 1
+        fi
+    fi
+
     for dir in "${CHART_DIRS[@]}"; do
         if [[ ! -d "$dir" ]]; then
             chartlib::error "Configured charts directory '$dir' does not exist"
@@ -101,7 +124,14 @@ main() {
 
     local exit_code=0
 
-    read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
+    if [[ -n "$force" ]]; then
+        read -ra changed_dirs <<< "$(chartlib::read_directories)"
+    elif [[ -n "$chart" ]]; then
+        read -ra changed_dirs <<< "$(echo "$chart")"
+        force=true
+    else
+        read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
+    fi
 
     if [[ -n "${changed_dirs[*]}" ]]; then
         echo "Charts to be installed and tested: ${changed_dirs[*]}"

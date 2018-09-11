@@ -39,6 +39,8 @@ Usage: chart_test.sh <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
+    --force           Force charts linting/installation
+    --chart           Lint/install a standalone chart (ignored if --force is used)
     --config          Path to the config file (optional)
 ```
 
@@ -140,6 +142,20 @@ Linting chart 'stable/dummy'...
 Done.
 ```
 
+#### Forcing to lint unchanged charts
+
+You can force to lint all charts with `--force` flag (chart version bump check will be ignored):
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4 chart_test.sh --no-install --config .mytestenv --force
+```
+
+You can force to lint one chart with `--chart` flags (chart version bump check will be ignored):
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4 chart_test.sh --no-install --config .mytestenv --chart stable/nginx
+```
+
 ### Installing and Testing Charts
 
 Installing a chart requires access to a Kubernetes cluster.
@@ -153,6 +169,20 @@ Make sure you set it based on the pull request number.
 
 ```shell
 docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4 chart_test.sh --no-lint --config .mytestenv
+```
+
+#### Forcing to install unchanged charts
+
+You can force to install all charts with `--force` flag:
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4 chart_test.sh --no-lint --config .mytestenv --force
+```
+
+You can force to install one chart with `--chart` flags:
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.4 chart_test.sh --no-lint --config .mytestenv --chart stable/nginx
 ```
 
 #### GKE Example
