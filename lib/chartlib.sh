@@ -237,7 +237,7 @@ chartlib::validate_chart() {
     echo "Validating chart '$chart_dir'..."
 
     # skipping version bump check if --force or --chart is used
-    if [ "$force" = false ]; then
+    if [ "$FORCE" = false ]; then
         chartlib::check_for_version_bump "$chart_dir" || error=true
     fi
     chartlib::lint_yaml_file "$chart_dir/Chart.yaml" || error=true
