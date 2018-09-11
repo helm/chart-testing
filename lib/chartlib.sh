@@ -49,6 +49,25 @@ echo " GITHUB_INSTANCE=$GITHUB_INSTANCE"
 echo '--------------------------------------------------------------------------------'
 echo
 
+# Read chart directories to be used with --force
+chartlib::read_directories() {
+    local dir
+
+    while read -r dir; do
+        local excluded=
+        for excluded_dir in "${EXCLUDED_CHARTS[@]}"; do
+            if [[ "$dir" == "$excluded_dir" ]]; then
+                excluded=true
+                break
+            fi
+        done
+        if [[ -z "$excluded" && -d "$dir" ]]; then
+            changed_dirs=("${changed_dirs[@]}" "$dir")
+        fi
+    done < <(find "${CHART_DIRS[@]}" -mindepth 1 -maxdepth 1 -type d | awk -F/ '{ print $1"/"$2 }' | uniq)
+
+    echo "${changed_dirs[@]}"
+}
 
 # Detects chart directories that have changes against the
 # target branch ("$REMOTE/$TARGET_BRANCH").
@@ -217,7 +236,10 @@ chartlib::validate_chart() {
 
     echo "Validating chart '$chart_dir'..."
 
-    chartlib::check_for_version_bump "$chart_dir" || error=true
+    # skipping version bump check if --force or --chart is used
+    if [ "$FORCE" = false ]; then
+        chartlib::check_for_version_bump "$chart_dir" || error=true
+    fi
     chartlib::lint_yaml_file "$chart_dir/Chart.yaml" || error=true
     chartlib::lint_yaml_file "$chart_dir/values.yaml" || error=true
     chartlib::validate_chart_yaml "$chart_dir" || error=true
