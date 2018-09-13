@@ -26,6 +26,7 @@ readonly TIMEOUT="${TIMEOUT:-300}"
 readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
+readonly CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
 readonly GITHUB_INSTANCE="${GITHUB_INSTANCE:-https://github.com}"
 
 # Special handling for arrays
@@ -46,6 +47,7 @@ echo " LINT_CONF=$LINT_CONF"
 echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo " GITHUB_INSTANCE=$GITHUB_INSTANCE"
+echo " CHECK_VERSION_INCREMENT=$CHECK_VERSION_INCREMENT"
 echo '--------------------------------------------------------------------------------'
 echo
 
@@ -217,7 +219,10 @@ chartlib::validate_chart() {
 
     echo "Validating chart '$chart_dir'..."
 
-    chartlib::check_for_version_bump "$chart_dir" || error=true
+    if [[ "$CHECK_VERSION_INCREMENT" == true ]]; then
+        chartlib::check_for_version_bump "$chart_dir" || error=true
+    fi
+
     chartlib::lint_yaml_file "$chart_dir/Chart.yaml" || error=true
     chartlib::lint_yaml_file "$chart_dir/values.yaml" || error=true
     chartlib::validate_chart_yaml "$chart_dir" || error=true
