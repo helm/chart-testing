@@ -12,7 +12,7 @@ It supports linting and testing charts that have changed against a target branch
 
 ## Prerequisites
 
-It is recommended to use the provided Docker image.
+It is recommended to use the provided Docker image which can be [found on Quay](quay.io/helmpack/chart-testing/).
 It comes with all necessary tools installed.
 
 * Bash 4.4 (https://tiswww.case.edu/php/chet/bash/bashtop.html)
@@ -83,7 +83,7 @@ chart-test.sh
 ### Linting Charts
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv
 ```
 
 *Sample Output*
@@ -143,7 +143,7 @@ Done.
 ### Installing and Testing Charts
 
 Installing a chart requires access to a Kubernetes cluster.
-You may have to create your own Docker image that extends from `gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
+You may have to create your own Docker image that extends from `quay.io/helmpack/chart-testing:v1.0.5` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
 You could run a container in the background, run the required steps to authenticatre and initialize the `kubectl` context before you, and eventually run `chart_test.sh`.
 
 Charts are installed into newly created namespaces that will be deleted again afterwards.
@@ -152,7 +152,7 @@ By default, they are named by the chart, which may not be a good idea, especiall
 Make sure you set it based on the pull request number.
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv
 ```
 
 #### GKE Example
