@@ -37,12 +37,10 @@ EOF
 }
 
 main() {
-    local no_lint=
-    local no_install=
-    local chart=
-    local config=
     local verbose=
-    export FORCE=false
+    local no_install=
+    local no_lint=
+    local config=
 
     while :; do
         case "${1:-}" in
@@ -61,11 +59,13 @@ main() {
                 ;;
             --force)
                 FORCE=true
+                CHECK_VERSION_INCREMENT=false
                 ;;
             --chart)
                 if [ -n "$2" ]; then
-                    chart="$2"
+                    STANDALONE_CHART="$2"
                     shift
+                    export CHECK_VERSION_INCREMENT=false
                 else
                     echo "ERROR: '--chart' cannot be empty." >&2
                     exit 1
@@ -108,13 +108,6 @@ main() {
 
     pushd "$REPO_ROOT" > /dev/null
 
-    if [[ -n "$chart" ]]; then
-        if [[ ! -d "$chart" ]]; then
-            chartlib::error "Configured chart '$chart' does not exist"
-            exit 1
-        fi
-    fi
-
     for dir in "${CHART_DIRS[@]}"; do
         if [[ ! -d "$dir" ]]; then
             chartlib::error "Configured charts directory '$dir' does not exist"
@@ -126,10 +119,12 @@ main() {
 
     if [[ "$FORCE" = true ]]; then
         read -ra changed_dirs <<< "$(chartlib::read_directories)"
-    elif [[ -n "$chart" ]]; then
-        read -ra changed_dirs <<< "${chart}"
-        # Set force to true so chart version bump check will be skipped
-        FORCE=true
+    elif [[ -n "$STANDALONE_CHART" ]]; then
+        if [[ ! -d "$STANDALONE_CHART" ]]; then
+            chartlib::error "Configured chart '$STANDALONE_CHART' does not exist"
+            exit 1
+        fi
+        read -ra changed_dirs <<< "${STANDALONE_CHART}"
     else
         read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
     fi

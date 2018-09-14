@@ -27,6 +27,10 @@ readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
 readonly GITHUB_INSTANCE="${GITHUB_INSTANCE:-https://github.com}"
+# env vars below aren't readonly to allow us to overwrite them
+CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
+FORCE="${FORCE:-false}"
+STANDALONE_CHART="${STANDALONE_CHART:-}"
 
 # Special handling for arrays
 [[ -z "${CHART_DIRS[*]}" ]] && CHART_DIRS=(charts); readonly CHART_DIRS
@@ -46,6 +50,9 @@ echo " LINT_CONF=$LINT_CONF"
 echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo " GITHUB_INSTANCE=$GITHUB_INSTANCE"
+echo " CHECK_VERSION_INCREMENT=$CHECK_VERSION_INCREMENT"
+echo " FORCE=$FORCE"
+echo " STANDALONE_CHART=$STANDALONE_CHART"
 echo '--------------------------------------------------------------------------------'
 echo
 
@@ -237,9 +244,10 @@ chartlib::validate_chart() {
     echo "Validating chart '$chart_dir'..."
 
     # skipping version bump check if --force or --chart is used
-    if [ "$FORCE" = false ]; then
+    if [[ "$CHECK_VERSION_INCREMENT" == true ]]; then
         chartlib::check_for_version_bump "$chart_dir" || error=true
     fi
+
     chartlib::lint_yaml_file "$chart_dir/Chart.yaml" || error=true
     chartlib::lint_yaml_file "$chart_dir/values.yaml" || error=true
     chartlib::validate_chart_yaml "$chart_dir" || error=true
