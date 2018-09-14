@@ -29,16 +29,18 @@ Usage: $(basename "$0") <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
+    --force           Force charts linting/installation
+    --chart           Lint/install a standalone chart (ignored if --force is used)
     --config          Path to the config file (optional)
     --                End of all options
 EOF
 }
 
 main() {
-    local no_lint=
-    local no_install=
-    local config=
     local verbose=
+    local no_install=
+    local no_lint=
+    local config=
 
     while :; do
         case "${1:-}" in
@@ -54,6 +56,20 @@ main() {
                 ;;
             --no-lint)
                 no_lint=true
+                ;;
+            --force)
+                FORCE=true
+                CHECK_VERSION_INCREMENT=false
+                ;;
+            --chart)
+                if [ -n "$2" ]; then
+                    STANDALONE_CHART="$2"
+                    shift
+                    export CHECK_VERSION_INCREMENT=false
+                else
+                    echo "ERROR: '--chart' cannot be empty." >&2
+                    exit 1
+                fi
                 ;;
             --config)
                 if [ -n "$2" ]; then
@@ -101,7 +117,17 @@ main() {
 
     local exit_code=0
 
-    read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
+    if [[ "$FORCE" = true ]]; then
+        read -ra changed_dirs <<< "$(chartlib::read_directories)"
+    elif [[ -n "$STANDALONE_CHART" ]]; then
+        if [[ ! -d "$STANDALONE_CHART" ]]; then
+            chartlib::error "Configured chart '$STANDALONE_CHART' does not exist"
+            exit 1
+        fi
+        read -ra changed_dirs <<< "${STANDALONE_CHART}"
+    else
+        read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
+    fi
 
     if [[ -n "${changed_dirs[*]}" ]]; then
         echo "Charts to be installed and tested: ${changed_dirs[*]}"

@@ -26,8 +26,11 @@ readonly TIMEOUT="${TIMEOUT:-300}"
 readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
-readonly CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
 readonly GITHUB_INSTANCE="${GITHUB_INSTANCE:-https://github.com}"
+# env vars below aren't readonly to allow us to overwrite them
+CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
+FORCE="${FORCE:-false}"
+STANDALONE_CHART="${STANDALONE_CHART:-}"
 
 # Special handling for arrays
 [[ -z "${CHART_DIRS[*]}" ]] && CHART_DIRS=(charts); readonly CHART_DIRS
@@ -48,9 +51,30 @@ echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo " GITHUB_INSTANCE=$GITHUB_INSTANCE"
 echo " CHECK_VERSION_INCREMENT=$CHECK_VERSION_INCREMENT"
+echo " FORCE=$FORCE"
+echo " STANDALONE_CHART=$STANDALONE_CHART"
 echo '--------------------------------------------------------------------------------'
 echo
 
+# Read chart directories to be used with --force
+chartlib::read_directories() {
+    local dir
+
+    while read -r dir; do
+        local excluded=
+        for excluded_dir in "${EXCLUDED_CHARTS[@]}"; do
+            if [[ "$dir" == "$excluded_dir" ]]; then
+                excluded=true
+                break
+            fi
+        done
+        if [[ -z "$excluded" && -d "$dir" ]]; then
+            changed_dirs=("${changed_dirs[@]}" "$dir")
+        fi
+    done < <(find "${CHART_DIRS[@]}" -mindepth 1 -maxdepth 1 -type d | awk -F/ '{ print $1"/"$2 }' | uniq)
+
+    echo "${changed_dirs[@]}"
+}
 
 # Detects chart directories that have changes against the
 # target branch ("$REMOTE/$TARGET_BRANCH").
