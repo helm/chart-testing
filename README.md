@@ -144,7 +144,7 @@ Done.
 
 Installing a chart requires access to a Kubernetes cluster.
 You may have to create your own Docker image that extends from `quay.io/helmpack/chart-testing:v1.0.5` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
-You could run a container in the background, run the required steps to authenticatre and initialize the `kubectl` context before you, and eventually run `chart_test.sh`.
+A container from such an image could run steps to authenticate to a Kubernetes cluster, where it initializes the `kubectl` context, before running `chart_test.sh`.
 
 Charts are installed into newly created namespaces that will be deleted again afterwards.
 By default, they are named by the chart, which may not be a good idea, especially when multiple PR jobs could be running for the same chart.
