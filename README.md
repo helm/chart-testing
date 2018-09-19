@@ -39,9 +39,12 @@ Usage: chart_test.sh <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
-    --force           Force charts linting/installation
-    --chart           Lint/install a standalone chart (ignored if --force is used)
+    --chart-all       Lint/install all charts
+    --chart           Lint/install:
+                        a standalone chart - stable/nginx
+                        a list of charts   - stable/nginx,stable/cert-manager
     --config          Path to the config file (optional)
+    --                End of all options
 ```
 
 ## Configuration
@@ -62,8 +65,8 @@ Note that this must be done before the script is sourced.
 | `VALIDATE_MAINTAINERS`| If `true`, maintainer names in `Chart.yaml` are validated to be existing Github accounts | `true` |
 | `GITHUB_INSTANCE`| Url of Github instance for maintainer validation | `https://github.com` |
 | `CHECK_VERSION_INCREMENT`| If `true`, the chart version is checked to be incremented from the version on the remote target branch | `true` |
-| `FORCE`| If `true`, forces to test all charts | `false` |
-| `STANDALONE_CHART`| If `true`, forces to test one specified chart | `false` |
+| `CHART_ALL`| If `true`, forces to test all charts | `false` |
+| `CHART`| Forces to test one specified chart or a list of charts | `` |
 
 Note that `CHART_DIRS`, `EXCLUDED_CHARTS`, and `CHART_REPOS` must be configured as Bash arrays.
 
@@ -147,13 +150,19 @@ Done.
 
 #### Forcing to lint unchanged charts
 
-You can force to lint all charts with `--force` flag (chart version bump check will be ignored):
+You can force to lint all charts with `--chart-all` flag (chart version bump check will be ignored):
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --force
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --chart-all
 ```
 
-You can force to lint one chart with `--chart` flags (chart version bump check will be ignored):
+You can force to lint a list of charts (separated by comma) with `--chart` flag (chart version bump check will be ignored):
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --chart stable/nginx,stable/cert-manager
+```
+
+You can force to lint one chart with `--chart` flag (chart version bump check will be ignored):
 
 ```shell
 docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --chart stable/nginx
@@ -176,13 +185,19 @@ docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts
 
 #### Forcing to install unchanged charts
 
-You can force to install all charts with `--force` flag:
+You can force to install all charts with `--chart-all` flag:
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --force
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --chart-all
 ```
 
-You can force to install one chart with `--chart` flags:
+You can force to install a list of charts (separated by comma) with `--chart` flag:
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --chart stable/nginx,stable/cert-manager
+```
+
+You can force to install one chart with `--chart` flag:
 
 ```shell
 docker run --rm -v "$(pwd):/workdir" --workdir /workdir gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --chart stable/nginx

@@ -29,8 +29,8 @@ readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
 readonly GITHUB_INSTANCE="${GITHUB_INSTANCE:-https://github.com}"
 # env vars below aren't readonly to allow us to overwrite them
 CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
-FORCE="${FORCE:-false}"
-STANDALONE_CHART="${STANDALONE_CHART:-}"
+CHART_ALL="${CHART_ALL:-false}"
+CHART="${CHART:-}"
 
 # Special handling for arrays
 [[ -z "${CHART_DIRS[*]}" ]] && CHART_DIRS=(charts); readonly CHART_DIRS
@@ -51,8 +51,8 @@ echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo " GITHUB_INSTANCE=$GITHUB_INSTANCE"
 echo " CHECK_VERSION_INCREMENT=$CHECK_VERSION_INCREMENT"
-echo " FORCE=$FORCE"
-echo " STANDALONE_CHART=$STANDALONE_CHART"
+echo " CHART_ALL=$CHART_ALL"
+echo " CHART=$CHART"
 echo '--------------------------------------------------------------------------------'
 echo
 

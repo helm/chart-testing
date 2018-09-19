@@ -29,8 +29,10 @@ Usage: $(basename "$0") <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
-    --force           Force charts linting/installation
-    --chart           Lint/install a standalone chart (ignored if --force is used)
+    --chart-all       Lint/install all charts
+    --chart           Lint/install:
+                        a standalone chart - stable/nginx
+                        a list of charts   - stable/nginx,stable/cert-manager
     --config          Path to the config file (optional)
     --                End of all options
 EOF
@@ -57,13 +59,13 @@ main() {
             --no-lint)
                 no_lint=true
                 ;;
-            --force)
-                FORCE=true
-                CHECK_VERSION_INCREMENT=false
+            --chart-all)
+                CHART_ALL=true
+                export CHECK_VERSION_INCREMENT=false
                 ;;
             --chart)
                 if [ -n "$2" ]; then
-                    STANDALONE_CHART="$2"
+                    CHART="$2"
                     shift
                     export CHECK_VERSION_INCREMENT=false
                 else
@@ -117,14 +119,11 @@ main() {
 
     local exit_code=0
 
-    if [[ "$FORCE" = true ]]; then
+    if [[ "$CHART_ALL" == "true" ]]; then
         read -ra changed_dirs <<< "$(chartlib::read_directories)"
-    elif [[ -n "$STANDALONE_CHART" ]]; then
-        if [[ ! -d "$STANDALONE_CHART" ]]; then
-            chartlib::error "Configured chart '$STANDALONE_CHART' does not exist"
-            exit 1
-        fi
-        read -ra changed_dirs <<< "${STANDALONE_CHART}"
+    elif [[ -n "$CHART" ]]; then
+        CHART="${CHART//,/ }"
+        read -ra changed_dirs <<< "${CHART}"
     else
         read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
     fi
