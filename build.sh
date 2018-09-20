@@ -19,7 +19,11 @@ set -o nounset
 set -o pipefail
 
 readonly IMAGE_TAG=v1.0.5
-readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
+
+# The image goes into two repositories. quay.io/helmpack/chart-testing is used
+# for public consumption and is built by Quay via a webhook. The below image
+# is close to the CI environment used by charts where we also push it.
+readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 show_help() {

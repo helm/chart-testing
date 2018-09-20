@@ -148,29 +148,29 @@ Done.
 
 #### Linting Unchanged Charts
 
-You can lint all charts with `--chart-all` flag (chart version bump check will be ignored):
+You can lint all charts with `--all` flag (chart version bump check will be ignored):
 
 ```shell
 docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --chart-all
 ```
 
-You can lint a list of charts (separated by comma) with `--chart` flag (chart version bump check will be ignored):
+You can lint a list of charts (separated by comma) with `--charts` flag (chart version bump check will be ignored):
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --chart stable/nginx,stable/cert-manager
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --charts stable/nginx,stable/cert-manager
 ```
 
-You can lint a single chart with `--chart` flag (chart version bump check will be ignored):
+You can lint a single chart with `--charts` flag (chart version bump check will be ignored):
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --chart stable/nginx
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --charts stable/nginx
 ```
 
 ### Installing and Testing Charts
 
 Installing a chart requires access to a Kubernetes cluster.
 You may have to create your own Docker image that extends from `quay.io/helmpack/chart-testing:v1.0.5` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
-You could run a container in the background, run the required steps to authenticatre and initialize the `kubectl` context before you, and eventually run `chart_test.sh`.
+A container from such an image could run steps to authenticate to a Kubernetes cluster, where it initializes the `kubectl` context, before running `chart_test.sh`.
 
 Charts are installed into newly created namespaces that will be deleted again afterwards.
 By default, they are named by the chart, which may not be a good idea, especially when multiple PR jobs could be running for the same chart.
@@ -183,22 +183,22 @@ docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-t
 
 #### Installing Unchanged Charts
 
-You can force to install all charts with `--chart-all` flag:
+You can force to install all charts with `--all` flag:
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --chart-all
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --all
 ```
 
-You can force to install a list of charts (separated by comma) with `--chart` flag:
+You can force to install a list of charts (separated by comma) with `--charts` flag:
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --chart stable/nginx,stable/cert-manager
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx,stable/cert-manager
 ```
 
-You can force to install one chart with `--chart` flag:
+You can force to install one chart with `--charts` flag:
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --chart stable/nginx
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx
 ```
 
 #### GKE Example
