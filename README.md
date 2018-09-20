@@ -24,7 +24,7 @@ It comes with all necessary tools installed.
 * kubectl (https://kubernetes.io/docs/reference/kubectl/overview/)
 * Tooling for your cluster
 
-Note that older Bash versions may no work!
+Note that older Bash versions may not work!
 
 ## Installation
 
