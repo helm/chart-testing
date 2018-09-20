@@ -181,26 +181,6 @@ Make sure you set it based on the pull request number.
 docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv
 ```
 
-#### Installing Unchanged Charts
-
-You can force to install all charts with `--all` flag:
-
-```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --all
-```
-
-You can force to install a list of charts (separated by comma) with `--charts` flag:
-
-```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx,stable/cert-manager
-```
-
-You can force to install one chart with `--charts` flag:
-
-```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx
-```
-
 #### GKE Example
 
 An example for GKE is available in the [examples/gke](examples/gke) directory.
