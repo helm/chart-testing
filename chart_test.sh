@@ -29,10 +29,10 @@ Usage: $(basename "$0") <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
-    --chart-all       Lint/install all charts
-    --chart           Lint/install:
-                        a standalone chart - stable/nginx
-                        a list of charts   - stable/nginx,stable/cert-manager
+    --all             Lint/install all charts
+    --charts          Lint/install:
+                        a standalone chart (e. g. stable/nginx)
+                        a list of charts (e. g. stable/nginx,stable/cert-manager)
     --config          Path to the config file (optional)
     --                End of all options
 EOF
@@ -43,6 +43,8 @@ main() {
     local no_install=
     local no_lint=
     local config=
+    local all=
+    local charts=
 
     while :; do
         case "${1:-}" in
@@ -59,15 +61,13 @@ main() {
             --no-lint)
                 no_lint=true
                 ;;
-            --chart-all)
-                CHART_ALL=true
-                export CHECK_VERSION_INCREMENT=false
+            --all)
+                all=true
                 ;;
-            --chart)
+            --charts)
                 if [ -n "$2" ]; then
-                    CHART="$2"
+                    charts="$2"
                     shift
-                    export CHECK_VERSION_INCREMENT=false
                 else
                     echo "ERROR: '--chart' cannot be empty." >&2
                     exit 1
@@ -119,11 +119,13 @@ main() {
 
     local exit_code=0
 
-    if [[ "$CHART_ALL" == "true" ]]; then
+    if [[ "$all" == "true" ]]; then
+        export CHECK_VERSION_INCREMENT=false
         read -ra changed_dirs <<< "$(chartlib::read_directories)"
-    elif [[ -n "$CHART" ]]; then
-        CHART="${CHART//,/ }"
-        read -ra changed_dirs <<< "${CHART}"
+    elif [[ -n "$charts" ]]; then
+        charts="${charts//,/ }"
+        export CHECK_VERSION_INCREMENT=false
+        read -ra changed_dirs <<< "${charts}"
     else
         read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
     fi

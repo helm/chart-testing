@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 readonly IMAGE_TAG=v1.0.5
-readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
+readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 show_help() {
