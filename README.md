@@ -151,7 +151,7 @@ Done.
 You can lint all charts with `--all` flag (chart version bump check will be ignored):
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --chart-all
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --all
 ```
 
 You can lint a list of charts (separated by comma) with `--charts` flag (chart version bump check will be ignored):
