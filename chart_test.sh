@@ -103,6 +103,10 @@ main() {
         fi
     fi
 
+    if [[ "$all" == "true" || -n "$charts" ]]; then
+        export CHECK_VERSION_INCREMENT=false
+    fi
+
     # shellcheck source=lib/chartlib.sh
     source "$SCRIPT_DIR/lib/chartlib.sh"
 
@@ -120,11 +124,9 @@ main() {
     local exit_code=0
 
     if [[ "$all" == "true" ]]; then
-        export CHECK_VERSION_INCREMENT=false
         read -ra changed_dirs <<< "$(chartlib::read_directories)"
     elif [[ -n "$charts" ]]; then
         charts="${charts//,/ }"
-        export CHECK_VERSION_INCREMENT=false
         read -ra changed_dirs <<< "${charts}"
     else
         read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"

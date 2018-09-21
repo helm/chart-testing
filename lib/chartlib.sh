@@ -27,8 +27,7 @@ readonly LINT_CONF="${LINT_CONF:-/testing/etc/lintconf.yaml}"
 readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}"
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
 readonly GITHUB_INSTANCE="${GITHUB_INSTANCE:-https://github.com}"
-# env vars below aren't readonly to allow us to overwrite them
-CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
+readonly CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
 
 # Special handling for arrays
 [[ -z "${CHART_DIRS[*]}" ]] && CHART_DIRS=(charts); readonly CHART_DIRS
