@@ -35,6 +35,10 @@ readonly CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
 [[ -z "${CHART_REPOS[*]}" ]] && CHART_REPOS=(); readonly CHART_REPOS
 
 echo
+if [[ "$CHECK_VERSION_INCREMENT" == false ]]; then
+    echo '--------------------------------------------------------------------------------'
+    echo " SKIPPING VERSION INCREMENT CHECK!"
+fi
 echo '--------------------------------------------------------------------------------'
 echo ' Environment:'
 echo " REMOTE=$REMOTE"
