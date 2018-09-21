@@ -29,16 +29,22 @@ Usage: $(basename "$0") <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
+    --all             Lint/install all charts
+    --charts          Lint/install:
+                        a standalone chart (e. g. stable/nginx)
+                        a list of charts (e. g. stable/nginx,stable/cert-manager)
     --config          Path to the config file (optional)
     --                End of all options
 EOF
 }
 
 main() {
-    local no_lint=
-    local no_install=
-    local config=
     local verbose=
+    local no_install=
+    local no_lint=
+    local config=
+    local all=
+    local charts=
 
     while :; do
         case "${1:-}" in
@@ -54,6 +60,18 @@ main() {
                 ;;
             --no-lint)
                 no_lint=true
+                ;;
+            --all)
+                all=true
+                ;;
+            --charts)
+                if [ -n "$2" ]; then
+                    charts="$2"
+                    shift
+                else
+                    echo "ERROR: '--charts' cannot be empty." >&2
+                    exit 1
+                fi
                 ;;
             --config)
                 if [ -n "$2" ]; then
@@ -85,6 +103,10 @@ main() {
         fi
     fi
 
+    if [[ "$all" == "true" || -n "$charts" ]]; then
+        export CHECK_VERSION_INCREMENT=false
+    fi
+
     # shellcheck source=lib/chartlib.sh
     source "$SCRIPT_DIR/lib/chartlib.sh"
 
@@ -101,7 +123,14 @@ main() {
 
     local exit_code=0
 
-    read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
+    if [[ "$all" == "true" ]]; then
+        read -ra changed_dirs <<< "$(chartlib::read_directories)"
+    elif [[ -n "$charts" ]]; then
+        charts="${charts//,/ }"
+        read -ra changed_dirs <<< "${charts}"
+    else
+        read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
+    fi
 
     if [[ -n "${changed_dirs[*]}" ]]; then
         echo "Charts to be installed and tested: ${changed_dirs[*]}"

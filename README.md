@@ -39,7 +39,12 @@ Usage: chart_test.sh <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
+    --all             Lint/install all charts
+    --charts          Lint/install:
+                        a standalone chart (e. g. stable/nginx)
+                        a list of charts (e. g. stable/nginx,stable/cert-manager)
     --config          Path to the config file (optional)
+    --                End of all options
 ```
 
 ## Configuration
@@ -58,8 +63,8 @@ Note that this must be done before the script is sourced.
 | `LINT_CONF` | Config file for YAML linter | `/testing/etc/lintconf.yaml` (path of default config file in Docker image) |
 | `CHART_YAML_SCHEMA` | YAML schema for `Chart.yaml` | `/testing/etc/chart_schema.yaml` (path of default schema file in Docker image) |
 | `VALIDATE_MAINTAINERS`| If `true`, maintainer names in `Chart.yaml` are validated to be existing Github accounts | `true` |
-| `CHECK_VERSION_INCREMENT`| If `true`, the chart version is checked to be incremented from the version on the remote target branch | `true` |
 | `GITHUB_INSTANCE`| Url of Github instance for maintainer validation | `https://github.com` |
+| `CHECK_VERSION_INCREMENT`| If `true`, the chart version is checked to be incremented from the version on the remote target branch | `true` |
 
 Note that `CHART_DIRS`, `EXCLUDED_CHARTS`, and `CHART_REPOS` must be configured as Bash arrays.
 
@@ -141,6 +146,26 @@ Linting chart 'stable/dummy'...
 Done.
 ```
 
+#### Linting Unchanged Charts
+
+You can lint all charts with `--all` flag (chart version bump check will be ignored):
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --all
+```
+
+You can lint a list of charts (separated by comma) with `--charts` flag (chart version bump check will be ignored):
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --charts stable/nginx,stable/cert-manager
+```
+
+You can lint a single chart with `--charts` flag (chart version bump check will be ignored):
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --charts stable/nginx
+```
+
 ### Installing and Testing Charts
 
 Installing a chart requires access to a Kubernetes cluster.
@@ -156,11 +181,30 @@ Make sure you set it based on the pull request number.
 docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv
 ```
 
+#### Installing Unchanged Charts
+
+You can force to install all charts with `--all` flag:
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --all
+```
+
+You can force to install a list of charts (separated by comma) with `--charts` flag:
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx,stable/cert-manager
+```
+
+You can force to install one chart with `--charts` flag:
+
+```shell
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx
+```
+
 #### GKE Example
 
 An example for GKE is available in the [examples/gke](examples/gke) directory.
 A custom `Dockerfile` additionally installs the `google-cloud-sdk` and a custom shell script puts everything together.
-
 
 #### Docker for Mac Example
 
