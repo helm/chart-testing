@@ -69,7 +69,7 @@ main() {
                     charts="$2"
                     shift
                 else
-                    echo "ERROR: '--chart' cannot be empty." >&2
+                    echo "ERROR: '--charts' cannot be empty." >&2
                     exit 1
                 fi
                 ;;
