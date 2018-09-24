@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=v1.0.5
+readonly IMAGE_TAG=v1.1.0
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 
 main() {
