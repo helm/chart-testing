@@ -89,7 +89,7 @@ chart-test.sh
 ### Linting Charts
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-install --config .mytestenv
 ```
 
 *Sample Output*
@@ -151,25 +151,25 @@ Done.
 You can lint all charts with `--all` flag (chart version bump check will be ignored):
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --all
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-install --config .mytestenv --all
 ```
 
 You can lint a list of charts (separated by comma) with `--charts` flag (chart version bump check will be ignored):
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --charts stable/nginx,stable/cert-manager
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-install --config .mytestenv --charts stable/nginx,stable/cert-manager
 ```
 
 You can lint a single chart with `--charts` flag (chart version bump check will be ignored):
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-install --config .mytestenv --charts stable/nginx
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-install --config .mytestenv --charts stable/nginx
 ```
 
 ### Installing and Testing Charts
 
 Installing a chart requires access to a Kubernetes cluster.
-You may have to create your own Docker image that extends from `quay.io/helmpack/chart-testing:v1.0.5` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
+You may have to create your own Docker image that extends from `quay.io/helmpack/chart-testing:v1.1.0` in order to install additional tools (e. g. `google-cloud-sdk` for GKE).
 A container from such an image could run steps to authenticate to a Kubernetes cluster, where it initializes the `kubectl` context, before running `chart_test.sh`.
 
 Charts are installed into newly created namespaces that will be deleted again afterwards.
@@ -178,7 +178,7 @@ By default, they are named by the chart, which may not be a good idea, especiall
 Make sure you set it based on the pull request number.
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-lint --config .mytestenv
 ```
 
 #### Installing Unchanged Charts
@@ -186,19 +186,19 @@ docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-t
 You can force to install all charts with `--all` flag:
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --all
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-lint --config .mytestenv --all
 ```
 
 You can force to install a list of charts (separated by comma) with `--charts` flag:
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx,stable/cert-manager
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx,stable/cert-manager
 ```
 
 You can force to install one chart with `--charts` flag:
 
 ```shell
-docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.0.5 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx
+docker run --rm -v "$(pwd):/workdir" --workdir /workdir quay.io/helmpack/chart-testing:v1.1.0 chart_test.sh --no-lint --config .mytestenv --charts stable/nginx
 ```
 
 #### GKE Example
