@@ -107,7 +107,7 @@ chartlib::init_helm() {
     helm init --client-only
 
     for repo in "${CHART_REPOS[@]}"; do
-        local name="${repo%=*}"
+        local name="${repo%%=*}"
         local url="${repo#*=}"
 
         helm repo add "$name" "$url"
