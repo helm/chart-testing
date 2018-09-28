@@ -380,15 +380,20 @@ chartlib::get_pods_for_deployment() {
 #   $1 The chart directory
 chartlib::lint_chart_with_all_configs() {
     local chart_dir="${1?Chart directory is required}"
+    local error=
 
     local has_test_values=
     for values_file in "$chart_dir"/ci/*-values.yaml; do
         has_test_values=true
-        chartlib::lint_chart_with_single_config "$chart_dir" "$values_file"
+        chartlib::lint_chart_with_single_config "$chart_dir" "$values_file" || error=true
     done
 
     if [[ -z "$has_test_values" ]]; then
-        chartlib::lint_chart_with_single_config "$chart_dir"
+        chartlib::lint_chart_with_single_config "$chart_dir" || error=true
+    fi
+
+    if [[ -n "$error" ]]; then
+        return 1
     fi
 }
 
