@@ -1,5 +1,7 @@
-.history
 .idea
-.settings
 .project
-.classpath
+.settings
+.vscode
+/dist
+/config.*
+/ct

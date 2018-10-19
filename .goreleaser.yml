@@ -1,0 +1,49 @@
+project_name: chart-testing
+builds:
+  - main: app/main.go
+    binary: ct
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - arm
+    goos:
+      - linux
+      - darwin
+      - windows
+    ldflags:
+      - >-
+        -X github.com/helm/chart-testing/app/cmd.Version={{ .Tag }}
+        -X github.com/helm/chart-testing/app/cmd.GitCommit={{ .Commit }}
+        -X github.com/helm/chart-testing/app/cmd.BuildDate={{ .Date }}
+archive:
+  format_overrides:
+    - goos: windows
+      format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+dockers:
+  - goos: linux
+    goarch: amd64
+    binary: ct
+    image: quay.io/helmpack/chart-testing
+    skip_push: false
+    dockerfile: Dockerfile
+    tag_templates:
+      - "{{ .Tag }}"
+      - latest
+    build_flag_templates:
+      - "--build-arg=dist_dir="
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.version={{ .Version }}"
+      - "--label=org.label-schema.name={{ .ProjectName }}"
+      - "--label=org.label-schema.build-date={{ .Date }}"
+      - "--label=org.label-schema.description='ct - The chart testing tool'"
+      - "--label=org.label-schema.vendor=Helm"
+    extra_files:
+      - etc/chart_schema.yaml
+      - etc/lintconf.yaml

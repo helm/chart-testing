@@ -1,0 +1,23 @@
+{
+  "remote": "origin",
+  "target-branch": "master",
+  "tiller-namespace": "tiller",
+  "build-id": "pr-42",
+  "lint-conf": "my-lint-conf.yaml",
+  "chart-yaml-schema": "my-chart-yaml-schema.yaml",
+  "github-instance": "https://github.com",
+  "validate-maintainers": true,
+  "check-version-increment": true,
+  "all": false,
+  "chart-repos": [
+    "incubator=https://incubator"
+  ],
+  "chart-dirs": [
+    "stable",
+    "incubator"
+  ],
+  "excluded-charts": [
+    "common"
+  ],
+  "timeout": "300s"
+}

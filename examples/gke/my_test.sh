@@ -19,6 +19,7 @@ set -o nounset
 set -o pipefail
 
 readonly IMAGE_REPOSITORY="myrepo/chart-testing"
+readonly IMAGE_REPOSITORY="v1.0.0"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 main() {
@@ -36,8 +37,6 @@ main() {
     docker exec "$config_container_id" gcloud container clusters get-credentials my-cluster --project my-project --zone us-west1-a
     docker exec "$config_container_id" kubectl cluster-info
     docker exec "$config_container_id" chart_test.sh --config /workdir/.testenv
-
-    echo "Done Testing!"
 }
 
 main

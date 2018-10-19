@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  lint:
     docker:
       - image: koalaman/shellcheck-alpine
     steps:
@@ -8,7 +8,42 @@ jobs:
       - run:
           name: lint
           command: |
-            shellcheck -x lib/chartlib.sh
-            shellcheck -x chart_test.sh
-            shellcheck -x examples/docker-for-mac/my_test.sh
-            shellcheck -x examples/gke/my_test.sh
+            shellcheck -x build.sh
+            shellcheck -x tag.sh
+  release:
+    docker:
+      - image: golang:1.11.1-alpine3.8
+    working_directory: /workdir
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Install tools
+          command: |
+            apk add bash build-base ca-certificates curl docker git openssh
+            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.89.0/goreleaser_Linux_x86_64.tar.gz
+            mkdir -p /usr/local/goreleaser
+            tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
+            ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser
+            rm -rf goreleaser_Linux_x86_64.tar.gz
+      - checkout
+      - run:
+          name: Checkout tag
+          command: git gc --aggressive --prune=all && git checkout -b "$CIRCLE_TAG" "$CIRCLE_TAG"
+      - run:
+          name: Create release
+          command: |
+            go mod download
+            ./build.sh --debug --release
+workflows:
+  version: 2
+  untagged-build:
+    jobs:
+      - lint
+  tagged-build:
+    jobs:
+      - release:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

@@ -1,0 +1,5 @@
+maintainers:
+  - name: invalid
+    email: invalid@example.com
+  - name: valid
+    email: valid@example.com

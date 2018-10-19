@@ -18,26 +18,25 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=v1.1.0
-
-# The image goes into two repositories. quay.io/helmpack/chart-testing is used
-# for public consumption and is built by Quay via a webhook. The below image
-# is close to the CI environment used by charts where we also push it.
-readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 show_help() {
 cat << EOF
-Usage: ${0##*/} <args>
-    -h, --help             Display help
-    -v, --verbose          Display verbose output
-    -p, --push             Push image to registry
+Usage: $(basename "$0") <options>
+
+Build ct using Goreleaser.
+
+    -h, --help      Display help
+    -d, --debug     Display verbose output and run Goreleaser with --debug
+    -r, --release   Create a release using Goreleaser. This includes the creation
+                    of a GitHub release and building and pushing the Docker image.
+                    If this flag is not specified, Goreleaser is run with --snapshot
 EOF
 }
 
 main() {
-    local verbose=
-    local push=
+    local debug=
+    local release=
 
     while :; do
         case "${1:-}" in
@@ -45,14 +44,11 @@ main() {
                 show_help
                 exit
                 ;;
-            -v|--verbose)
-                verbose=true
+            -d|--debug)
+                debug=true
                 ;;
-            -p|--push)
-                push=true
-                ;;
-            -?*)
-                printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            -r|--release)
+                release=true
                 ;;
             *)
                 break
@@ -62,17 +58,23 @@ main() {
         shift
     done
 
-    [[ -n "$verbose" ]] && set -o xtrace
+    local goreleaser_args=(--rm-dist)
 
-    pushd "$SCRIPT_DIR"
-
-    docker build --tag "$IMAGE_REPOSITORY:$IMAGE_TAG" .
-
-    if [[ -n "$push" ]]; then
-        docker push "$IMAGE_REPOSITORY:$IMAGE_TAG"
+    if [[ -n "$debug" ]]; then
+        goreleaser_args+=( --debug)
+        set -x
     fi
 
-    popd
+    if [[ -z "$release" ]]; then
+        goreleaser_args+=( --snapshot)
+    fi
+
+    pushd "$SCRIPT_DIR" > /dev/null
+
+    go test ./...
+    goreleaser "${goreleaser_args[@]}"
+
+    popd > /dev/null
 }
 
 main "$@"
