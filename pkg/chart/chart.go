@@ -184,13 +184,13 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 	}
 
 	fmt.Println()
-	printDelimiterLine("-")
+	util.PrintDelimiterLine("-")
 	fmt.Println(" Charts to be processed:")
-	printDelimiterLine("-")
+	util.PrintDelimiterLine("-")
 	for _, chart := range charts {
 		fmt.Printf(" %s\n", chart)
 	}
-	printDelimiterLine("-")
+	util.PrintDelimiterLine("-")
 	fmt.Println()
 
 	if err := t.helm.Init(); err != nil {
@@ -248,7 +248,7 @@ func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
 
 // PrintResults writes test results to stdout.
 func (t *Testing) PrintResults(results []TestResult) {
-	printDelimiterLine("-")
+	util.PrintDelimiterLine("-")
 	if results != nil {
 		for _, result := range results {
 			err := result.Error
@@ -261,7 +261,7 @@ func (t *Testing) PrintResults(results []TestResult) {
 	} else {
 		fmt.Println("No chart changes detected.")
 	}
-	printDelimiterLine("-")
+	util.PrintDelimiterLine("-")
 }
 
 // LintChart lints the specified chart.
@@ -535,7 +535,7 @@ func (t *Testing) PrintPodDetailsAndLogs(namespace string) {
 		return
 	}
 
-	printDelimiterLine("=")
+	util.PrintDelimiterLine("=")
 
 	for _, pod := range pods {
 		printDetails(pod, "Description of pod", "~", func(item string) error {
@@ -566,32 +566,24 @@ func (t *Testing) PrintPodDetailsAndLogs(namespace string) {
 			containers...)
 	}
 
-	printDelimiterLine("=")
+	util.PrintDelimiterLine("=")
 }
 
 func printDetails(pod string, text string, delimiterChar string, printFunc func(item string) error, items ...string) {
 	for _, item := range items {
 		item = strings.Trim(item, "'")
 
-		printDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(delimiterChar)
 		fmt.Printf("==> %s %s\n", text, pod)
-		printDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(delimiterChar)
 
 		if err := printFunc(item); err != nil {
 			fmt.Println("Error printing details:", err)
 			return
 		}
 
-		printDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(delimiterChar)
 		fmt.Printf("<== %s %s\n", text, pod)
-		printDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(delimiterChar)
 	}
-}
-
-func printDelimiterLine(delimiterChar string) {
-	delim := make([]string, 120)
-	for i := 0; i < 120; i++ {
-		delim[i] = delimiterChar
-	}
-	fmt.Println(strings.Join(delim, ""))
 }

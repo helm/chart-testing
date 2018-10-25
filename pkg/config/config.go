@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"path"
+	"reflect"
 	"strings"
 	"time"
 
@@ -89,29 +90,52 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func
 		return nil, errors.New("Specifying both, '--all' and '--charts', is not allowed!")
 	}
 
-	if strings.Contains(cmd.Use, "lint") {
-		chartYamlSchemaPath := cfg.ChartYamlSchema
-		if chartYamlSchemaPath == "" {
-			var err error
-			cfgFile, err = findConfigFile("chart_schema.yaml")
-			if err != nil {
-				return nil, errors.New("'chart_schema.yaml' neither specified nor found in default locations")
-			}
-			cfg.ChartYamlSchema = cfgFile
+	isLint := strings.Contains(cmd.Use, "lint")
+	chartYamlSchemaPath := cfg.ChartYamlSchema
+	if chartYamlSchemaPath == "" {
+		var err error
+		cfgFile, err = findConfigFile("chart_schema.yaml")
+		if err != nil && isLint {
+			return nil, errors.New("'chart_schema.yaml' neither specified nor found in default locations")
 		}
-
-		lintConfPath := cfg.LintConf
-		if lintConfPath == "" {
-			var err error
-			cfgFile, err = findConfigFile("lintconf.yaml")
-			if err != nil {
-				return nil, errors.New("'lintconf.yaml' neither specified nor found in default locations")
-			}
-			cfg.LintConf = cfgFile
-		}
+		cfg.ChartYamlSchema = cfgFile
 	}
 
+	lintConfPath := cfg.LintConf
+	if lintConfPath == "" {
+		var err error
+		cfgFile, err = findConfigFile("lintconf.yaml")
+		if err != nil && isLint {
+			return nil, errors.New("'lintconf.yaml' neither specified nor found in default locations")
+		}
+		cfg.LintConf = cfgFile
+	}
+
+	printCfg(cfg)
+
 	return cfg, nil
+}
+
+func printCfg(cfg *Configuration) {
+	util.PrintDelimiterLine("-")
+	fmt.Println(" Configuration")
+	util.PrintDelimiterLine("-")
+
+	e := reflect.ValueOf(cfg).Elem()
+	typeOfCfg := e.Type()
+
+	for i := 0; i < e.NumField(); i++ {
+		var  pattern string
+		switch e.Field(i).Kind() {
+		case reflect.Bool:
+			pattern = "%s: %t\n"
+		default:
+			pattern = "%s: %s\n"
+		}
+		fmt.Printf(pattern, typeOfCfg.Field(i).Name, e.Field(i).Interface())
+	}
+
+	util.PrintDelimiterLine("-")
 }
 
 func findConfigFile(fileName string) (string, error) {
@@ -121,5 +145,5 @@ func findConfigFile(fileName string) (string, error) {
 			return filePath, nil
 		}
 	}
-	return "", errors.New("config file not found")
+	return "", errors.New(fmt.Sprintf("Config file not found: %s", fileName))
 }

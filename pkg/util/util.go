@@ -23,6 +23,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -163,4 +164,12 @@ func CreateInstallParams(chart string, buildId string) (release string, namespac
 	release = fmt.Sprintf("%s-%s", release, randomSuffix)
 	namespace = fmt.Sprintf("%s-%s", namespace, randomSuffix)
 	return
+}
+
+func PrintDelimiterLine(delimiterChar string) {
+	delim := make([]string, 120)
+	for i := 0; i < 120; i++ {
+		delim[i] = delimiterChar
+	}
+	fmt.Println(strings.Join(delim, ""))
 }
