@@ -16,6 +16,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"path"
 	"strings"
 	"time"
@@ -27,7 +28,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var configSearchLocations = []string{"/etc/ct", "$HOME/ct", "."}
+var (
+	homeDir, _ = homedir.Dir()
+	configSearchLocations = []string{"/etc/ct", path.Join(homeDir, "ct"), "."}
+)
 
 type Configuration struct {
 	Remote                string        `mapstructure:"remote"`

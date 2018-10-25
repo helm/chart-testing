@@ -5,6 +5,7 @@ require (
 	github.com/MakeNowJust/heredoc v0.0.0-20171113091838-e9091a26100e
 	github.com/Masterminds/semver v1.4.2
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/mitchellh/go-homedir v1.0.0
 	github.com/pkg/errors v0.8.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/cobra v0.0.3
