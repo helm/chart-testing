@@ -28,7 +28,7 @@ jobs:
       - checkout
       - run:
           name: Checkout tag
-          command: git gc --aggressive --prune=all && git checkout -b "$CIRCLE_TAG" "$CIRCLE_TAG"
+          command: git checkout -b "$CIRCLE_TAG" "$CIRCLE_TAG"
       - run:
           name: Create release
           command: |
