@@ -25,7 +25,7 @@ RUN apk --no-cache add \
     py-pip
 
 # Install YQ command line reader
-ARG YQ_VERSION=2.5.0
+ARG YQ_VERSION=2.7.0
 RUN pip install "yq==$YQ_VERSION"
 
 # Install SemVer testing tool
