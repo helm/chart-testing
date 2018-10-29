@@ -28,6 +28,7 @@ readonly CHART_YAML_SCHEMA="${CHART_YAML_SCHEMA:-/testing/etc/chart_schema.yaml}
 readonly VALIDATE_MAINTAINERS="${VALIDATE_MAINTAINERS:-true}"
 readonly GITHUB_INSTANCE="${GITHUB_INSTANCE:-https://github.com}"
 readonly CHECK_VERSION_INCREMENT="${CHECK_VERSION_INCREMENT:-true}"
+readonly HELM_EXTRA_OPTS="${HELM_EXTRA_OPTS:-}"
 
 # Special handling for arrays
 [[ -z "${CHART_DIRS[*]}" ]] && CHART_DIRS=(charts); readonly CHART_DIRS
@@ -52,6 +53,11 @@ echo " CHART_YAML_SCHEMA=$CHART_YAML_SCHEMA"
 echo " VALIDATE_MAINTAINERS=$VALIDATE_MAINTAINERS"
 echo " GITHUB_INSTANCE=$GITHUB_INSTANCE"
 echo " CHECK_VERSION_INCREMENT=$CHECK_VERSION_INCREMENT"
+if [ -n "$HELM_EXTRA_OPTS" ]; then
+    echo " HELM_EXTRA_OPTS is set"
+else
+    echo " HELM_EXTRA_OPTS is empty"
+fi
 echo '--------------------------------------------------------------------------------'
 echo
 
@@ -315,10 +321,12 @@ chartlib::install_chart_with_single_config() {
 
         if [[ -n "$values_file" ]]; then
             echo "Using custom values file '$values_file'..."
-            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" --values "$values_file"
+            # shellcheck disable=SC2086
+            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" --values "$values_file" $HELM_EXTRA_OPTS
         else
             echo "Chart does not provide test values. Using defaults..."
-            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT"
+            # shellcheck disable=SC2086
+            helm install "$chart_dir" --name "$release" --namespace "$namespace" --wait --timeout "$TIMEOUT" $HELM_EXTRA_OPTS
         fi
 
         local error=
