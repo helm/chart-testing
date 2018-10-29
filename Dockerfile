@@ -35,7 +35,7 @@ RUN curl -Lo vert "https://github.com/Masterminds/vert/releases/download/v$VERT_
     mv vert /usr/local/bin/
 
 # Install a YAML Linter
-ARG YAML_LINT_VERSION=1.8.1
+ARG YAML_LINT_VERSION=1.12.1
 RUN pip install "yamllint==$YAML_LINT_VERSION"
 
 # Install Yamale YAML schema validator
