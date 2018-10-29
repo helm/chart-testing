@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  shellcheck:
     docker:
       - image: koalaman/shellcheck-alpine
     steps:
@@ -12,3 +12,19 @@ jobs:
             shellcheck -x chart_test.sh
             shellcheck -x examples/docker-for-mac/my_test.sh
             shellcheck -x examples/gke/my_test.sh
+
+  docker_build:
+    docker:
+      - image: docker
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: |
+          docker build .
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - shellcheck
+      - docker_build

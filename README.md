@@ -211,3 +211,21 @@ A custom `Dockerfile` additionally installs the `google-cloud-sdk` and a custom 
 An example for Docker for Mac is available in the [examples/docker-for-mac](examples/docker-for-mac) directory.
 This script can be run as is in the [charts](https://github.com/helm/charts) repo.
 Make sure `Show system containers` is active for Docker's Kubernetes distribution, so the script can find the API server and configure `kubectl` so it can access the API server from within the container.
+
+# Contributing
+
+Ensure to have installed circleci client for local tests.
+Refer to https://circleci.com/docs/2.0/local-cli/
+
+Next, create branch, commit changes, run local change:
+
+```shell
+
+circleci config validate
+circleci local execute --job shellcheck
+circleci local execute --job docker_build
+
+
+```
+
+If everything is green, then create Pull Request.
