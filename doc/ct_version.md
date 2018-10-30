@@ -4,7 +4,7 @@ Print version information
 
 ### Synopsis
 
-Print version information.
+Print version information
 
 ```
 ct version [flags]

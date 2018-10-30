@@ -37,37 +37,14 @@ A Docker image is available at `quay.io/helmpack/chart-testing`.
 
 ## Usage
 
-```
-$ ./ct
-        __ 
-  _____/ /_
- / ___/ __/
-/ /__/ /_  
-\___/\__/ 
+See documentation for individual commands:
 
-Lint and test
+* [ct doc-gen](ct_doc-gen.md)
+* [ct install](ct_install.md)
+* [ct lint](ct_lint.md)
+* [ct lint-and-install](ct_lint-and-install.md)
+* [ct version](ct_version.md)
 
-* changed charts
-* specific charts
-* all charts
-
-in given chart directories.
-
-Usage:
-  ct [command]
-
-Available Commands:
-  help             Help about any command
-  install          Install and test a chart
-  lint             Lint and validate a chart
-  lint-and-install Lint, install, and test a chart
-  version          Print version information
-
-Flags:
-  -h, --help   help for ct
-
-Use "ct [command] --help" for more information about a command.
-```
 
 ## Configuration
 
