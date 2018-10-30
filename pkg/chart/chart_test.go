@@ -102,10 +102,10 @@ func init() {
 		ChartDirs:      []string{"stable", "incubator"},
 	}
 	ct = Testing{
-		config:              cfg,
-		directoryLister:     fakeDirLister{},
-		git:                 fakeGit{},
-		chartUtils:          fakeChartUtils{},
+		config:           cfg,
+		directoryLister:  fakeDirLister{},
+		git:              fakeGit{},
+		chartUtils:       fakeChartUtils{},
 		accountValidator: fakeAccountValidator{},
 	}
 }

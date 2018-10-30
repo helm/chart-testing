@@ -16,9 +16,10 @@ package tool
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/helm/chart-testing/pkg/exec"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 type Git struct {

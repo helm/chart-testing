@@ -16,29 +16,31 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
+	"os"
 )
 
-var (
-	// GitCommit is updated with the Git tag by the Goreleaser build
-	GitCommit = "unknown"
-	// BuildDate is updated with the current ISO timestamp by the Goreleaser build
-	BuildDate = "unknown"
-	// Version is updated with the latest tag by the Goreleaser build
-	Version = "unreleased"
-)
-
-func newVersionCmd() *cobra.Command {
+func newGenerateDocsCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "version",
-		Short: "Print version information",
-		Run:   version,
+		Use:   "doc-gen",
+		Short: "Generate documentation",
+		Long: heredoc.Doc(`
+			Generate documentation for all commands
+			to the 'docs' directory.`),
+		Run: generateDocs,
 	}
 }
 
-func version(cmd *cobra.Command, args []string) {
-	fmt.Println("Version:\t", Version)
-	fmt.Println("Git commit:\t", GitCommit)
-	fmt.Println("Date:\t\t", BuildDate)
-	fmt.Println("License:\t Apache 2.0")
+func generateDocs(cmd *cobra.Command, args []string) {
+	fmt.Println("Generating docs...")
+
+	err := doc.GenMarkdownTree(NewRootCmd(), "doc")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Done.")
 }

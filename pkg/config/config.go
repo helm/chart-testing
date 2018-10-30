@@ -16,11 +16,12 @@ package config
 
 import (
 	"fmt"
-	"github.com/mitchellh/go-homedir"
 	"path"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/mitchellh/go-homedir"
 
 	"github.com/helm/chart-testing/pkg/util"
 	"github.com/pkg/errors"
@@ -30,7 +31,7 @@ import (
 )
 
 var (
-	homeDir, _ = homedir.Dir()
+	homeDir, _            = homedir.Dir()
 	configSearchLocations = []string{"/etc/ct", path.Join(homeDir, "ct"), "."}
 )
 
@@ -125,7 +126,7 @@ func printCfg(cfg *Configuration) {
 	typeOfCfg := e.Type()
 
 	for i := 0; i < e.NumField(); i++ {
-		var  pattern string
+		var pattern string
 		switch e.Field(i).Kind() {
 		case reflect.Bool:
 			pattern = "%s: %t\n"

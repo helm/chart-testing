@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
 
@@ -30,15 +29,8 @@ func newLintAndInstallCmd() *cobra.Command {
 		Use:     "lint-and-install",
 		Aliases: []string{"li"},
 		Short:   "Lint, install, and test a chart",
-		Long: heredoc.Doc(`
-			        __
-			  _____/ /_
-			 / ___/ __/
-			/ /__/ /_
-			\___/\__/
-
-			Combines 'lint' and 'install' commands.`),
-		Run: lintAndInstall,
+		Long:    "Combines 'lint' and 'install' commands.",
+		Run:     lintAndInstall,
 	}
 
 	flags := cmd.Flags()

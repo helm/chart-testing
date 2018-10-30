@@ -21,7 +21,7 @@ import (
 
 func TestFlatten(t *testing.T) {
 	var testDataSlice = []struct {
-		input   []interface{}
+		input    []interface{}
 		expected []string
 	}{
 		{[]interface{}{"foo", "bar", []string{"bla", "blubb"}}, []string{"foo", "bar", "bla", "blubb"}},

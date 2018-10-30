@@ -16,8 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"os"
+
+	"github.com/spf13/viper"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
@@ -29,23 +30,17 @@ var (
 	cfgFile string
 )
 
-func newRootCmd() *cobra.Command {
+func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ct",
 		Short: "The Helm chart testing tool",
 		Long: heredoc.Doc(`
-			        __ 
-			  _____/ /_
-			 / ___/ __/
-			/ /__/ /_  
-			\___/\__/ 
-			
 			Lint and test
-			
+
 			* changed charts
 			* specific charts
 			* all charts
-			
+
 			in given chart directories.`),
 	}
 
@@ -53,13 +48,14 @@ func newRootCmd() *cobra.Command {
 	cmd.AddCommand(newInstallCmd())
 	cmd.AddCommand(newLintAndInstallCmd())
 	cmd.AddCommand(newVersionCmd())
+	cmd.AddCommand(newGenerateDocsCmd())
 
 	return cmd
 }
 
 // Execute runs the application
 func Execute() {
-	if err := newRootCmd().Execute(); err != nil {
+	if err := NewRootCmd().Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

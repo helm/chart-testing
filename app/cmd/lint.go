@@ -16,8 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/MakeNowJust/heredoc"
 	"os"
+
+	"github.com/MakeNowJust/heredoc"
 
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
@@ -31,27 +32,21 @@ func newLintCmd() *cobra.Command {
 		Use:   "lint",
 		Short: "Lint and validate a chart",
 		Long: heredoc.Doc(`
-			        __ 
-			  _____/ /_
-			 / ___/ __/
-			/ /__/ /_  
-			\___/\__/ 
-			
 			Run 'helm lint', version checking, YAML schema validation
-			on 'Chart.yaml', YAML linting on 'Chart.yaml' and 'values.yaml', 
+			on 'Chart.yaml', YAML linting on 'Chart.yaml' and 'values.yaml',
 			and maintainer validation on
-			
+
 			* changed charts (default)
 			* specific charts (--charts)
 			* all charts (--all)
-			
+
 			in given chart directories.
 
 			Charts may have multiple custom values files matching the glob pattern
-			'*-values.yaml' in a directory named 'ci' in the root of the chart's 
-			directory. The chart is linted for each of these files. If no custom 
+			'*-values.yaml' in a directory named 'ci' in the root of the chart's
+			directory. The chart is linted for each of these files. If no custom
 			values file is present, the chart is linted with defaults.`),
-		Run:   lint,
+		Run: lint,
 	}
 
 	flags := cmd.Flags()
@@ -62,10 +57,10 @@ func newLintCmd() *cobra.Command {
 
 func addLintFlags(flags *flag.FlagSet) {
 	flags.String("lint-conf", "", heredoc.Doc(`
-			The config file for YAML linting. If not specified, 'lintconf.yaml' is 
+			The config file for YAML linting. If not specified, 'lintconf.yaml' is
 			searched in '/etc/ct', '$HOME/ct', and the current directory`))
 	flags.String("chart-yaml-schema", "", heredoc.Doc(`
-			The schema for chart.yml validation. If not specified, 'chart_schema.yaml' 
+			The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
 			is searched in '/etc/ct', '$HOME/ct', and the current directory`))
 	flags.Bool("validate-maintainers", true, heredoc.Doc(`
 			Enabled validation of maintainer account names in chart.yml (default: true).

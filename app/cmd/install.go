@@ -34,12 +34,6 @@ func newInstallCmd() *cobra.Command {
 		Use:   "install",
 		Short: "Install and test a chart",
 		Long: heredoc.Doc(`
-			        __
-			  _____/ /_
-			 / ___/ __/
-			/ /__/ /_
-			\___/\__/
-
 			Run 'helm install' and ' helm test' on
 
 			* changed charts (default)
