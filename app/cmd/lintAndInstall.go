@@ -27,8 +27,9 @@ import (
 
 func newLintAndInstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "lint-and-install",
-		Short: "Lint, install, and test a chart",
+		Use:     "lint-and-install",
+		Aliases: []string{"li"},
+		Short:   "Lint, install, and test a chart",
 		Long: heredoc.Doc(`
 			        __
 			  _____/ /_
