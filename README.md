@@ -1,9 +1,6 @@
 # Chart Testing
 
-`ct` is the the tool for testing Helm chart written in Go.
-
-## Features
-
+`ct` is the the tool for testing Helm charts.
 It is meant to be used for linting and testing pull requests.
 It automatically detects charts changed against the target branch.
 
@@ -89,3 +86,40 @@ build-id: pr-42
 `ct install --config config.yaml`
 
 `ct` supports any format [Viper](https://github.com/spf13/viper) can read, i. e. JSON, TOML, YAML, HCL, and Java properties files.
+
+## Building from Source
+
+`ct` is built using Go 1.11. Older versions may work but have not been tested.
+
+`build.sh` is used to build and release the tool. It uses [Goreleaser](https://goreleaser.com/) under the covers.
+
+```
+$ ./build.sh -h
+Usage: build.sh <options>
+
+Build ct using Goreleaser.
+
+    -h, --help      Display help
+    -d, --debug     Display verbose output and run Goreleaser with --debug
+    -r, --release   Create a release using Goreleaser. This includes the creation
+                    of a GitHub release and building and pushing the Docker image.
+                    If this flag is not specified, Goreleaser is run with --snapshot
+```
+
+## Releasing
+
+CircleCI creates releases automatically when a new tag is pushed. Tags are created using `tag.sh`.
+
+```
+ ./tag.sh -h
+Usage: tag.sh <options>
+
+Create and push a tag.
+
+    -h, --help        Display help
+    -d, --debug       Display verbose output
+    -r, --remote      The name of the remote to push the tag to (default: upstream)
+    -f, --force       Force an existing tag to be overwritten
+    -t, --tag         The name of the tag to create
+    -s, --skip-push   Skip pushing the tag
+```
