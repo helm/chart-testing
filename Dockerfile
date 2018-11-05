@@ -7,7 +7,8 @@ RUN apk --no-cache add \
     openssh-client \
     python \
     py-crcmod \
-    py-pip
+    py-pip && \
+    pip install --upgrade pip==18.1
 
 # Install a YAML Linter
 ARG YAML_LINT_VERSION=1.12.1
