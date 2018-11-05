@@ -31,8 +31,10 @@ jobs:
           name: Build
           command: |
             if [[ -z "$CIRCLECI_TAG" ]]; then
+              echo "Building snapshot..."
               ./build.sh
             else
+              echo "Building release $CIRCLECI_TAG..."
               ./build.sh --release
             fi
 workflows:
