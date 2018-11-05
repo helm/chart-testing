@@ -22,8 +22,8 @@ RUN apk --no-cache add \
     openssh-client \
     python \
     py-crcmod \
-    py-pip \
-    && pip install --upgrade pip==18.1
+    py-pip && \
+    pip install --upgrade pip==18.1
 
 # Install YQ command line reader
 ARG YQ_VERSION=2.5.0
