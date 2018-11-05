@@ -29,7 +29,8 @@ func newGenerateDocsCmd() *cobra.Command {
 		Long: heredoc.Doc(`
 			Generate documentation for all commands
 			to the 'docs' directory.`),
-		Run: generateDocs,
+		Hidden: true,
+		Run:    generateDocs,
 	}
 }
 
