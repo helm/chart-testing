@@ -94,10 +94,5 @@ func lint(cmd *cobra.Command, args []string) {
 
 func bindLintFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
 	options := []string{"lint-conf", "chart-yaml-schema", "validate-maintainers", "check-version-increment"}
-	for _, option := range options {
-		if err := v.BindPFlag(option, flagSet.Lookup(option)); err != nil {
-			return err
-		}
-	}
-	return nil
+	return bindFlags(options, flagSet, v)
 }

@@ -16,10 +16,8 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/spf13/viper"
+	"os"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/pkg/chart"
@@ -58,11 +56,12 @@ func newInstallCmd() *cobra.Command {
 
 func addInstallFlags(flags *flag.FlagSet) {
 	flags.String("build-id", "", heredoc.Doc(`
-			An optional, arbitrary identifier that is added to the name of the namespace a
-			chart is installed into. In a CI environment, this could be the build number or
-			the ID of a pull request. If not specified, the name of the chart is used.`))
-	flags.Duration("timeout", 5*time.Minute, "The timeout for Helm in seconds (default: 5m)")
-	flags.String("tiller-namespace", "kube-system", "The namespace of Tiller (default: kube-system)")
+		An optional, arbitrary identifier that is added to the name of the namespace a
+		chart is installed into. In a CI environment, this could be the build number or
+		the ID of a pull request. If not specified, the name of the chart is used`))
+	flags.String("helm-extra-args", "", heredoc.Doc(`
+		Additional arguments for Helm. Must be passed as a single quoted string
+		(e. g. "--timeout 500 --tiller-namespace tiller"`))
 }
 
 func install(cmd *cobra.Command, args []string) {
@@ -90,11 +89,6 @@ func install(cmd *cobra.Command, args []string) {
 }
 
 func bindInstallFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"build-id", "timeout", "tiller-namespace"}
-	for _, option := range options {
-		if err := v.BindPFlag(option, flagSet.Lookup(option)); err != nil {
-			return err
-		}
-	}
-	return nil
+	options := []string{"build-id", "helm-extra-args"}
+	return bindFlags(options, flagSet, v)
 }

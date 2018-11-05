@@ -15,11 +15,9 @@
 package config
 
 import (
-	"testing"
-	"time"
-
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestUnmarshalYaml(t *testing.T) {
@@ -36,7 +34,6 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, "origin", cfg.Remote)
 	require.Equal(t, "master", cfg.TargetBranch)
 	require.Equal(t, "pr-42", cfg.BuildId)
-	require.Equal(t, "tiller", cfg.TillerNamespace)
 	require.Equal(t, "my-lint-conf.yaml", cfg.LintConf)
 	require.Equal(t, "my-chart-yaml-schema.yaml", cfg.ChartYamlSchema)
 	require.Equal(t, true, cfg.ValidateMaintainers)
@@ -45,5 +42,5 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, []string{"incubator=https://incubator"}, cfg.ChartRepos)
 	require.Equal(t, []string{"stable", "incubator"}, cfg.ChartDirs)
 	require.Equal(t, []string{"common"}, cfg.ExcludedCharts)
-	require.Equal(t, 5*time.Minute, cfg.Timeout)
+	require.Equal(t, "--timeout 300", cfg.HelmExtraArgs)
 }

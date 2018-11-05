@@ -16,25 +16,20 @@ package tool
 
 import (
 	"fmt"
-	"strconv"
-	"time"
-
 	"github.com/helm/chart-testing/pkg/exec"
 )
 
 type Helm struct {
-	exec            exec.ProcessExecutor
-	kubectl         Kubectl
-	timeout         time.Duration
-	tillerNamespace string
+	exec      exec.ProcessExecutor
+	kubectl   Kubectl
+	extraArgs []string
 }
 
-func NewHelm(kubectl Kubectl, timeout time.Duration, tillerNamespace string) Helm {
+func NewHelm(kubectl Kubectl, extraArgs []string) Helm {
 	return Helm{
-		exec:            exec.ProcessExecutor{},
-		kubectl:         kubectl,
-		timeout:         timeout,
-		tillerNamespace: tillerNamespace,
+		exec:      exec.ProcessExecutor{},
+		kubectl:   kubectl,
+		extraArgs: extraArgs,
 	}
 }
 
@@ -63,18 +58,17 @@ func (h Helm) Install(chart string, namespace string, release string) error {
 }
 
 func (h Helm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {
-	timeoutSec := strconv.FormatFloat(h.timeout.Seconds(), 'f', 0, 64)
 	var values []string
 	if valuesFile != "" {
 		values = []string{"--values", valuesFile}
 	}
 
 	if err := h.exec.RunProcess("helm", "install", chart, "--name", release, "--namespace", namespace,
-		"--tiller-namespace", h.tillerNamespace, "--wait", "--timeout", timeoutSec, values); err != nil {
+		"--wait", values, h.extraArgs); err != nil {
 		return err
 	}
 
-	if err := h.exec.RunProcess("helm", "test", release, "--tiller-namespace", h.tillerNamespace, "--timeout", timeoutSec); err != nil {
+	if err := h.exec.RunProcess("helm", "test", release, h.extraArgs); err != nil {
 		return err
 	}
 
@@ -83,7 +77,7 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 
 func (h Helm) DeleteRelease(release string) {
 	fmt.Printf("Deleting release '%s'...\n", release)
-	if err := h.exec.RunProcess("helm", "delete", "--purge", release); err != nil {
+	if err := h.exec.RunProcess("helm", "delete", "--purge", release, h.extraArgs); err != nil {
 		fmt.Println("Error deleting Helm release:", err)
 	}
 }

@@ -69,19 +69,30 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		Process all charts except those explicitly excluded.
 		Disables changed charts detection and version increment checking`))
 	flags.StringSlice("charts", []string{}, heredoc.Doc(`
-		Specific charts to test.
-		Disables changed charts detection and version increment checking`))
-	flags.StringSlice("chart-dirs", []string{"charts"}, "Directories containing Helm charts")
-	flags.StringSlice("chart-repos", []string{}, "Additional chart repos to add so dependencies can be resolved")
-	flags.StringSlice("excluded-charts", []string{}, "Charts that should be skipped")
+		Specific charts to test. Disables changed charts detection and
+		version increment checking. May be specified multiple times
+		or separate values with commas`))
+	flags.StringSlice("chart-dirs", []string{"charts"}, heredoc.Doc(`
+		Directories containing Helm charts. May be specified multiple times
+		or separate values with commas`))
+	flags.StringSlice("chart-repos", []string{}, heredoc.Doc(`
+		Additional chart repos to add so dependencies can be resolved. May be
+		specified multiple times or separate values with commas`))
+	flags.StringSlice("excluded-charts", []string{}, heredoc.Doc(`
+		Charts that should be skipped. May be specified multiple times
+		or separate values with commas`))
 }
 
-func bindRootFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"remote", "target-branch", "all", "charts", "chart-dirs", "chart-repos", "excluded-charts"}
+func bindFlags(options []string, flagSet *flag.FlagSet, v *viper.Viper) error {
 	for _, option := range options {
 		if err := v.BindPFlag(option, flagSet.Lookup(option)); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func bindRootFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
+	options := []string{"remote", "target-branch", "all", "charts", "chart-dirs", "chart-repos", "excluded-charts"}
+	return bindFlags(options, flagSet, v)
 }

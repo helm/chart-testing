@@ -1,7 +1,6 @@
 {
     "remote": "origin",
     "target-branch": "master",
-    "tiller-namespace": "tiller",
     "build-id": "pr-42",
     "lint-conf": "my-lint-conf.yaml",
     "chart-yaml-schema": "my-chart-yaml-schema.yaml",
@@ -19,5 +18,5 @@
     "excluded-charts": [
         "common"
     ],
-    "timeout": "300s"
+    "helm-extra-args": "--timeout 300"
 }

@@ -16,12 +16,10 @@ package config
 
 import (
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"path"
 	"reflect"
 	"strings"
-	"time"
-
-	"github.com/mitchellh/go-homedir"
 
 	"github.com/helm/chart-testing/pkg/util"
 	"github.com/pkg/errors"
@@ -36,20 +34,19 @@ var (
 )
 
 type Configuration struct {
-	Remote                string        `mapstructure:"remote"`
-	TargetBranch          string        `mapstructure:"target-branch"`
-	BuildId               string        `mapstructure:"build-id"`
-	TillerNamespace       string        `mapstructure:"tiller-namespace"`
-	LintConf              string        `mapstructure:"lint-conf"`
-	ChartYamlSchema       string        `mapstructure:"chart-yaml-schema"`
-	ValidateMaintainers   bool          `mapstructure:"validate-maintainers"`
-	CheckVersionIncrement bool          `mapstructure:"check-version-increment"`
-	ProcessAllCharts      bool          `mapstructure:"all"`
-	Charts                []string      `mapstructure:"charts"`
-	ChartRepos            []string      `mapstructure:"chart-repos"`
-	ChartDirs             []string      `mapstructure:"chart-dirs"`
-	ExcludedCharts        []string      `mapstructure:"excluded-charts"`
-	Timeout               time.Duration `mapstructure:"timeout"`
+	Remote                string   `mapstructure:"remote"`
+	TargetBranch          string   `mapstructure:"target-branch"`
+	BuildId               string   `mapstructure:"build-id"`
+	LintConf              string   `mapstructure:"lint-conf"`
+	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`
+	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
+	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
+	ProcessAllCharts      bool     `mapstructure:"all"`
+	Charts                []string `mapstructure:"charts"`
+	ChartRepos            []string `mapstructure:"chart-repos"`
+	ChartDirs             []string `mapstructure:"chart-dirs"`
+	ExcludedCharts        []string `mapstructure:"excluded-charts"`
+	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func(flagSet *flag.FlagSet, viper *viper.Viper) error) (*Configuration, error) {

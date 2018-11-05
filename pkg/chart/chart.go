@@ -161,9 +161,10 @@ type TestResult struct {
 // NewTesting creates a new Testing struct with the given config.
 func NewTesting(config config.Configuration) Testing {
 	kubectl := tool.NewKubectl()
+	extraArgs := strings.Fields(config.HelmExtraArgs)
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(kubectl, config.Timeout, config.TillerNamespace),
+		helm:             tool.NewHelm(kubectl, extraArgs),
 		git:              tool.NewGit(),
 		kubectl:          kubectl,
 		linter:           tool.NewLinter(),
