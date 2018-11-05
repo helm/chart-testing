@@ -30,11 +30,15 @@ jobs:
       - run:
           name: Build
           command: |
-            if [[ -z "$CIRCLE_TAG" ]]; then
+            set -e
+            set -u
+
+            if [[ -z "${CIRCLE_TAG:-}" ]]; then
               echo "Building snapshot..."
               ./build.sh
             else
               echo "Building release $CIRCLE_TAG..."
+              echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin quay.io
               ./build.sh --release
             fi
 workflows:
