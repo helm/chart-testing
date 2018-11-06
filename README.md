@@ -33,7 +33,7 @@ A Docker image is available at `quay.io/helmpack/chart-testing`.
 
 See documentation for individual commands:
 
-* [ct doc-gen](doc/ct.md)
+* [ct](doc/ct.md)
 * [ct install](doc/ct_install.md)
 * [ct lint](doc/ct_lint.md)
 * [ct lint-and-install](doc/ct_lint-and-install.md)
