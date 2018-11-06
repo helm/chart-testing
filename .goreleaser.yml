@@ -20,6 +20,11 @@ archive:
   format_overrides:
     - goos: windows
       format: zip
+  files:
+    - LICENSE
+    - README.md
+    - etc/chart_schema.yaml
+    - etc/lintconf.yaml
 checksum:
   name_template: 'checksums.txt'
 snapshot:
