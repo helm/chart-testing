@@ -30,7 +30,11 @@ import (
 
 var (
 	homeDir, _            = homedir.Dir()
-	configSearchLocations = []string{"/etc/ct", path.Join(homeDir, "ct"), "."}
+	configSearchLocations = []string{
+		".",
+		path.Join(homeDir, ".ct"),
+		"/etc/ct",
+	}
 )
 
 type Configuration struct {

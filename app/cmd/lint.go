@@ -57,11 +57,13 @@ func newLintCmd() *cobra.Command {
 
 func addLintFlags(flags *flag.FlagSet) {
 	flags.String("lint-conf", "", heredoc.Doc(`
-			The config file for YAML linting. If not specified, 'lintconf.yaml' is
-			searched in '/etc/ct', '$HOME/ct', and the current directory`))
+			The config file for YAML linting. If not specified, 'lintconf.yaml'
+			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+			that order`))
 	flags.String("chart-yaml-schema", "", heredoc.Doc(`
 			The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
-			is searched in '/etc/ct', '$HOME/ct', and the current directory`))
+			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+			that order.`))
 	flags.Bool("validate-maintainers", true, heredoc.Doc(`
 			Enabled validation of maintainer account names in chart.yml (default: true).
 			Works for GitHub, GitLab, and Bitbucket`))
