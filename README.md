@@ -33,11 +33,11 @@ A Docker image is available at `quay.io/helmpack/chart-testing`.
 
 See documentation for individual commands:
 
-* [ct doc-gen](ct_doc-gen.md)
-* [ct install](ct_install.md)
-* [ct lint](ct_lint.md)
-* [ct lint-and-install](ct_lint-and-install.md)
-* [ct version](ct_version.md)
+* [ct doc-gen](doc/ct_doc-gen.md)
+* [ct install](doc/ct_install.md)
+* [ct lint](doc/ct_lint.md)
+* [ct lint-and-install](doc/ct_lint-and-install.md)
+* [ct version](doc/ct_version.md)
 
 
 ## Configuration
@@ -51,6 +51,10 @@ CLI flags, environment variables, and a config file can be mixed. The following 
 1. CLI flags
 1. Environment variables
 1. Config file
+
+Note that linting requires config file for [yamllint](https://github.com/adrienverge/yamllint) and [yamale](https://github.com/23andMe/Yamale).
+If not specified, these files are search in the current directory, `$HOME/.ct`, and `/etc/ct`, in that order.
+Samples are provided in the [etc](etc) folder.
 
 ### Examples
 
