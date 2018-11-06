@@ -94,7 +94,7 @@ build-id: pr-42
 
 `build.sh` is used to build and release the tool. It uses [Goreleaser](https://goreleaser.com/) under the covers.
 
-Note: on MacOS you will need to `GNU Coreutils readlink`. You can install with:
+Note: on MacOS you will need `GNU Coreutils readlink`. You can install it with:
 
 ```console
 brew install coreutils
