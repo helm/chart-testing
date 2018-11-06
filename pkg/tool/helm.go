@@ -25,9 +25,9 @@ type Helm struct {
 	extraArgs []string
 }
 
-func NewHelm(kubectl Kubectl, extraArgs []string) Helm {
+func NewHelm(exec exec.ProcessExecutor, kubectl Kubectl, extraArgs []string) Helm {
 	return Helm{
-		exec:      exec.ProcessExecutor{},
+		exec:      exec,
 		kubectl:   kubectl,
 		extraArgs: extraArgs,
 	}

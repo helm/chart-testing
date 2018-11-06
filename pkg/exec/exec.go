@@ -25,7 +25,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-type ProcessExecutor struct{}
+type ProcessExecutor struct {
+	debug bool
+}
+
+func NewProcessExecutor(debug bool) ProcessExecutor {
+	return ProcessExecutor{
+		debug: debug,
+	}
+}
 
 func (p ProcessExecutor) RunProcessAndCaptureOutput(executable string, execArgs ...interface{}) (string, error) {
 	return p.RunProcessInDirAndCaptureOutput("", executable, execArgs)
@@ -33,7 +41,9 @@ func (p ProcessExecutor) RunProcessAndCaptureOutput(executable string, execArgs 
 
 func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string, executable string, execArgs ...interface{}) (string, error) {
 	args, err := util.Flatten(execArgs)
-	fmt.Println(">>>", executable, strings.Join(args, " "))
+	if p.debug {
+		fmt.Println(">>>", executable, strings.Join(args, " "))
+	}
 	if err != nil {
 		return "", errors.Wrap(err, "Invalid arguments supplied")
 	}
@@ -49,7 +59,9 @@ func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string
 
 func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) error {
 	args, err := util.Flatten(execArgs)
-	fmt.Println(">>>", executable, strings.Join(args, " "))
+	if p.debug {
+		fmt.Println(">>>", executable, strings.Join(args, " "))
+	}
 	if err != nil {
 		return errors.Wrap(err, "Invalid arguments supplied")
 	}

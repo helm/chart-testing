@@ -20,8 +20,10 @@ type Linter struct {
 	exec exec.ProcessExecutor
 }
 
-func NewLinter() Linter {
-	return Linter{exec: exec.ProcessExecutor{}}
+func NewLinter(exec exec.ProcessExecutor) Linter {
+	return Linter{
+		exec: exec,
+	}
 }
 
 func (l Linter) YamlLint(yamlFile string, configFile string) error {

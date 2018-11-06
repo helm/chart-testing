@@ -14,9 +14,9 @@ type Kubectl struct {
 	exec exec.ProcessExecutor
 }
 
-func NewKubectl() Kubectl {
+func NewKubectl(exec exec.ProcessExecutor) Kubectl {
 	return Kubectl{
-		exec: exec.ProcessExecutor{},
+		exec: exec,
 	}
 }
 

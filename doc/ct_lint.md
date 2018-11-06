@@ -40,6 +40,8 @@ ct lint [flags]
                                    or separate values with commas
       --check-version-increment    Activates a check for chart version increments (default: true) (default true)
       --config string              Config file
+      --debug                      Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
+                                   passed, this may reveal sensitive data)
       --excluded-charts strings    Charts that should be skipped. May be specified multiple times
                                    or separate values with commas
   -h, --help                       help for lint

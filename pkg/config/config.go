@@ -51,6 +51,7 @@ type Configuration struct {
 	ChartDirs             []string `mapstructure:"chart-dirs"`
 	ExcludedCharts        []string `mapstructure:"excluded-charts"`
 	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
+	Debug                 bool     `mapstructure:"debug"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func(flagSet *flag.FlagSet, viper *viper.Viper) error) (*Configuration, error) {

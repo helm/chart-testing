@@ -38,6 +38,8 @@ ct install [flags]
                                   version increment checking. May be specified multiple times
                                   or separate values with commas
       --config string             Config file
+      --debug                     Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
+                                  passed, this may reveal sensitive data)
       --excluded-charts strings   Charts that should be skipped. May be specified multiple times
                                   or separate values with commas
       --helm-extra-args string    Additional arguments for Helm. Must be passed as a single quoted string

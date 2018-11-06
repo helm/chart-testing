@@ -16,6 +16,7 @@ package chart
 
 import (
 	"fmt"
+	"github.com/helm/chart-testing/pkg/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -160,14 +161,15 @@ type TestResult struct {
 
 // NewTesting creates a new Testing struct with the given config.
 func NewTesting(config config.Configuration) Testing {
-	kubectl := tool.NewKubectl()
+	procExec := exec.NewProcessExecutor(config.Debug)
+	kubectl := tool.NewKubectl(procExec)
 	extraArgs := strings.Fields(config.HelmExtraArgs)
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(kubectl, extraArgs),
-		git:              tool.NewGit(),
+		helm:             tool.NewHelm(procExec, kubectl, extraArgs),
+		git:              tool.NewGit(procExec),
 		kubectl:          kubectl,
-		linter:           tool.NewLinter(),
+		linter:           tool.NewLinter(procExec),
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
 		chartUtils:       util.ChartUtils{},

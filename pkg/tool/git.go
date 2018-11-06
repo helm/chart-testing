@@ -26,8 +26,10 @@ type Git struct {
 	exec exec.ProcessExecutor
 }
 
-func NewGit() Git {
-	return Git{exec: exec.ProcessExecutor{}}
+func NewGit(exec exec.ProcessExecutor) Git {
+	return Git{
+		exec: exec,
+	}
 }
 
 func (g Git) FileExistsOnBranch(file string, remote string, branch string) bool {
