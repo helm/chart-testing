@@ -17,7 +17,6 @@ It comes with all necessary tools installed.
 * kubectl (https://kubernetes.io/docs/reference/kubectl/overview/)
 * Tooling for your cluster
 
-
 ### Binary Distribution
 
 Download the release distribution for your OS from the Releases page:
@@ -26,11 +25,9 @@ https://github.com/helm/chart-testing/releases
 
 Unpack the `ct` binary, add it to your PATH, and you are good to go!
 
-
 ### Docker Image
 
 A Docker image is available at `quay.io/helmpack/chart-testing`.
-
 
 ## Usage
 
@@ -55,7 +52,6 @@ CLI flags, environment variables, and a config file can be mixed. The following 
 1. Environment variables
 1. Config file
 
-
 ### Examples
 
 The following example show various way of configuring the same thing:
@@ -74,8 +70,9 @@ The following example show various way of configuring the same thing:
 
 #### Config File
 
-*config.yaml*
-```
+`config.yaml`:
+
+```yaml
 remote: upstream
 chart-dirs:
   - stable
@@ -93,7 +90,22 @@ build-id: pr-42
 
 `build.sh` is used to build and release the tool. It uses [Goreleaser](https://goreleaser.com/) under the covers.
 
+Note: on MacOS you will need to `GNU Coreutils readlink`. You can install with:
+
+```console
+brew install coreutils
 ```
+
+Then add `gnubin` to your `$PATH`, with:
+
+```console
+echo 'export PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"' >> ~/.bash_profile
+bash --login
+```
+
+To use the build script:
+
+```console
 $ ./build.sh -h
 Usage: build.sh <options>
 
@@ -110,8 +122,8 @@ Build ct using Goreleaser.
 
 CircleCI creates releases automatically when a new tag is pushed. Tags are created using `tag.sh`.
 
-```
- ./tag.sh -h
+```console
+$ ./tag.sh -h
 Usage: tag.sh <options>
 
 Create and push a tag.
