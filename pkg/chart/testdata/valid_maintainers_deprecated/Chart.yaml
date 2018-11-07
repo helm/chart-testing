@@ -1,0 +1,6 @@
+deprecated: true
+maintainers:
+  - name: valid
+    email: valid@example.com
+  - name: valid-too
+    email: valid-too@example.com

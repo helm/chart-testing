@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2018 The Helm Authors. All rights reserved.
+# Copyright The Helm Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=v1.1.0
+readonly IMAGE_TAG=v3.0.0
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 
 main() {
@@ -74,9 +74,8 @@ configure_kubectl() {
 run_test() {
     git remote add k8s https://github.com/helm/charts.git &> /dev/null || true
     git fetch k8s
-    docker exec "$testcontainer_id" chart_test.sh --config test/.testenv
-
-    echo "Done Testing!"
+    docker exec "$testcontainer_id" ct lint --chart-dirs stable,incubator --remote k8s
+    docker exec "$testcontainer_id" ct install --chart-dirs stable,incubator --remote k8s
 }
 
 main

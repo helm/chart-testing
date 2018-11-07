@@ -1,6 +1,4 @@
+.circleci
 .history
 .idea
-.editorconfig
-.gitignore
-.git
-Dockerfile
+.vscode

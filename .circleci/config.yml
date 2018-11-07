@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  lint:
     docker:
       - image: koalaman/shellcheck-alpine
     steps:
@@ -8,7 +8,50 @@ jobs:
       - run:
           name: lint
           command: |
-            shellcheck -x lib/chartlib.sh
-            shellcheck -x chart_test.sh
-            shellcheck -x examples/docker-for-mac/my_test.sh
-            shellcheck -x examples/gke/my_test.sh
+            shellcheck -x build.sh
+            shellcheck -x tag.sh
+  build:
+    docker:
+      - image: golang:1.11.1-alpine3.8
+    working_directory: /go/src/github.com/helm/chart-testing
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Install tools
+          command: |
+            apk add bash build-base ca-certificates curl docker git openssh
+            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.93.0/goreleaser_Linux_x86_64.tar.gz
+            mkdir -p /usr/local/goreleaser
+            tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
+            ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser
+            rm -rf goreleaser_Linux_x86_64.tar.gz
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+      - checkout
+      - run:
+          name: Build
+          command: |
+            set -e
+            set -u
+
+            if [[ -z "${CIRCLE_TAG:-}" ]]; then
+              echo "Building snapshot..."
+              ./build.sh
+            else
+              echo "Building release $CIRCLE_TAG..."
+              echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin quay.io
+              ./build.sh --release
+            fi
+workflows:
+  version: 2
+  untagged-build:
+    jobs:
+      - lint
+      - build
+  tagged-build:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
