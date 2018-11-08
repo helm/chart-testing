@@ -139,3 +139,10 @@ Create and push a tag.
     -t, --tag         The name of the tag to create
     -s, --skip-push   Skip pushing the tag
 ```
+
+## Supported versions
+
+| Version | Release | Active support until | Security support until |
+| --- | --- | --- | --- |
+| v1 | Sept 12, 2018 | Nov 07, 2018 | Feb 07, 2019 |
+| v2 | Nov 07, 2018 | ? | ? |
