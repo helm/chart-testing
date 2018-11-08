@@ -150,3 +150,9 @@ Create and push a tag.
 ## Upgrading
 
 When upgrading from `< v2.0.0` you will also need to change the usage in your scripts. This is because, while the [v2.0.0](https://github.com/helm/chart-testing/releases/tag/v2.0.0) release has parity with `v1`, it was refactored from a bash library to Go so there are minor syntax differences. Compare [v1 usage](https://github.com/helm/chart-testing/tree/release-v1#usage) with this (`v2`) version's README [usage](#usage) section above.
+
+## Contributing
+
+* Pull requests for `v2` should be made against the `master` branch
+* Pull requests for `v1` should be made against the `release-v1` branch
+* See GitHub's documentation to [change the base branch of a pull request](https://help.github.com/articles/changing-the-base-branch-of-a-pull-request/) if necessary
