@@ -28,7 +28,7 @@ Unpack the `ct` binary, add it to your PATH, and you are good to go!
 ### Docker Image
 
 A Docker image is available at `quay.io/helmpack/chart-testing` with list of
-avaliable tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags).
+available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags).
 
 ## Usage
 
