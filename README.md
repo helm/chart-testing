@@ -85,7 +85,7 @@ chart-dirs:
 build-id: pr-42
 ```
 
-Config usage:
+#### Config Usage:
 
     ct install --config config.yaml
 
