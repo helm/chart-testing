@@ -146,3 +146,7 @@ Create and push a tag.
 | --- | --- | --- | --- |
 | v1 | Sept 12, 2018 | Nov 07, 2018 | Feb 07, 2019 |
 | v2 | Nov 07, 2018 | ? | ? |
+
+## Upgrading
+
+When upgrading from `< v2.0.0` you will also need to change the usage in your scripts. This is because, while the [v2.0.0](https://github.com/helm/chart-testing/releases/tag/v2.0.0) release has parity with `v1`, it was refactored from a bash library to Go so there are minor syntax differences. Compare [v1 usage](https://github.com/helm/chart-testing/tree/release-v1#usage) with this (`v2`) version's README [usage](#usage) section above.
