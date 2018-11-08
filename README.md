@@ -92,6 +92,9 @@ build-id: pr-42
 
 `ct` supports any format [Viper](https://github.com/spf13/viper) can read, i. e. JSON, TOML, YAML, HCL, and Java properties files.
 
+Notice that if no config file is specified, then `ct.yaml` (or any of the supported formats) is loaded from the current directory, `$HOME/.ct`, or `/etc/ct`, in that order, if found.
+
+
 ## Building from Source
 
 `ct` is built using Go 1.11. Older versions may work but have not been tested.
