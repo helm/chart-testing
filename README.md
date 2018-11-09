@@ -144,11 +144,8 @@ Create and push a tag.
 
 The previous MAJOR version will be supported for three months after each new MAJOR release.
 
+Within this support window, pull requests for the previous MAJOR version should be made against the previous release branch. For example, if the current MAJOR version is `v2`, the pull request base branch should be `release-v1`.
+
 ## Upgrading
 
 When upgrading from `< v2.0.0` you will also need to change the usage in your scripts. This is because, while the [v2.0.0](https://github.com/helm/chart-testing/releases/tag/v2.0.0) release has parity with `v1`, it was refactored from a bash library to Go so there are minor syntax differences. Compare [v1 usage](https://github.com/helm/chart-testing/tree/release-v1#usage) with this (`v2`) version's README [usage](#usage) section above.
-
-## Contributing
-
-* Pull requests for `v2` should be made against the `master` branch
-* Pull requests for `v1` should be made against the `release-v1` branch
