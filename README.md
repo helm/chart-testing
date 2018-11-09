@@ -8,7 +8,7 @@ It automatically detects charts changed against the target branch.
 
 ### Prerequisites
 
-It is recommended to use the provided Docker image which can be [found on Quay](quay.io/helmpack/chart-testing/).
+It is recommended to use the provided Docker image which can be [found on Quay](https://quay.io/helmpack/chart-testing/).
 It comes with all necessary tools installed.
 
 * Helm (http://helm.sh)
@@ -27,7 +27,8 @@ Unpack the `ct` binary, add it to your PATH, and you are good to go!
 
 ### Docker Image
 
-A Docker image is available at `quay.io/helmpack/chart-testing`.
+A Docker image is available at `quay.io/helmpack/chart-testing` with list of
+available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags).
 
 ## Usage
 
@@ -84,9 +85,15 @@ chart-dirs:
 build-id: pr-42
 ```
 
-`ct install --config config.yaml`
+#### Config Usage
+
+    ct install --config config.yaml
+
 
 `ct` supports any format [Viper](https://github.com/spf13/viper) can read, i. e. JSON, TOML, YAML, HCL, and Java properties files.
+
+Notice that if no config file is specified, then `ct.yaml` (or any of the supported formats) is loaded from the current directory, `$HOME/.ct`, or `/etc/ct`, in that order, if found.
+
 
 ## Building from Source
 
