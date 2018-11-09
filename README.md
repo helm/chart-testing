@@ -152,4 +152,3 @@ When upgrading from `< v2.0.0` you will also need to change the usage in your sc
 
 * Pull requests for `v2` should be made against the `master` branch
 * Pull requests for `v1` should be made against the `release-v1` branch
-* See GitHub's documentation to [change the base branch of a pull request](https://help.github.com/articles/changing-the-base-branch-of-a-pull-request/) if necessary
