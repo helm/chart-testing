@@ -142,10 +142,7 @@ Create and push a tag.
 
 ## Supported versions
 
-| Version | Release | Active support until | Security support until |
-| --- | --- | --- | --- |
-| v1 | Sept 12, 2018 | Nov 07, 2018 | Feb 07, 2019 |
-| v2 | Nov 07, 2018 | ? | ? |
+The previous MAJOR version will be supported for three months after each new MAJOR release.
 
 ## Upgrading
 
