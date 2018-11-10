@@ -18,12 +18,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/viper"
-
 	"github.com/MakeNowJust/heredoc"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	flag "github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -96,6 +95,6 @@ func bindFlags(options []string, flagSet *flag.FlagSet, v *viper.Viper) error {
 }
 
 func bindRootFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"remote", "target-branch", "all", "charts", "chart-dirs", "chart-repos", "excluded-charts"}
+	options := []string{"remote", "target-branch", "all", "charts", "chart-dirs", "chart-repos", "excluded-charts", "debug"}
 	return bindFlags(options, flagSet, v)
 }
