@@ -68,11 +68,11 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 		return err
 	}
 
-	if err := h.exec.RunProcess("helm", "test", release, h.extraArgs); err != nil {
+	if err := h.kubectl.WaitForDeployments(namespace); err != nil {
 		return err
 	}
 
-	return h.kubectl.WaitForDeployments(namespace)
+	return h.exec.RunProcess("helm", "test", release, h.extraArgs)
 }
 
 func (h Helm) DeleteRelease(release string) {
