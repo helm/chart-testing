@@ -296,9 +296,11 @@ func (t *Testing) LintChart(chart string, valuesFiles []string) TestResult {
 		return result
 	}
 
-	if err := t.ValidateMaintainers(chart); err != nil {
-		result.Error = err
-		return result
+	if t.config.ValidateMaintainers {
+		if err := t.ValidateMaintainers(chart); err != nil {
+			result.Error = err
+			return result
+		}
 	}
 
 	if len(valuesFiles) > 0 {
