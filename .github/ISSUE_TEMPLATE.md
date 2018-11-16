@@ -22,9 +22,10 @@ explain why.
 
 **Version of Helm and Kubernetes**:
 
-<!-- to get current helm and kubernetes versions try:
+<!-- To get current helm, kubernetes and ct versions:
 helm version
 kubectl version
+ct version
 and paste output here.
 -->
 
