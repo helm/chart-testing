@@ -114,6 +114,11 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func
 		cfg.LintConf = cfgFile
 	}
 
+	if len(cfg.Charts) > 0 || cfg.ProcessAllCharts {
+		fmt.Println("Version increment checking disabled.")
+		cfg.CheckVersionIncrement = false
+	}
+
 	printCfg(cfg)
 
 	return cfg, nil
