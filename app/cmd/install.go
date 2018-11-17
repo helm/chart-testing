@@ -16,8 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"os"
+
+	"github.com/spf13/viper"
 
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/pkg/chart"
@@ -61,7 +62,13 @@ func addInstallFlags(flags *flag.FlagSet) {
 		the ID of a pull request. If not specified, the name of the chart is used`))
 	flags.String("helm-extra-args", "", heredoc.Doc(`
 		Additional arguments for Helm. Must be passed as a single quoted string
-		(e. g. "--timeout 500 --tiller-namespace tiller"`))
+		(e.g. "--timeout 500 --tiller-namespace tiller"`))
+	flags.String("namespace", "", heredoc.Doc(`
+		Namespace to install the release(s) into. If not specified, each release will be
+		installed in its own randomly generated namespace.`))
+	flags.String("release-label", "app.kubernetes.io/instance", heredoc.Doc(`
+		The label to be used as a selector when inspecting resources created by charts.
+		This is only used if namespace is specified.`))
 }
 
 func install(cmd *cobra.Command, args []string) {
@@ -89,6 +96,6 @@ func install(cmd *cobra.Command, args []string) {
 }
 
 func bindInstallFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"build-id", "helm-extra-args"}
+	options := []string{"build-id", "helm-extra-args", "namespace", "release-label"}
 	return bindFlags(options, flagSet, v)
 }

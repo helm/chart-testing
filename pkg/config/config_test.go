@@ -15,9 +15,10 @@
 package config
 
 import (
+	"testing"
+
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestUnmarshalYaml(t *testing.T) {
@@ -43,4 +44,6 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, []string{"stable", "incubator"}, cfg.ChartDirs)
 	require.Equal(t, []string{"common"}, cfg.ExcludedCharts)
 	require.Equal(t, "--timeout 300", cfg.HelmExtraArgs)
+	require.Equal(t, "default", cfg.Namespace)
+	require.Equal(t, "release", cfg.ReleaseLabel)
 }

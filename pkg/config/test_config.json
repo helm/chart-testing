@@ -18,5 +18,7 @@
     "excluded-charts": [
         "common"
     ],
-    "helm-extra-args": "--timeout 300"
+    "helm-extra-args": "--timeout 300",
+    "namespace": "default",
+    "release-label": "release"
 }
