@@ -2,4 +2,4 @@
 
 This example shows how to lint and test charts using CircleCi and [kind](https://github.com/kubernetes-sigs/kind).
 
-`kind` is a nice tool for running local Kubernetes clusters using Docker container "nodes".  
+`kind` is a tool for running local/CI pipelines Kubernetes clusters using Docker container "nodes".  
