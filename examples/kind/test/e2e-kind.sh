@@ -32,6 +32,16 @@ run_kind() {
     echo
 }
 
+install_tiller() {
+    # Install Tiller with RABC
+    kubectl -n kube-system create sa tiller 
+    kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+    docker exec "$config_container_id" helm init --service-account tiller
+    echo "Wait for Tiller to be up and ready..."
+    until kubectl -n kube-system get pods 2>&1 | grep -w "tiller-deploy"  | grep -w "1/1"; do sleep 1; done
+    echo
+}
+
 install_hostpath-provisioner() {
      # kind doesn't support Dynamic PVC provisioning yet, this one of ways to get it working
      # https://github.com/rimusz/charts/tree/master/stable/hostpath-provisioner
@@ -40,8 +50,8 @@ install_hostpath-provisioner() {
      kubectl delete storageclass standard
 
      echo "Install Hostpath Provisioner..."
-     docker exec "$config_container_id" helm init
-     docker exec "$config_container_id" helm repo add rimusz https://charts.rimusz.net && helm repo update
+     docker exec "$config_container_id" helm repo add rimusz https://charts.rimusz.net
+     docker exec "$config_container_id" helm repo update
      docker exec "$config_container_id" helm upgrade --install hostpath-provisioner --namespace kube-system rimusz/hostpath-provisioner
      echo
 }
@@ -70,6 +80,9 @@ main() {
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s master
     echo
+
+    # Install Tiller with RABC
+    install_tiller
 
     # Install hostpath-provisioner for Dynammic PVC provisioning
     install_hostpath-provisioner
