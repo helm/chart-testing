@@ -33,7 +33,7 @@ run_kind() {
 }
 
 install_tiller() {
-    # Install Tiller with RABC
+    # Install Tiller with RBAC
     kubectl -n kube-system create sa tiller 
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
     docker exec "$config_container_id" helm init --service-account tiller
@@ -81,7 +81,7 @@ main() {
     git fetch k8s master
     echo
 
-    # Install Tiller with RABC
+    # Install Tiller with RBAC
     install_tiller
 
     # Install hostpath-provisioner for Dynammic PVC provisioning
