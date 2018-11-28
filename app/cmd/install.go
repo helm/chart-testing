@@ -16,10 +16,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"os"
 
-	"github.com/MakeNowJust/heredoc"
+	"github.com/spf13/viper"
+
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
 
@@ -31,20 +31,18 @@ func newInstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "Install and test a chart",
-		Long: heredoc.Doc(`
-			Run 'helm install' and ' helm test' on
+		Long: `Run 'helm install' and ' helm test' on
 
-			* changed charts (default)
-			* specific charts (--charts)
-			* all charts (--all)
+	* changed charts (default)
+	* specific charts (--charts)
+	* all charts (--all)
 
-			in given chart directories.
+in given chart directories.
 
-			Charts may have multiple custom values files matching the glob pattern
-			'*-values.yaml' in a directory named 'ci' in the root of the chart's
-			directory. The chart is installed and tested for each of these files.
-			If no custom values file is present, the chart is installed and
-			tested with defaults.`),
+Charts may have multiple custom values files matching the glob pattern
+'*-values.yaml' in a directory named 'ci' in the root of the chart's directory.
+The chart is installed and tested for each of these files. If no custom values
+file is present, the chart is installed and tested with defaults.`,
 		Run: install,
 	}
 
@@ -55,13 +53,11 @@ func newInstallCmd() *cobra.Command {
 }
 
 func addInstallFlags(flags *flag.FlagSet) {
-	flags.String("build-id", "", heredoc.Doc(`
-		An optional, arbitrary identifier that is added to the name of the namespace a
-		chart is installed into. In a CI environment, this could be the build number or
-		the ID of a pull request. If not specified, the name of the chart is used`))
-	flags.String("helm-extra-args", "", heredoc.Doc(`
-		Additional arguments for Helm. Must be passed as a single quoted string
-		(e. g. "--timeout 500 --tiller-namespace tiller"`))
+	flags.String("build-id", "", `An optional, arbitrary identifier that is added to the name of the namespace a
+chart is installed into. In a CI environment, this could be the build number or
+the ID of a pull request. If not specified, the name of the chart is used`)
+	flags.String("helm-extra-args", "", `Additional arguments for Helm. Must be passed as a single quoted string
+(e. g. "--timeout 500 --tiller-namespace tiller"`)
 }
 
 func install(cmd *cobra.Command, args []string) {

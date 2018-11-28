@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:6b250e53b3b7b9abd7e62f55875c234d2f8b77b846bff200fecafa2dc09af09a"
-  name = "github.com/MakeNowJust/heredoc"
-  packages = ["."]
-  pruneopts = ""
-  revision = "e9091a26100e9cfb2b6a8f470085bfa541931a91"
-
-[[projects]]
   digest = "1:b856d8248663c39265a764561c1a1a149783f6cc815feb54a1f3a591b91f6eca"
   name = "github.com/Masterminds/semver"
   packages = ["."]
@@ -224,7 +216,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/MakeNowJust/heredoc",
     "github.com/Masterminds/semver",
     "github.com/mitchellh/go-homedir",
     "github.com/pkg/errors",

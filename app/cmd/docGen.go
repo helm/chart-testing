@@ -16,19 +16,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/MakeNowJust/heredoc"
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
-	"os"
 )
 
 func newGenerateDocsCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "doc-gen",
-		Short: "Generate documentation",
-		Long: heredoc.Doc(`
-			Generate documentation for all commands
-			to the 'docs' directory.`),
+		Use:    "doc-gen",
+		Short:  "Generate documentation",
+		Long:   "Generate documentation for all commands to the 'docs' directory.",
 		Hidden: true,
 		Run:    generateDocs,
 	}

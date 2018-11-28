@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MakeNowJust/heredoc"
-
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/spf13/cobra"
@@ -31,21 +29,19 @@ func newLintCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "lint",
 		Short: "Lint and validate a chart",
-		Long: heredoc.Doc(`
-			Run 'helm lint', version checking, YAML schema validation
-			on 'Chart.yaml', YAML linting on 'Chart.yaml' and 'values.yaml',
-			and maintainer validation on
+		Long: `Run 'helm lint', version checking, YAML schema validation on 'Chart.yaml', YAML
+linting on 'Chart.yaml' and 'values.yaml', and maintainer validation on
 
-			* changed charts (default)
-			* specific charts (--charts)
-			* all charts (--all)
+	* changed charts (default)
+	* specific charts (--charts)
+	* all charts (--all)
 
-			in given chart directories.
+in given chart directories.
 
-			Charts may have multiple custom values files matching the glob pattern
-			'*-values.yaml' in a directory named 'ci' in the root of the chart's
-			directory. The chart is linted for each of these files. If no custom
-			values file is present, the chart is linted with defaults.`),
+Charts may have multiple custom values files matching the glob pattern
+'*-values.yaml' in a directory named 'ci' in the root of the chart's directory.
+The chart is linted for each of these files. If no custom values file is
+present, the chart is linted with defaults.`,
 		Run: lint,
 	}
 
@@ -56,17 +52,12 @@ func newLintCmd() *cobra.Command {
 }
 
 func addLintFlags(flags *flag.FlagSet) {
-	flags.String("lint-conf", "", heredoc.Doc(`
-			The config file for YAML linting. If not specified, 'lintconf.yaml'
-			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-			that order`))
-	flags.String("chart-yaml-schema", "", heredoc.Doc(`
-			The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
-			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-			that order.`))
-	flags.Bool("validate-maintainers", true, heredoc.Doc(`
-			Enabled validation of maintainer account names in chart.yml (default: true).
-			Works for GitHub, GitLab, and Bitbucket`))
+	flags.String("lint-conf", "", `The config file for YAML linting. If not specified, 'lintconf.yaml' is searched
+in the current directory, '$HOME/.ct', and '/etc/ct', in that order`)
+	flags.String("chart-yaml-schema", "", `The schema for chart.yml validation. If not specified, 'chart_schema.yaml' is
+searched in the current directory, '$HOME/.ct', and '/etc/ct', in that order.`)
+	flags.Bool("validate-maintainers", true, `Enabled validation of maintainer account names in chart.yml (default: true).
+Works for GitHub, GitLab, and Bitbucket`)
 	flags.Bool("check-version-increment", true, "Activates a check for chart version increments (default: true)")
 }
 
