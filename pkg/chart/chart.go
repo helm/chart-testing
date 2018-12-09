@@ -55,22 +55,18 @@ type Git interface {
 //
 // BuildDependencies builds the chart's dependencies
 //
-// Lint runs `helm lint` for the given chart
+// LintWithValues runs `helm lint` for the given chart using the specified values file.
+// Pass a zero value for valuesFile in order to run lint without specifying a values file.
 //
-// LintWithValues runs `helm lint` for the given chart using the specified values file
-//
-// Install runs `helm install` for the given chart
-//
-// InstallWithValues runs `helm install` for the given chart using the specified values file
+// InstallWithValues runs `helm install` for the given chart using the specified values file.
+// Pass a zero value for valuesFile in order to run install without specifying a values file.
 //
 // DeleteRelease purges the specified Helm release.
 type Helm interface {
 	Init() error
 	AddRepo(name string, url string) error
 	BuildDependencies(chart string) error
-	Lint(chart string) error
 	LintWithValues(chart string, valuesFile string) error
-	Install(chart string, namespace string, release string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
 	Test(release string) error
 	DeleteRelease(release string)
@@ -245,7 +241,7 @@ func (t *Testing) InstallCharts() ([]TestResult, error) {
 	return t.processCharts(t.InstallChart)
 }
 
-// LintAndInstallChart first lints and then installs charts (changed, all, specific) depending on the configuration.
+// LintAndInstallCharts first lints and then installs charts (changed, all, specific) depending on the configuration.
 func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
 	return t.processCharts(t.LintAndInstallChart)
 }
@@ -304,16 +300,15 @@ func (t *Testing) LintChart(chart string, valuesFiles []string) TestResult {
 		}
 	}
 
-	if len(valuesFiles) > 0 {
-		for _, valuesFile := range valuesFiles {
-			if err := t.helm.LintWithValues(chart, valuesFile); err != nil {
-				result.Error = err
-				break
-			}
-		}
-	} else {
-		if err := t.helm.Lint(chart); err != nil {
+	// Lint with defaults if no values files are specified.
+	if len(valuesFiles) == 0 {
+		valuesFiles = append(valuesFiles, "")
+	}
+
+	for _, valuesFile := range valuesFiles {
+		if err := t.helm.LintWithValues(chart, valuesFile); err != nil {
 			result.Error = err
+			break
 		}
 	}
 
