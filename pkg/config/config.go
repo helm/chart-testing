@@ -93,7 +93,11 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func
 	}
 
 	if cfg.ProcessAllCharts && len(cfg.Charts) > 0 {
-		return nil, errors.New("Specifying both, '--all' and '--charts', is not allowed!")
+		return nil, errors.New("specifying both, '--all' and '--charts', is not allowed")
+	}
+
+	if cfg.Namespace != "" && cfg.ReleaseLabel == "" {
+		return nil, errors.New("specifying '--namespace' without '--release-label' is not allowed")
 	}
 
 	isLint := strings.Contains(cmd.Use, "lint")
