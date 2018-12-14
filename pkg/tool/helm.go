@@ -16,19 +16,18 @@ package tool
 
 import (
 	"fmt"
+
 	"github.com/helm/chart-testing/pkg/exec"
 )
 
 type Helm struct {
 	exec      exec.ProcessExecutor
-	kubectl   Kubectl
 	extraArgs []string
 }
 
-func NewHelm(exec exec.ProcessExecutor, kubectl Kubectl, extraArgs []string) Helm {
+func NewHelm(exec exec.ProcessExecutor, extraArgs []string) Helm {
 	return Helm{
 		exec:      exec,
-		kubectl:   kubectl,
 		extraArgs: extraArgs,
 	}
 }
@@ -45,16 +44,13 @@ func (h Helm) BuildDependencies(chart string) error {
 	return h.exec.RunProcess("helm", "dependency", "build", chart)
 }
 
-func (h Helm) Lint(chart string) error {
-	return h.exec.RunProcess("helm", "lint", chart)
-}
-
 func (h Helm) LintWithValues(chart string, valuesFile string) error {
-	return h.exec.RunProcess("helm", "lint", chart, "--values", valuesFile)
-}
+	var values []string
+	if valuesFile != "" {
+		values = []string{"--values", valuesFile}
+	}
 
-func (h Helm) Install(chart string, namespace string, release string) error {
-	return h.InstallWithValues(chart, "", namespace, release)
+	return h.exec.RunProcess("helm", "lint", chart, values)
 }
 
 func (h Helm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {
@@ -68,10 +64,10 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 		return err
 	}
 
-	if err := h.kubectl.WaitForDeployments(namespace); err != nil {
-		return err
-	}
+	return nil
+}
 
+func (h Helm) Test(release string) error {
 	return h.exec.RunProcess("helm", "test", release, h.extraArgs)
 }
 

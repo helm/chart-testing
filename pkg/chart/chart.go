@@ -16,10 +16,11 @@ package chart
 
 import (
 	"fmt"
-	"github.com/helm/chart-testing/pkg/exec"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/helm/chart-testing/pkg/exec"
 
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/helm/chart-testing/pkg/tool"
@@ -54,23 +55,20 @@ type Git interface {
 //
 // BuildDependencies builds the chart's dependencies
 //
-// Lint runs `helm lint` for the given chart
+// LintWithValues runs `helm lint` for the given chart using the specified values file.
+// Pass a zero value for valuesFile in order to run lint without specifying a values file.
 //
-// LintWithValues runs `helm lint` for the given chart using the specified values file
-//
-// Install runs `helm install` for the given chart
-//
-// InstallWithValues runs `helm install` for the given chart using the specified values file
+// InstallWithValues runs `helm install` for the given chart using the specified values file.
+// Pass a zero value for valuesFile in order to run install without specifying a values file.
 //
 // DeleteRelease purges the specified Helm release.
 type Helm interface {
 	Init() error
 	AddRepo(name string, url string) error
 	BuildDependencies(chart string) error
-	Lint(chart string) error
 	LintWithValues(chart string, valuesFile string) error
-	Install(chart string, namespace string, release string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
+	Test(release string) error
 	DeleteRelease(release string)
 }
 
@@ -93,7 +91,7 @@ type Helm interface {
 // GetContainers gets all containers of pod
 type Kubectl interface {
 	DeleteNamespace(namespace string)
-	WaitForDeployments(namespace string) error
+	WaitForDeployments(namespace string, selector string) error
 	GetPodsforDeployment(namespace string, deployment string) ([]string, error)
 	GetPods(args ...string) ([]string, error)
 	DescribePod(namespace string, pod string) error
@@ -112,7 +110,7 @@ type Linter interface {
 	Yamale(yamlFile string, schemaFile string) error
 }
 
-// DiretoryLister is the interface
+// DirectoryLister is the interface
 //
 // ListChildDirs lists direct child directories of parentDir given they pass the test function
 type DirectoryLister interface {
@@ -162,13 +160,12 @@ type TestResult struct {
 // NewTesting creates a new Testing struct with the given config.
 func NewTesting(config config.Configuration) Testing {
 	procExec := exec.NewProcessExecutor(config.Debug)
-	kubectl := tool.NewKubectl(procExec)
 	extraArgs := strings.Fields(config.HelmExtraArgs)
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(procExec, kubectl, extraArgs),
+		helm:             tool.NewHelm(procExec, extraArgs),
 		git:              tool.NewGit(procExec),
-		kubectl:          kubectl,
+		kubectl:          tool.NewKubectl(procExec),
 		linter:           tool.NewLinter(procExec),
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
@@ -244,7 +241,7 @@ func (t *Testing) InstallCharts() ([]TestResult, error) {
 	return t.processCharts(t.InstallChart)
 }
 
-// LintAndInstallChart first lints and then installs charts (changed, all, specific) depending on the configuration.
+// LintAndInstallCharts first lints and then installs charts (changed, all, specific) depending on the configuration.
 func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
 	return t.processCharts(t.LintAndInstallChart)
 }
@@ -303,16 +300,15 @@ func (t *Testing) LintChart(chart string, valuesFiles []string) TestResult {
 		}
 	}
 
-	if len(valuesFiles) > 0 {
-		for _, valuesFile := range valuesFiles {
-			if err := t.helm.LintWithValues(chart, valuesFile); err != nil {
-				result.Error = err
-				break
-			}
-		}
-	} else {
-		if err := t.helm.Lint(chart); err != nil {
+	// Lint with defaults if no values files are specified.
+	if len(valuesFiles) == 0 {
+		valuesFiles = append(valuesFiles, "")
+	}
+
+	for _, valuesFile := range valuesFiles {
+		if err := t.helm.LintWithValues(chart, valuesFile); err != nil {
 			result.Error = err
+			break
 		}
 	}
 
@@ -326,28 +322,37 @@ func (t *Testing) InstallChart(chart string, valuesFiles []string) TestResult {
 
 	result := TestResult{Chart: chart}
 
-	if len(valuesFiles) > 0 {
-		for _, valuesFile := range valuesFiles {
-			release, namespace := util.CreateInstallParams(chart, t.config.BuildId)
+	// Test with defaults if no values files are specified.
+	if len(valuesFiles) == 0 {
+		valuesFiles = append(valuesFiles, "")
+	}
 
+	for _, valuesFile := range valuesFiles {
+		var namespace, release, releaseSelector string
+
+		if t.config.Namespace != "" {
+			namespace = t.config.Namespace
+			release, _ = util.CreateInstallParams(chart, t.config.BuildId)
+			releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
+		} else {
+			release, namespace = util.CreateInstallParams(chart, t.config.BuildId)
 			defer t.kubectl.DeleteNamespace(namespace)
-			defer t.helm.DeleteRelease(release)
-			defer t.PrintPodDetailsAndLogs(namespace)
-
-			if err := t.helm.InstallWithValues(chart, valuesFile, namespace, release); err != nil {
-				result.Error = err
-				break
-			}
 		}
-	} else {
-		release, namespace := util.CreateInstallParams(chart, t.config.BuildId)
 
-		defer t.kubectl.DeleteNamespace(namespace)
 		defer t.helm.DeleteRelease(release)
-		defer t.PrintPodDetailsAndLogs(namespace)
+		defer t.PrintPodDetailsAndLogs(namespace, releaseSelector)
 
-		if err := t.helm.Install(chart, namespace, release); err != nil {
+		if err := t.helm.InstallWithValues(chart, valuesFile, namespace, release); err != nil {
 			result.Error = err
+			break
+		}
+		if err := t.kubectl.WaitForDeployments(namespace, releaseSelector); err != nil {
+			result.Error = err
+			break
+		}
+		if err := t.helm.Test(release); err != nil {
+			result.Error = err
+			break
 		}
 	}
 
@@ -533,8 +538,16 @@ func (t *Testing) ValidateMaintainers(chart string) error {
 	return nil
 }
 
-func (t *Testing) PrintPodDetailsAndLogs(namespace string) {
-	pods, err := t.kubectl.GetPods("--no-headers", "--namespace", namespace, "--output", "jsonpath={.items[*].metadata.name}")
+func (t *Testing) PrintPodDetailsAndLogs(namespace string, selector string) {
+	pods, err := t.kubectl.GetPods(
+		"--no-headers",
+		"--namespace",
+		namespace,
+		"--selector",
+		selector,
+		"--output",
+		"jsonpath={.items[*].metadata.name}",
+	)
 	if err != nil {
 		fmt.Println("Error printing logs:", err)
 		return

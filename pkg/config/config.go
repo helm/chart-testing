@@ -16,10 +16,11 @@ package config
 
 import (
 	"fmt"
-	"github.com/mitchellh/go-homedir"
 	"path"
 	"reflect"
 	"strings"
+
+	"github.com/mitchellh/go-homedir"
 
 	"github.com/helm/chart-testing/pkg/util"
 	"github.com/pkg/errors"
@@ -52,6 +53,8 @@ type Configuration struct {
 	ExcludedCharts        []string `mapstructure:"excluded-charts"`
 	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
 	Debug                 bool     `mapstructure:"debug"`
+	Namespace             string   `mapstructure:"namespace"`
+	ReleaseLabel          string   `mapstructure:"release-label"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func(flagSet *flag.FlagSet, viper *viper.Viper) error) (*Configuration, error) {
@@ -90,7 +93,11 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func
 	}
 
 	if cfg.ProcessAllCharts && len(cfg.Charts) > 0 {
-		return nil, errors.New("Specifying both, '--all' and '--charts', is not allowed!")
+		return nil, errors.New("specifying both, '--all' and '--charts', is not allowed")
+	}
+
+	if cfg.Namespace != "" && cfg.ReleaseLabel == "" {
+		return nil, errors.New("specifying '--namespace' without '--release-label' is not allowed")
 	}
 
 	isLint := strings.Contains(cmd.Use, "lint")

@@ -51,9 +51,9 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 	}
 }
 
-func (k Kubectl) WaitForDeployments(namespace string) error {
+func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 	output, err := k.exec.RunProcessAndCaptureOutput(
-		"kubectl", "get", "deployments", "--namespace", namespace, "--output", "jsonpath={.items[*].metadata.name}")
+		"kubectl", "get", "deployments", "--namespace", namespace, "--selector", selector, "--output", "jsonpath={.items[*].metadata.name}")
 	if err != nil {
 		return err
 	}
