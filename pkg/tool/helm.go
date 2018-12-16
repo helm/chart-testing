@@ -36,8 +36,8 @@ func (h Helm) Init() error {
 	return h.exec.RunProcess("helm", "init", "--client-only")
 }
 
-func (h Helm) AddRepo(name string, url string) error {
-	return h.exec.RunProcess("helm", "repo", "add", name, url)
+func (h Helm) AddRepo(name string, url string, extraArgs []string) error {
+	return h.exec.RunProcess("helm", "repo", "add", name, url, extraArgs)
 }
 
 func (h Helm) BuildDependencies(chart string) error {

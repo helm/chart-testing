@@ -13,6 +13,9 @@
     "chart-repos": [
         "incubator=https://incubator"
     ],
+    "helm-repo-extra-args": [
+        "incubator=--username test"
+    ],
     "chart-dirs": [
         "stable",
         "incubator"
