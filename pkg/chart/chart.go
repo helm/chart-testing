@@ -197,8 +197,7 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 		return nil, errors.Wrap(err, "Error initializing Helm")
 	}
 
-	var repoArgs map[string][]string
-	repoArgs = make(map[string][]string)
+	repoArgs := map[string][]string{}
 
 	for _, repo := range t.config.HelmRepoExtraArgs {
 		repoSlice := strings.SplitN(repo, "=", 2)
