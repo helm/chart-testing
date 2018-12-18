@@ -38,6 +38,8 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, "my-lint-conf.yaml", cfg.LintConf)
 	require.Equal(t, "my-chart-yaml-schema.yaml", cfg.ChartYamlSchema)
 	require.Equal(t, true, cfg.ValidateMaintainers)
+	require.Equal(t, false, cfg.NoChartSchemaValidation)
+	require.Equal(t, false, cfg.NoYamlLint)
 	require.Equal(t, true, cfg.CheckVersionIncrement)
 	require.Equal(t, false, cfg.ProcessAllCharts)
 	require.Equal(t, []string{"incubator=https://incubator"}, cfg.ChartRepos)

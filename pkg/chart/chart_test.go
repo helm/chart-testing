@@ -25,6 +25,7 @@ import (
 
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type fakeGit struct{}
@@ -98,6 +99,19 @@ type fakeLinter struct{}
 
 func (l fakeLinter) YamlLint(yamlFile, configFile string) error { return nil }
 func (l fakeLinter) Yamale(yamlFile, schemaFile string) error   { return nil }
+
+type fakeLinter2 struct {
+	mock.Mock
+}
+
+func (l *fakeLinter2) YamlLint(yamlFile, configFile string) error {
+	l.Called(yamlFile, configFile)
+	return nil
+}
+func (l *fakeLinter2) Yamale(yamlFile, schemaFile string) error {
+	l.Called(yamlFile, schemaFile)
+	return nil
+}
 
 type fakeHelm struct{}
 
@@ -199,4 +213,96 @@ func TestLintChartMaintainerValidation(t *testing.T) {
 
 	runTests(true)
 	runTests(false)
+}
+
+func TestLintNoChartSchemaValidation(t *testing.T) {
+	type testData struct {
+		name     string
+		chartDir string
+		expected bool
+	}
+
+	runTests := func(noValidation bool, callsYamlLint, callsYamale int) {
+		var fakeMockLinter = new(fakeLinter2)
+
+		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
+		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
+
+		ct.linter = fakeMockLinter
+		ct.config.NoChartSchemaValidation = noValidation
+		ct.config.ValidateMaintainers = false
+		ct.config.NoYamlLint = false
+
+		var suffix string
+		if noValidation {
+			suffix = "without-validation"
+		} else {
+			suffix = "with-validation"
+		}
+
+		testCases := []testData{
+			{fmt.Sprintf("schema-%s", suffix), "testdata/test_lints", true},
+		}
+
+		for _, testData := range testCases {
+			t.Run(testData.name, func(t *testing.T) {
+				result := ct.LintChart(testData.chartDir, []string{})
+				assert.Equal(t, testData.expected, result.Error == nil)
+				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
+				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
+			})
+		}
+	}
+
+	// will run the schema validation
+	runTests(false, 2, 1)
+	// will not run the schema validation
+	runTests(true, 2, 0)
+
+}
+
+func TestLintNoYamlLintValidation(t *testing.T) {
+	type testData struct {
+		name     string
+		chartDir string
+		expected bool
+	}
+
+	runTests := func(noValidation bool, callsYamlLint, callsYamale int) {
+
+		var fakeMockLinter = new(fakeLinter2)
+
+		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
+		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
+
+		ct.linter = fakeMockLinter
+		ct.config.NoYamlLint = noValidation
+		ct.config.NoChartSchemaValidation = false
+		ct.config.ValidateMaintainers = false
+
+		var suffix string
+		if noValidation {
+			suffix = "without-yaml-validation"
+		} else {
+			suffix = "with-yaml-validation"
+		}
+
+		testCases := []testData{
+			{fmt.Sprintf("lint-%s", suffix), "testdata/test_lints", true},
+		}
+
+		for _, testData := range testCases {
+			t.Run(testData.name, func(t *testing.T) {
+				result := ct.LintChart(testData.chartDir, []string{})
+				assert.Equal(t, testData.expected, result.Error == nil)
+				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
+				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
+			})
+		}
+	}
+
+	// will run the lint validation
+	runTests(false, 2, 1)
+	// will not run the lint validation
+	runTests(true, 0, 1)
 }
