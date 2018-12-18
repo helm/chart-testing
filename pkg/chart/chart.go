@@ -284,13 +284,13 @@ func (t *Testing) LintChart(chart string, valuesFiles []string) TestResult {
 		result.Error = err
 		return result
 	}
-	if err := t.linter.YamlLint(chartYaml, t.config.LintConf); err != nil {
-		result.Error = err
-		return result
-	}
-	if err := t.linter.YamlLint(valuesYaml, t.config.LintConf); err != nil {
-		result.Error = err
-		return result
+
+	yamlFiles := append([]string{chartYaml, valuesYaml}, valuesFiles...)
+	for _, yamlFile := range yamlFiles {
+		if err := t.linter.YamlLint(yamlFile, t.config.LintConf); err != nil {
+			result.Error = err
+			return result
+		}
 	}
 
 	if t.config.ValidateMaintainers {
