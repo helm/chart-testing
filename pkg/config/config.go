@@ -39,24 +39,24 @@ var (
 )
 
 type Configuration struct {
-	Remote                  string   `mapstructure:"remote"`
-	TargetBranch            string   `mapstructure:"target-branch"`
-	BuildId                 string   `mapstructure:"build-id"`
-	LintConf                string   `mapstructure:"lint-conf"`
-	ChartYamlSchema         string   `mapstructure:"chart-yaml-schema"`
-	ValidateMaintainers     bool     `mapstructure:"validate-maintainers"`
-	CheckVersionIncrement   bool     `mapstructure:"check-version-increment"`
-	ProcessAllCharts        bool     `mapstructure:"all"`
-	Charts                  []string `mapstructure:"charts"`
-	ChartRepos              []string `mapstructure:"chart-repos"`
-	ChartDirs               []string `mapstructure:"chart-dirs"`
-	ExcludedCharts          []string `mapstructure:"excluded-charts"`
-	HelmExtraArgs           string   `mapstructure:"helm-extra-args"`
-	Debug                   bool     `mapstructure:"debug"`
-	Namespace               string   `mapstructure:"namespace"`
-	ReleaseLabel            string   `mapstructure:"release-label"`
-	NoChartSchemaValidation bool     `mapstructure:"no-chart-schema-validation"`
-	NoYamlLint              bool     `mapstructure:"no-yaml-lint"`
+	Remote                string   `mapstructure:"remote"`
+	TargetBranch          string   `mapstructure:"target-branch"`
+	BuildId               string   `mapstructure:"build-id"`
+	LintConf              string   `mapstructure:"lint-conf"`
+	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`
+	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
+	ValidateChartSchema   bool     `mapstructure:"validate-chart-schema"`
+	ValidateYaml          bool     `mapstructure:"validate-yaml"`
+	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
+	ProcessAllCharts      bool     `mapstructure:"all"`
+	Charts                []string `mapstructure:"charts"`
+	ChartRepos            []string `mapstructure:"chart-repos"`
+	ChartDirs             []string `mapstructure:"chart-dirs"`
+	ExcludedCharts        []string `mapstructure:"excluded-charts"`
+	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
+	Debug                 bool     `mapstructure:"debug"`
+	Namespace             string   `mapstructure:"namespace"`
+	ReleaseLabel          string   `mapstructure:"release-label"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func(flagSet *flag.FlagSet, viper *viper.Viper) error) (*Configuration, error) {

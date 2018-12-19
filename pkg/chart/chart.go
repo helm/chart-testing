@@ -280,14 +280,14 @@ func (t *Testing) LintChart(chart string, valuesFiles []string) TestResult {
 	chartYaml := path.Join(chart, "Chart.yaml")
 	valuesYaml := path.Join(chart, "values.yaml")
 
-	if !t.config.NoChartSchemaValidation {
+	if t.config.ValidateChartSchema {
 		if err := t.linter.Yamale(chartYaml, t.config.ChartYamlSchema); err != nil {
 			result.Error = err
 			return result
 		}
 	}
 
-	if !t.config.NoYamlLint {
+	if t.config.ValidateYaml {
 		yamlFiles := append([]string{chartYaml, valuesYaml}, valuesFiles...)
 		for _, yamlFile := range yamlFiles {
 			if err := t.linter.YamlLint(yamlFile, t.config.LintConf); err != nil {

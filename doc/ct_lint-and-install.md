@@ -13,47 +13,47 @@ ct lint-and-install [flags]
 ### Options
 
 ```
-      --all                         Process all charts except those explicitly excluded.
-                                    Disables changed charts detection and version increment checking
-      --build-id string             An optional, arbitrary identifier that is added to the name of the namespace a
-                                    chart is installed into. In a CI environment, this could be the build number or
-                                    the ID of a pull request. If not specified, the name of the chart is used
-      --chart-dirs strings          Directories containing Helm charts. May be specified multiple times
-                                    or separate values with commas (default [charts])
-      --chart-repos strings         Additional chart repos to add so dependencies can be resolved. May be
-                                    specified multiple times or separate values with commas
-      --chart-yaml-schema string    The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
-                                    is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-                                    that order.
-      --charts strings              Specific charts to test. Disables changed charts detection and
-                                    version increment checking. May be specified multiple times
-                                    or separate values with commas
-      --check-version-increment     Activates a check for chart version increments (default: true) (default true)
-      --config string               Config file
-      --debug                       Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
-                                    passed, this may reveal sensitive data)
-      --excluded-charts strings     Charts that should be skipped. May be specified multiple times
-                                    or separate values with commas
-      --helm-extra-args string      Additional arguments for Helm. Must be passed as a single quoted string
-                                    (e.g. "--timeout 500 --tiller-namespace tiller"
-  -h, --help                        help for lint-and-install
-      --lint-conf string            The config file for YAML linting. If not specified, 'lintconf.yaml'
-                                    is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-                                    that order
-      --namespace string            Namespace to install the release(s) into. If not specified, each release will be
-                                    installed in its own randomly generated namespace.
-      --release-label string        The label to be used as a selector when inspecting resources created by charts.
-                                    This is only used if namespace is specified. (default "app.kubernetes.io/instance")
-      --remote string               The name of the Git remote used to identify changed charts (default "origin")
-      --target-branch string        The name of the target branch used to identify changed charts (default "master")
-      --validate-maintainers        Enabled validation of maintainer account names in chart.yml (default: true).
-                                    Works for GitHub, GitLab, and Bitbucket (default true)
-      --no-chart-schema-validation  Disable schema validation (default: false).
-      --no-yaml-lint                Disable lint validation (default: false).
+      --all                        Process all charts except those explicitly excluded.
+                                   Disables changed charts detection and version increment checking
+      --build-id string            An optional, arbitrary identifier that is added to the name of the namespace a
+                                   chart is installed into. In a CI environment, this could be the build number or
+                                   the ID of a pull request. If not specified, the name of the chart is used
+      --chart-dirs strings         Directories containing Helm charts. May be specified multiple times
+                                   or separate values with commas (default [charts])
+      --chart-repos strings        Additional chart repos to add so dependencies can be resolved. May be
+                                   specified multiple times or separate values with commas
+      --chart-yaml-schema string   The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
+                                   is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+                                   that order.
+      --charts strings             Specific charts to test. Disables changed charts detection and
+                                   version increment checking. May be specified multiple times
+                                   or separate values with commas
+      --check-version-increment    Activates a check for chart version increments (default: true) (default true)
+      --config string              Config file
+      --debug                      Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
+                                   passed, this may reveal sensitive data)
+      --excluded-charts strings    Charts that should be skipped. May be specified multiple times
+                                   or separate values with commas
+      --helm-extra-args string     Additional arguments for Helm. Must be passed as a single quoted string
+                                   (e.g. "--timeout 500 --tiller-namespace tiller"
+  -h, --help                       help for lint-and-install
+      --lint-conf string           The config file for YAML linting. If not specified, 'lintconf.yaml'
+                                   is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+                                   that order
+      --namespace string           Namespace to install the release(s) into. If not specified, each release will be
+                                   installed in its own randomly generated namespace.
+      --release-label string       The label to be used as a selector when inspecting resources created by charts.
+                                   This is only used if namespace is specified. (default "app.kubernetes.io/instance")
+      --remote string              The name of the Git remote used to identify changed charts (default "origin")
+      --target-branch string       The name of the target branch used to identify changed charts (default "master")
+      --validate-chart-schema      Enabled validation of the schema (default: true) (default true)
+      --validate-maintainers       Enabled validation of maintainer account names in chart.yml (default: true).
+                                   Works for GitHub, GitLab, and Bitbucket (default true)
+      --validate-yaml              Enabled validation to lint the yaml files (default: true) (default true)
 ```
 
 ### SEE ALSO
 
 * [ct](ct.md)	 - The Helm chart testing tool
 
-###### Auto generated by spf13/cobra on 17-Nov-2018
+###### Auto generated by spf13/cobra on 19-Dec-2018

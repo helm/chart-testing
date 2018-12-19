@@ -68,8 +68,10 @@ func addLintFlags(flags *flag.FlagSet) {
 			Enabled validation of maintainer account names in chart.yml (default: true).
 			Works for GitHub, GitLab, and Bitbucket`))
 	flags.Bool("check-version-increment", true, "Activates a check for chart version increments (default: true)")
-	flags.Bool("no-chart-schema-validation", false, "Disable schema validation (default: false)")
-	flags.Bool("no-yaml-lint", false, "Disable lint validation (default: false)")
+	flags.Bool("validate-chart-schema", true, heredoc.Doc(`
+			Enabled validation of the schema (default: true)`))
+	flags.Bool("validate-yaml", true, heredoc.Doc(`
+			Enabled validation to lint the yaml files (default: true)`))
 }
 
 func lint(cmd *cobra.Command, args []string) {
@@ -97,6 +99,6 @@ func lint(cmd *cobra.Command, args []string) {
 }
 
 func bindLintFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"lint-conf", "chart-yaml-schema", "validate-maintainers", "check-version-increment", "no-chart-schema-validation", "no-yaml-lint"}
+	options := []string{"lint-conf", "chart-yaml-schema", "validate-maintainers", "check-version-increment", "validate-chart-schema", "validate-yaml"}
 	return bindFlags(options, flagSet, v)
 }

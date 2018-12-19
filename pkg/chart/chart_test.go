@@ -215,29 +215,29 @@ func TestLintChartMaintainerValidation(t *testing.T) {
 	runTests(false)
 }
 
-func TestLintNoChartSchemaValidation(t *testing.T) {
+func TestLintChartSchemaValidation(t *testing.T) {
 	type testData struct {
 		name     string
 		chartDir string
 		expected bool
 	}
 
-	runTests := func(noValidation bool, callsYamlLint, callsYamale int) {
+	runTests := func(validate bool, callsYamlLint, callsYamale int) {
 		var fakeMockLinter = new(fakeLinter2)
 
 		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
 		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
 
 		ct.linter = fakeMockLinter
-		ct.config.NoChartSchemaValidation = noValidation
+		ct.config.ValidateChartSchema = validate
 		ct.config.ValidateMaintainers = false
-		ct.config.NoYamlLint = false
+		ct.config.ValidateYaml = false
 
 		var suffix string
-		if noValidation {
-			suffix = "without-validation"
-		} else {
+		if validate {
 			suffix = "with-validation"
+		} else {
+			suffix = "without-validation"
 		}
 
 		testCases := []testData{
@@ -254,21 +254,19 @@ func TestLintNoChartSchemaValidation(t *testing.T) {
 		}
 	}
 
-	// will run the schema validation
-	runTests(false, 2, 1)
-	// will not run the schema validation
-	runTests(true, 2, 0)
+	runTests(true, 0, 1)
+	runTests(false, 0, 0)
 
 }
 
-func TestLintNoYamlLintValidation(t *testing.T) {
+func TestLintYamlValidation(t *testing.T) {
 	type testData struct {
 		name     string
 		chartDir string
 		expected bool
 	}
 
-	runTests := func(noValidation bool, callsYamlLint, callsYamale int) {
+	runTests := func(validate bool, callsYamlLint, callsYamale int) {
 
 		var fakeMockLinter = new(fakeLinter2)
 
@@ -276,15 +274,15 @@ func TestLintNoYamlLintValidation(t *testing.T) {
 		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
 
 		ct.linter = fakeMockLinter
-		ct.config.NoYamlLint = noValidation
-		ct.config.NoChartSchemaValidation = false
+		ct.config.ValidateYaml = validate
+		ct.config.ValidateChartSchema = false
 		ct.config.ValidateMaintainers = false
 
 		var suffix string
-		if noValidation {
-			suffix = "without-yaml-validation"
+		if validate {
+			suffix = "with-validation"
 		} else {
-			suffix = "with-yaml-validation"
+			suffix = "without-validation"
 		}
 
 		testCases := []testData{
@@ -301,8 +299,6 @@ func TestLintNoYamlLintValidation(t *testing.T) {
 		}
 	}
 
-	// will run the lint validation
-	runTests(false, 2, 1)
-	// will not run the lint validation
-	runTests(true, 0, 1)
+	runTests(true, 2, 0)
+	runTests(false, 0, 0)
 }
