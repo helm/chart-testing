@@ -44,7 +44,7 @@ ct lint [flags]
                                        passed, this may reveal sensitive data)
       --excluded-charts strings        Charts that should be skipped. May be specified multiple times
                                        or separate values with commas
-      --helm-repo-extra-args strings   Additional arguments for Helm. (e.g. --username test --password secret)
+      --helm-repo-extra-args strings   Additional arguments for helm repo add. (e.g. --username test --password secret)
                                        May be specified multiple times or separate values with commas
   -h, --help                           help for lint
       --lint-conf string               The config file for YAML linting. If not specified, 'lintconf.yaml'
