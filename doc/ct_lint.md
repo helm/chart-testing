@@ -50,10 +50,10 @@ ct lint [flags]
                                    that order
       --remote string              The name of the Git remote used to identify changed charts (default "origin")
       --target-branch string       The name of the target branch used to identify changed charts (default "master")
-      --validate-chart-schema      Enabled validation of the schema (default: true) (default true)
-      --validate-maintainers       Enabled validation of maintainer account names in chart.yml (default: true).
+      --validate-chart-schema      Enable schema validation of 'Chart.yaml' using Yamale (default: true) (default true)
+      --validate-maintainers       Enable validation of maintainer account names in chart.yml (default: true).
                                    Works for GitHub, GitLab, and Bitbucket (default true)
-      --validate-yaml              Enabled validation to lint the yaml files (default: true) (default true)
+      --validate-yaml              Enable linting of 'Chart.yaml' and values files (default: true) (default true)
 ```
 
 ### SEE ALSO

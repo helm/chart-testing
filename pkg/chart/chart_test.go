@@ -19,11 +19,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
-
-	"github.com/helm/chart-testing/pkg/util"
-
 	"github.com/helm/chart-testing/pkg/config"
+	"github.com/helm/chart-testing/pkg/util"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -95,20 +93,15 @@ func (v fakeAccountValidator) Validate(repoDomain string, account string) error 
 	return errors.New(fmt.Sprintf("Error validating account: %s", account))
 }
 
-type fakeLinter struct{}
-
-func (l fakeLinter) YamlLint(yamlFile, configFile string) error { return nil }
-func (l fakeLinter) Yamale(yamlFile, schemaFile string) error   { return nil }
-
-type fakeLinter2 struct {
+type fakeLinter struct {
 	mock.Mock
 }
 
-func (l *fakeLinter2) YamlLint(yamlFile, configFile string) error {
+func (l *fakeLinter) YamlLint(yamlFile, configFile string) error {
 	l.Called(yamlFile, configFile)
 	return nil
 }
-func (l *fakeLinter2) Yamale(yamlFile, schemaFile string) error {
+func (l *fakeLinter) Yamale(yamlFile, schemaFile string) error {
 	l.Called(yamlFile, schemaFile)
 	return nil
 }
@@ -134,13 +127,16 @@ func init() {
 		ExcludedCharts: []string{"excluded"},
 		ChartDirs:      []string{"stable", "incubator"},
 	}
+
+	fakeMockLinter := new(fakeLinter)
+
 	ct = Testing{
 		config:           cfg,
 		directoryLister:  fakeDirLister{},
 		git:              fakeGit{},
 		chartUtils:       fakeChartUtils{},
 		accountValidator: fakeAccountValidator{},
-		linter:           fakeLinter{},
+		linter:           fakeMockLinter,
 		helm:             fakeHelm{},
 	}
 }
@@ -222,8 +218,8 @@ func TestLintChartSchemaValidation(t *testing.T) {
 		expected bool
 	}
 
-	runTests := func(validate bool, callsYamlLint, callsYamale int) {
-		var fakeMockLinter = new(fakeLinter2)
+	runTests := func(validate bool, callsYamlLint int, callsYamale int) {
+		fakeMockLinter := new(fakeLinter)
 
 		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
 		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
@@ -266,9 +262,8 @@ func TestLintYamlValidation(t *testing.T) {
 		expected bool
 	}
 
-	runTests := func(validate bool, callsYamlLint, callsYamale int) {
-
-		var fakeMockLinter = new(fakeLinter2)
+	runTests := func(validate bool, callsYamlLint int, callsYamale int) {
+		fakeMockLinter := new(fakeLinter)
 
 		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
 		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
