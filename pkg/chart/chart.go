@@ -213,7 +213,7 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 
 		repoExtraArgs := repoArgs[name]
 		if err := t.helm.AddRepo(name, url, repoExtraArgs); err != nil {
-			return nil, errors.Wrapf(err, "Error adding repo: %s=%s with args %s", name, url, repoExtraArgs)
+			return nil, errors.Wrapf(err, "Error adding repo: %s=%s", name, url)
 		}
 	}
 
