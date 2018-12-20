@@ -15,6 +15,7 @@
 package util
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -61,6 +62,28 @@ func TestCompareVersions(t *testing.T) {
 	for index, testData := range testDataSlice {
 		t.Run(string(index), func(t *testing.T) {
 			actual, _ := CompareVersions(testData.oldVersion, testData.newVersion)
+			assert.Equal(t, testData.expected, actual)
+		})
+	}
+}
+
+func TestTruncateLeft(t *testing.T) {
+	var testDataSlice = []struct {
+		input     string
+		maxLength int
+		expected  string
+	}{
+		{"way_shorter_than_max_length", 63, "way_shorter_than_max_length"},
+		{"max_length", len("max_length"), "max_length"},
+		{"way_longer_than_max_length", 10, "max_length"},
+		{"one_shorter_than_max_length", len("one_shorter_than_max_length") + 1, "one_shorter_than_max_length"},
+		{"_one_longer_than_max_length", len("_one_longer_than_max_length") - 1, "one_longer_than_max_length"},
+	}
+
+	for index, testData := range testDataSlice {
+		t.Run(string(index), func(t *testing.T) {
+			actual := TruncateLeft(testData.input, testData.maxLength)
+			fmt.Printf("actual: %s,%d, input: %s,%d\n", actual, len(actual), testData.input, testData.maxLength)
 			assert.Equal(t, testData.expected, actual)
 		})
 	}

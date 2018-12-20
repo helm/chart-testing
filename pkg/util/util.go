@@ -28,6 +28,7 @@ import (
 )
 
 const chars = "1234567890abcdefghijklmnopqrstuvwxyz"
+const maxNameLength = 63
 
 type Maintainer struct {
 	Name  string `yaml:"name"`
@@ -158,11 +159,11 @@ func CreateInstallParams(chart string, buildId string) (release string, namespac
 	release = path.Base(chart)
 	namespace = release
 	if buildId != "" {
-		namespace += buildId
+		namespace = fmt.Sprintf("%s-%s", namespace, buildId)
 	}
 	randomSuffix := RandomString(10)
-	release = fmt.Sprintf("%s-%s", release, randomSuffix)
-	namespace = fmt.Sprintf("%s-%s", namespace, randomSuffix)
+	release = TruncateLeft(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
+	namespace = TruncateLeft(fmt.Sprintf("%s-%s", namespace, randomSuffix), maxNameLength)
 	return
 }
 
@@ -172,4 +173,12 @@ func PrintDelimiterLine(delimiterChar string) {
 		delim[i] = delimiterChar
 	}
 	fmt.Println(strings.Join(delim, ""))
+}
+
+func TruncateLeft(s string, maxLength int) string {
+	excess := len(s) - maxLength
+	if excess > 0 {
+		return s[excess:]
+	}
+	return s
 }
