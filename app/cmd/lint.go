@@ -19,7 +19,6 @@ import (
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
-
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/spf13/cobra"
@@ -65,9 +64,13 @@ func addLintFlags(flags *flag.FlagSet) {
 			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
 			that order.`))
 	flags.Bool("validate-maintainers", true, heredoc.Doc(`
-			Enabled validation of maintainer account names in chart.yml (default: true).
+			Enable validation of maintainer account names in chart.yml (default: true).
 			Works for GitHub, GitLab, and Bitbucket`))
 	flags.Bool("check-version-increment", true, "Activates a check for chart version increments (default: true)")
+	flags.Bool("validate-chart-schema", true, heredoc.Doc(`
+			Enable schema validation of 'Chart.yaml' using Yamale (default: true)`))
+	flags.Bool("validate-yaml", true, heredoc.Doc(`
+			Enable linting of 'Chart.yaml' and values files (default: true)`))
 }
 
 func lint(cmd *cobra.Command, args []string) {
@@ -95,6 +98,6 @@ func lint(cmd *cobra.Command, args []string) {
 }
 
 func bindLintFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"lint-conf", "chart-yaml-schema", "validate-maintainers", "check-version-increment"}
+	options := []string{"lint-conf", "chart-yaml-schema", "validate-maintainers", "check-version-increment", "validate-chart-schema", "validate-yaml"}
 	return bindFlags(options, flagSet, v)
 }

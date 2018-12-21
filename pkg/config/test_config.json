@@ -6,6 +6,8 @@
     "chart-yaml-schema": "my-chart-yaml-schema.yaml",
     "github-instance": "https://github.com",
     "validate-maintainers": true,
+    "validate-chart-schema": true,
+    "validate-yaml": true,
     "check-version-increment": true,
     "all": false,
     "chart-repos": [

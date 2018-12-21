@@ -45,6 +45,8 @@ type Configuration struct {
 	LintConf              string   `mapstructure:"lint-conf"`
 	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`
 	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
+	ValidateChartSchema   bool     `mapstructure:"validate-chart-schema"`
+	ValidateYaml          bool     `mapstructure:"validate-yaml"`
 	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
 	ProcessAllCharts      bool     `mapstructure:"all"`
 	Charts                []string `mapstructure:"charts"`

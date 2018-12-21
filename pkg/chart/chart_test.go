@@ -19,12 +19,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pkg/errors"
-
-	"github.com/helm/chart-testing/pkg/util"
-
 	"github.com/helm/chart-testing/pkg/config"
+	"github.com/helm/chart-testing/pkg/util"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 type fakeGit struct{}
@@ -94,10 +93,18 @@ func (v fakeAccountValidator) Validate(repoDomain string, account string) error 
 	return errors.New(fmt.Sprintf("Error validating account: %s", account))
 }
 
-type fakeLinter struct{}
+type fakeLinter struct {
+	mock.Mock
+}
 
-func (l fakeLinter) YamlLint(yamlFile, configFile string) error { return nil }
-func (l fakeLinter) Yamale(yamlFile, schemaFile string) error   { return nil }
+func (l *fakeLinter) YamlLint(yamlFile, configFile string) error {
+	l.Called(yamlFile, configFile)
+	return nil
+}
+func (l *fakeLinter) Yamale(yamlFile, schemaFile string) error {
+	l.Called(yamlFile, schemaFile)
+	return nil
+}
 
 type fakeHelm struct{}
 
@@ -120,13 +127,16 @@ func init() {
 		ExcludedCharts: []string{"excluded"},
 		ChartDirs:      []string{"stable", "incubator"},
 	}
+
+	fakeMockLinter := new(fakeLinter)
+
 	ct = Testing{
 		config:           cfg,
 		directoryLister:  fakeDirLister{},
 		git:              fakeGit{},
 		chartUtils:       fakeChartUtils{},
 		accountValidator: fakeAccountValidator{},
-		linter:           fakeLinter{},
+		linter:           fakeMockLinter,
 		helm:             fakeHelm{},
 	}
 }
@@ -199,4 +209,91 @@ func TestLintChartMaintainerValidation(t *testing.T) {
 
 	runTests(true)
 	runTests(false)
+}
+
+func TestLintChartSchemaValidation(t *testing.T) {
+	type testData struct {
+		name     string
+		chartDir string
+		expected bool
+	}
+
+	runTests := func(validate bool, callsYamlLint int, callsYamale int) {
+		fakeMockLinter := new(fakeLinter)
+
+		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
+		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
+
+		ct.linter = fakeMockLinter
+		ct.config.ValidateChartSchema = validate
+		ct.config.ValidateMaintainers = false
+		ct.config.ValidateYaml = false
+
+		var suffix string
+		if validate {
+			suffix = "with-validation"
+		} else {
+			suffix = "without-validation"
+		}
+
+		testCases := []testData{
+			{fmt.Sprintf("schema-%s", suffix), "testdata/test_lints", true},
+		}
+
+		for _, testData := range testCases {
+			t.Run(testData.name, func(t *testing.T) {
+				result := ct.LintChart(testData.chartDir, []string{})
+				assert.Equal(t, testData.expected, result.Error == nil)
+				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
+				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
+			})
+		}
+	}
+
+	runTests(true, 0, 1)
+	runTests(false, 0, 0)
+
+}
+
+func TestLintYamlValidation(t *testing.T) {
+	type testData struct {
+		name     string
+		chartDir string
+		expected bool
+	}
+
+	runTests := func(validate bool, callsYamlLint int, callsYamale int) {
+		fakeMockLinter := new(fakeLinter)
+
+		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
+		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
+
+		ct.linter = fakeMockLinter
+		ct.config.ValidateYaml = validate
+		ct.config.ValidateChartSchema = false
+		ct.config.ValidateMaintainers = false
+
+		var suffix string
+		if validate {
+			suffix = "with-validation"
+		} else {
+			suffix = "without-validation"
+		}
+
+		testCases := []testData{
+			{fmt.Sprintf("lint-%s", suffix), "testdata/test_lints", true},
+		}
+
+		for _, testData := range testCases {
+			t.Run(testData.name, func(t *testing.T) {
+				result := ct.LintChart(testData.chartDir, []string{})
+				assert.Equal(t, testData.expected, result.Error == nil)
+				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
+				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
+			})
+		}
+	}
+
+	runTests(true, 2, 0)
+	runTests(false, 0, 0)
 }
