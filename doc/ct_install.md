@@ -44,8 +44,10 @@ ct install [flags]
                                        or separate values with commas
       --helm-extra-args string         Additional arguments for Helm. Must be passed as a single quoted string
                                        (e.g. "--timeout 500 --tiller-namespace tiller"
-      --helm-repo-extra-args strings   Additional arguments for helm repo add. (e.g. --username test --password secret)
-                                       May be specified multiple times or separate values with commas
+      --helm-repo-extra-args strings   Additional arguments for the 'helm repo add' command to be
+                                       specified on a per-repo basis with an equals sign as delimiter
+                                       (e.g. 'myrepo=--username test --password secret'). May be specified
+                                       multiple times or separate values with commas
   -h, --help                           help for install
       --namespace string               Namespace to install the release(s) into. If not specified, each release will be
                                        installed in its own randomly generated namespace.

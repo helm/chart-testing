@@ -36,8 +36,10 @@ ct lint-and-install [flags]
                                        or separate values with commas
       --helm-extra-args string         Additional arguments for Helm. Must be passed as a single quoted string
                                        (e.g. "--timeout 500 --tiller-namespace tiller"
-      --helm-repo-extra-args strings   Additional arguments for helm repo add. (e.g. --username test --password secret)
-                                       May be specified multiple times or separate values with commas
+      --helm-repo-extra-args strings   Additional arguments for the 'helm repo add' command to be
+                                       specified on a per-repo basis with an equals sign as delimiter
+                                       (e.g. 'myrepo=--username test --password secret'). May be specified
+                                       multiple times or separate values with commas
   -h, --help                           help for lint-and-install
       --lint-conf string               The config file for YAML linting. If not specified, 'lintconf.yaml'
                                        is searched in the current directory, '$HOME/.ct', and '/etc/ct', in

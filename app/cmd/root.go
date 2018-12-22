@@ -78,8 +78,10 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		Additional chart repos to add so dependencies can be resolved. May be
 		specified multiple times or separate values with commas`))
 	flags.StringSlice("helm-repo-extra-args", []string{}, heredoc.Doc(`
-		Additional arguments for helm repo add. (e.g. --username test --password secret)
-		May be specified multiple times or separate values with commas`))
+		Additional arguments for the 'helm repo add' command to be
+		specified on a per-repo basis with an equals sign as delimiter
+		(e.g. 'myrepo=--username test --password secret'). May be specified
+		multiple times or separate values with commas`))
 	flags.StringSlice("excluded-charts", []string{}, heredoc.Doc(`
 		Charts that should be skipped. May be specified multiple times
 		or separate values with commas`))
