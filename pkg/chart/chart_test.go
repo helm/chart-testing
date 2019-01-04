@@ -42,6 +42,7 @@ func (g fakeGit) MergeBase(commit1 string, commit2 string) (string, error) {
 
 func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error) {
 	return []string{
+		"fileAtRoot",
 		"incubator/excluded/Chart.yaml",
 		"incubator/excluded/values.yaml",
 		"incubator/bar/README.md",
