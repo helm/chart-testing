@@ -11,21 +11,21 @@ RUN apk --no-cache add \
     pip install --upgrade pip==18.1
 
 # Install a YAML Linter
-ARG YAML_LINT_VERSION=1.12.1
+ARG YAML_LINT_VERSION=1.13.0
 RUN pip install "yamllint==$YAML_LINT_VERSION"
 
 # Install Yamale YAML schema validator
-ARG YAMALE_VERSION=1.7.0
+ARG YAMALE_VERSION=1.8.0
 RUN pip install "yamale==$YAMALE_VERSION"
 
 # Install kubectl
-ARG KUBECTL_VERSION=v1.12.2
+ARG KUBECTL_VERSION=v1.13.1
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG HELM_VERSION=v2.11.0
+ARG HELM_VERSION=v2.12.1
 RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$HELM_VERSION" && \
     tar -xzf "helm-$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
