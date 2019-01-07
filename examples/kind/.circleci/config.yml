@@ -11,7 +11,7 @@ jobs:
             shellcheck -x test/e2e-kind.sh
   lint-charts:
     docker:
-      - image: quay.io/helmpack/chart-testing:v2.0.1
+      - image: quay.io/helmpack/chart-testing:v2.1.0
     steps:
       - checkout
       - run:
@@ -24,7 +24,7 @@ jobs:
     machine: true
     environment:
       CHART_TESTING_IMAGE: quay.io/helmpack/chart-testing
-      CHART_TESTING_TAG: v2.0.1
+      CHART_TESTING_TAG: v2.1.0
       CHARTS_REPO: https://github.com/your_git_repo/charts
       K8S_VERSION: "v1.11.3"
     steps:
