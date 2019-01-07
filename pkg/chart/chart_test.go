@@ -110,7 +110,7 @@ func (l *fakeLinter) Yamale(yamlFile, schemaFile string) error {
 type fakeHelm struct{}
 
 func (h fakeHelm) Init() error                                          { return nil }
-func (h fakeHelm) AddRepo(name, url string) error                       { return nil }
+func (h fakeHelm) AddRepo(name, url string, extraArgs []string) error   { return nil }
 func (h fakeHelm) BuildDependencies(chart string) error                 { return nil }
 func (h fakeHelm) LintWithValues(chart string, valuesFile string) error { return nil }
 func (h fakeHelm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {

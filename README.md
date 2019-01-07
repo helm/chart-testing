@@ -95,6 +95,23 @@ build-id: pr-42
 Notice that if no config file is specified, then `ct.yaml` (or any of the supported formats) is loaded from the current directory, `$HOME/.ct`, or `/etc/ct`, in that order, if found.
 
 
+#### Using private chart repositories
+
+When adding chart-repos you can specify additional arguments for the `helm repo add` command using `helm-repo-extra-args` on a per-repo basis. This could for example be used to authenticate a private chart repository.
+
+`config.yaml`:
+
+```yaml
+chart-repos:
+  - incubator=https://incubator.io
+  - basic-auth=https://private.com
+  - ssl-repo=https://self-signed.ca
+helm-repo-extra-args:
+  - ssl-repo=--ca-file ./my-ca.crt
+```
+
+    ct install --config config.yaml --helm-repo-extra-args "basic-auth=--username user --password secret"
+
 ## Building from Source
 
 `ct` is built using Go 1.11. Older versions may work but have not been tested.

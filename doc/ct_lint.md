@@ -26,38 +26,42 @@ ct lint [flags]
 ### Options
 
 ```
-      --all                        Process all charts except those explicitly excluded.
-                                   Disables changed charts detection and version increment checking
-      --chart-dirs strings         Directories containing Helm charts. May be specified multiple times
-                                   or separate values with commas (default [charts])
-      --chart-repos strings        Additional chart repos to add so dependencies can be resolved. May be
-                                   specified multiple times or separate values with commas
-      --chart-yaml-schema string   The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
-                                   is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-                                   that order.
-      --charts strings             Specific charts to test. Disables changed charts detection and
-                                   version increment checking. May be specified multiple times
-                                   or separate values with commas
-      --check-version-increment    Activates a check for chart version increments (default: true) (default true)
-      --config string              Config file
-      --debug                      Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
-                                   passed, this may reveal sensitive data)
-      --excluded-charts strings    Charts that should be skipped. May be specified multiple times
-                                   or separate values with commas
-  -h, --help                       help for lint
-      --lint-conf string           The config file for YAML linting. If not specified, 'lintconf.yaml'
-                                   is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-                                   that order
-      --remote string              The name of the Git remote used to identify changed charts (default "origin")
-      --target-branch string       The name of the target branch used to identify changed charts (default "master")
-      --validate-chart-schema      Enable schema validation of 'Chart.yaml' using Yamale (default: true) (default true)
-      --validate-maintainers       Enable validation of maintainer account names in chart.yml (default: true).
-                                   Works for GitHub, GitLab, and Bitbucket (default true)
-      --validate-yaml              Enable linting of 'Chart.yaml' and values files (default: true) (default true)
+      --all                            Process all charts except those explicitly excluded.
+                                       Disables changed charts detection and version increment checking
+      --chart-dirs strings             Directories containing Helm charts. May be specified multiple times
+                                       or separate values with commas (default [charts])
+      --chart-repos strings            Additional chart repos to add so dependencies can be resolved. May be
+                                       specified multiple times or separate values with commas
+      --chart-yaml-schema string       The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
+                                       is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+                                       that order.
+      --charts strings                 Specific charts to test. Disables changed charts detection and
+                                       version increment checking. May be specified multiple times
+                                       or separate values with commas
+      --check-version-increment        Activates a check for chart version increments (default: true) (default true)
+      --config string                  Config file
+      --debug                          Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
+                                       passed, this may reveal sensitive data)
+      --excluded-charts strings        Charts that should be skipped. May be specified multiple times
+                                       or separate values with commas
+      --helm-repo-extra-args strings   Additional arguments for the 'helm repo add' command to be
+                                       specified on a per-repo basis with an equals sign as delimiter
+                                       (e.g. 'myrepo=--username test --password secret'). May be specified
+                                       multiple times or separate values with commas
+  -h, --help                           help for lint
+      --lint-conf string               The config file for YAML linting. If not specified, 'lintconf.yaml'
+                                       is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+                                       that order
+      --remote string                  The name of the Git remote used to identify changed charts (default "origin")
+      --target-branch string           The name of the target branch used to identify changed charts (default "master")
+      --validate-chart-schema          Enable schema validation of 'Chart.yaml' using Yamale (default: true) (default true)
+      --validate-maintainers           Enable validation of maintainer account names in chart.yml (default: true).
+                                       Works for GitHub, GitLab, and Bitbucket (default true)
+      --validate-yaml                  Enable linting of 'Chart.yaml' and values files (default: true) (default true)
 ```
 
 ### SEE ALSO
 
 * [ct](ct.md)	 - The Helm chart testing tool
 
-###### Auto generated by spf13/cobra on 19-Dec-2018
+###### Auto generated by spf13/cobra on 22-Dec-2018

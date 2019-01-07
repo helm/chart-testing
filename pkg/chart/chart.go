@@ -64,7 +64,7 @@ type Git interface {
 // DeleteRelease purges the specified Helm release.
 type Helm interface {
 	Init() error
-	AddRepo(name string, url string) error
+	AddRepo(name string, url string, extraArgs []string) error
 	BuildDependencies(chart string) error
 	LintWithValues(chart string, valuesFile string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
@@ -197,11 +197,22 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 		return nil, errors.Wrap(err, "Error initializing Helm")
 	}
 
+	repoArgs := map[string][]string{}
+
+	for _, repo := range t.config.HelmRepoExtraArgs {
+		repoSlice := strings.SplitN(repo, "=", 2)
+		name := repoSlice[0]
+		repoExtraArgs := strings.Fields(repoSlice[1])
+		repoArgs[name] = repoExtraArgs
+	}
+
 	for _, repo := range t.config.ChartRepos {
 		repoSlice := strings.SplitN(repo, "=", 2)
 		name := repoSlice[0]
 		url := repoSlice[1]
-		if err := t.helm.AddRepo(name, url); err != nil {
+
+		repoExtraArgs := repoArgs[name]
+		if err := t.helm.AddRepo(name, url, repoExtraArgs); err != nil {
 			return nil, errors.Wrapf(err, "Error adding repo: %s=%s", name, url)
 		}
 	}

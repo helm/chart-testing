@@ -25,36 +25,40 @@ ct install [flags]
 ### Options
 
 ```
-      --all                       Process all charts except those explicitly excluded.
-                                  Disables changed charts detection and version increment checking
-      --build-id string           An optional, arbitrary identifier that is added to the name of the namespace a
-                                  chart is installed into. In a CI environment, this could be the build number or
-                                  the ID of a pull request. If not specified, the name of the chart is used
-      --chart-dirs strings        Directories containing Helm charts. May be specified multiple times
-                                  or separate values with commas (default [charts])
-      --chart-repos strings       Additional chart repos to add so dependencies can be resolved. May be
-                                  specified multiple times or separate values with commas
-      --charts strings            Specific charts to test. Disables changed charts detection and
-                                  version increment checking. May be specified multiple times
-                                  or separate values with commas
-      --config string             Config file
-      --debug                     Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
-                                  passed, this may reveal sensitive data)
-      --excluded-charts strings   Charts that should be skipped. May be specified multiple times
-                                  or separate values with commas
-      --helm-extra-args string    Additional arguments for Helm. Must be passed as a single quoted string
-                                  (e.g. "--timeout 500 --tiller-namespace tiller"
-  -h, --help                      help for install
-      --namespace string          Namespace to install the release(s) into. If not specified, each release will be
-                                  installed in its own randomly generated namespace.
-      --release-label string      The label to be used as a selector when inspecting resources created by charts.
-                                  This is only used if namespace is specified. (default "app.kubernetes.io/instance")
-      --remote string             The name of the Git remote used to identify changed charts (default "origin")
-      --target-branch string      The name of the target branch used to identify changed charts (default "master")
+      --all                            Process all charts except those explicitly excluded.
+                                       Disables changed charts detection and version increment checking
+      --build-id string                An optional, arbitrary identifier that is added to the name of the namespace a
+                                       chart is installed into. In a CI environment, this could be the build number or
+                                       the ID of a pull request. If not specified, the name of the chart is used
+      --chart-dirs strings             Directories containing Helm charts. May be specified multiple times
+                                       or separate values with commas (default [charts])
+      --chart-repos strings            Additional chart repos to add so dependencies can be resolved. May be
+                                       specified multiple times or separate values with commas
+      --charts strings                 Specific charts to test. Disables changed charts detection and
+                                       version increment checking. May be specified multiple times
+                                       or separate values with commas
+      --config string                  Config file
+      --debug                          Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
+                                       passed, this may reveal sensitive data)
+      --excluded-charts strings        Charts that should be skipped. May be specified multiple times
+                                       or separate values with commas
+      --helm-extra-args string         Additional arguments for Helm. Must be passed as a single quoted string
+                                       (e.g. "--timeout 500 --tiller-namespace tiller"
+      --helm-repo-extra-args strings   Additional arguments for the 'helm repo add' command to be
+                                       specified on a per-repo basis with an equals sign as delimiter
+                                       (e.g. 'myrepo=--username test --password secret'). May be specified
+                                       multiple times or separate values with commas
+  -h, --help                           help for install
+      --namespace string               Namespace to install the release(s) into. If not specified, each release will be
+                                       installed in its own randomly generated namespace.
+      --release-label string           The label to be used as a selector when inspecting resources created by charts.
+                                       This is only used if namespace is specified. (default "app.kubernetes.io/instance")
+      --remote string                  The name of the Git remote used to identify changed charts (default "origin")
+      --target-branch string           The name of the target branch used to identify changed charts (default "master")
 ```
 
 ### SEE ALSO
 
 * [ct](ct.md)	 - The Helm chart testing tool
 
-###### Auto generated by spf13/cobra on 19-Dec-2018
+###### Auto generated by spf13/cobra on 22-Dec-2018

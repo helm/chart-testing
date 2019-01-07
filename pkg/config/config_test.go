@@ -43,6 +43,7 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, true, cfg.CheckVersionIncrement)
 	require.Equal(t, false, cfg.ProcessAllCharts)
 	require.Equal(t, []string{"incubator=https://incubator"}, cfg.ChartRepos)
+	require.Equal(t, []string{"incubator=--username test"}, cfg.HelmRepoExtraArgs)
 	require.Equal(t, []string{"stable", "incubator"}, cfg.ChartDirs)
 	require.Equal(t, []string{"common"}, cfg.ExcludedCharts)
 	require.Equal(t, "--timeout 300", cfg.HelmExtraArgs)
