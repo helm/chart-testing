@@ -32,10 +32,6 @@ RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-
     ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm && \
     rm -f "helm-$HELM_VERSION-linux-amd64.tar.gz"
 
-# Goreleaser needs to override this because it builds the
-# Dockerfile from a tmp dir with all files to be copied in the root
-ARG dist_dir=dist/linux_amd64
-
-COPY "$dist_dir/chart_schema.yaml" /etc/ct/chart_schema.yaml
-COPY "$dist_dir/lintconf.yaml" /etc/ct/lintconf.yaml
-COPY "$dist_dir/ct" /usr/local/bin/ct
+COPY ./etc/chart_schema.yaml /etc/ct/chart_schema.yaml
+COPY ./etc/lintconf.yaml /etc/ct/lintconf.yaml
+COPY ct /usr/local/bin/ct

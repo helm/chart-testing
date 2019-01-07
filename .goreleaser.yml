@@ -41,7 +41,6 @@ dockers:
       - quay.io/helmpack/chart-testing:{{ .Tag }}
       - quay.io/helmpack/chart-testing:latest
     build_flag_templates:
-      - --build-arg=dist_dir=
       - --label=org.label-schema.schema-version=1.0
       - --label=org.label-schema.version={{ .Version }}
       - --label=org.label-schema.name={{ .ProjectName }}
