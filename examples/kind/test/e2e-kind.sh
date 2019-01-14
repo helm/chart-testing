@@ -34,7 +34,7 @@ run_kind() {
 
 install_tiller() {
     # Install Tiller with RBAC
-    kubectl -n kube-system create sa tiller 
+    kubectl -n kube-system create sa tiller
     kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
     docker exec "$config_container_id" helm init --service-account tiller
     echo "Wait for Tiller to be up and ready..."
@@ -74,8 +74,8 @@ main() {
     docker exec "$config_container_id" mkdir /root/.kube
     docker cp "$KUBECONFIG" "$config_container_id:/root/.kube/config"
     # Update in kubeconfig from localhost to kind container IP
-    docker exec "$config_container_id" sed -i "s/localhost/$kind_container_ip/g" /root/.kube/config
-    
+    docker exec "$config_container_id" sed -i "s/localhost:.*/$kind_container_ip:6443/g" /root/.kube/config
+
     echo "Add git remote k8s ${CHARTS_REPO}"
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s master
