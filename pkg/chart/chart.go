@@ -422,7 +422,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		if len(pathElements) < 2 || util.StringSliceContains(cfg.ExcludedCharts, pathElements[1]) {
 			continue
 		}
-		dir := filepath.Dir(file)
+		dir := path.Join(pathElements[0], pathElements[1])
 		// Only add if not already in list and double-check if it is a chart directory
 		if !util.StringSliceContains(changedChartDirs, dir) && t.chartUtils.IsChartDir(dir) {
 			changedChartDirs = append(changedChartDirs, dir)
