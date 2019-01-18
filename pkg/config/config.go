@@ -108,7 +108,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func
 	if chartYamlSchemaPath == "" {
 		var err error
 		cfgFile, err = findConfigFile("chart_schema.yaml")
-		if err != nil && isLint {
+		if err != nil && isLint && cfg.ValidateChartSchema {
 			return nil, errors.New("'chart_schema.yaml' neither specified nor found in default locations")
 		}
 		cfg.ChartYamlSchema = cfgFile
@@ -118,7 +118,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func
 	if lintConfPath == "" {
 		var err error
 		cfgFile, err = findConfigFile("lintconf.yaml")
-		if err != nil && isLint {
+		if err != nil && isLint && cfg.ValidateYaml {
 			return nil, errors.New("'lintconf.yaml' neither specified nor found in default locations")
 		}
 		cfg.LintConf = cfgFile
