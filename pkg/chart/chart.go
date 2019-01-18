@@ -345,28 +345,38 @@ func (t *Testing) InstallChart(chart string, valuesFiles []string) TestResult {
 	for _, valuesFile := range valuesFiles {
 		var namespace, release, releaseSelector string
 
-		if t.config.Namespace != "" {
-			namespace = t.config.Namespace
-			release, _ = util.CreateInstallParams(chart, t.config.BuildId)
-			releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
-		} else {
-			release, namespace = util.CreateInstallParams(chart, t.config.BuildId)
-			defer t.kubectl.DeleteNamespace(namespace)
+		// Use anonymous function. Otherwise deferred calls would pile up
+		// and be executed in reverse order after the loop.
+		fun := func() error {
+			if t.config.Namespace != "" {
+				namespace = t.config.Namespace
+				release, _ = util.CreateInstallParams(chart, t.config.BuildId)
+				releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
+			} else {
+				release, namespace = util.CreateInstallParams(chart, t.config.BuildId)
+				defer t.kubectl.DeleteNamespace(namespace)
+			}
+
+			defer t.helm.DeleteRelease(release)
+			defer t.PrintPodDetailsAndLogs(namespace, releaseSelector)
+
+			if err := t.helm.InstallWithValues(chart, valuesFile, namespace, release); err != nil {
+				result.Error = err
+				return err
+			}
+			if err := t.kubectl.WaitForDeployments(namespace, releaseSelector); err != nil {
+				result.Error = err
+				return err
+			}
+			if err := t.helm.Test(release); err != nil {
+				result.Error = err
+				return err
+			}
+
+			return nil
 		}
 
-		defer t.helm.DeleteRelease(release)
-		defer t.PrintPodDetailsAndLogs(namespace, releaseSelector)
-
-		if err := t.helm.InstallWithValues(chart, valuesFile, namespace, release); err != nil {
-			result.Error = err
-			break
-		}
-		if err := t.kubectl.WaitForDeployments(namespace, releaseSelector); err != nil {
-			result.Error = err
-			break
-		}
-		if err := t.helm.Test(release); err != nil {
-			result.Error = err
+		if err := fun(); err != nil {
 			break
 		}
 	}
