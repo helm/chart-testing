@@ -119,11 +119,11 @@ type DirectoryLister interface {
 
 // ChartUtils is the interface that wraps chart-related methods
 //
-// IsChartdir checks if a directory is a chart directory
+// LookupChartDir looks up the chart's root directory based on some chart file that has changed
 //
 // ReadChartYaml reads the `Chart.yaml` from the specified directory
 type ChartUtils interface {
-	IsChartDir(dir string) bool
+	LookupChartDir(chartDirs []string, dir string) (string, error)
 	ReadChartYaml(dir string) (*util.ChartYaml, error)
 }
 
@@ -422,10 +422,15 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		if len(pathElements) < 2 || util.StringSliceContains(cfg.ExcludedCharts, pathElements[1]) {
 			continue
 		}
-		dir := path.Join(pathElements[0], pathElements[1])
+		dir := filepath.Dir(file)
 		// Only add if not already in list and double-check if it is a chart directory
-		if !util.StringSliceContains(changedChartDirs, dir) && t.chartUtils.IsChartDir(dir) {
-			changedChartDirs = append(changedChartDirs, dir)
+		if !util.StringSliceContains(changedChartDirs, dir) {
+			chartDir, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
+			if err == nil {
+				changedChartDirs = append(changedChartDirs, chartDir)
+			} else {
+				fmt.Printf("Directory '%s' is not chart directory. Skipping...", chartDir)
+			}
 		}
 	}
 
@@ -441,7 +446,8 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 	for _, chartParentDir := range cfg.ChartDirs {
 		dirs, err := t.directoryLister.ListChildDirs(chartParentDir,
 			func(dir string) bool {
-				return t.chartUtils.IsChartDir(dir) && !util.StringSliceContains(cfg.ExcludedCharts, path.Base(dir))
+				_, err := t.chartUtils.LookupChartDir(chartDirs, dir)
+				return err == nil && !util.StringSliceContains(cfg.ExcludedCharts, path.Base(dir))
 			})
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading chart directories")
