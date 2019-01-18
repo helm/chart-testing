@@ -423,14 +423,15 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 			continue
 		}
 		dir := filepath.Dir(file)
-		// Only add if not already in list and double-check if it is a chart directory
-		if !util.StringSliceContains(changedChartDirs, dir) {
-			chartDir, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
-			if err == nil {
+		// Make sure directory is really a chart directory
+		chartDir, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
+		if err == nil {
+			// Only add it if not already in the list
+			if !util.StringSliceContains(changedChartDirs, chartDir) {
 				changedChartDirs = append(changedChartDirs, chartDir)
-			} else {
-				fmt.Printf("Directory '%s' is not chart directory. Skipping...", chartDir)
 			}
+		} else {
+			fmt.Printf("Directory '%s' is not chart directory. Skipping...", chartDir)
 		}
 	}
 
