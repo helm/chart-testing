@@ -75,8 +75,9 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		Directories containing Helm charts. May be specified multiple times
 		or separate values with commas`))
 	flags.StringSlice("chart-repos", []string{}, heredoc.Doc(`
-		Additional chart repos to add so dependencies can be resolved. May be
-		specified multiple times or separate values with commas`))
+		Additional chart repositories for dependency resolutions.
+		Repositories should be formatted as 'name=url' (ex: local=http://127.0.0.1:8879/charts).
+		May be specified multiple times or separate values with commas`))
 	flags.StringSlice("helm-repo-extra-args", []string{}, heredoc.Doc(`
 		Additional arguments for the 'helm repo add' command to be
 		specified on a per-repo basis with an equals sign as delimiter
