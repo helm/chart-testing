@@ -51,7 +51,7 @@ func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string
 		"incubator/excluded/values.yaml",
 		"stable/blah/Chart.yaml",
 		"stable/blah/README.md",
-		"stable/this-is-no-chart-dir/foo.md",
+		"foo/this-is-no-chart-dir/foo.md",
 	}, nil
 }
 
@@ -76,8 +76,11 @@ func (l fakeDirLister) ListChildDirs(parentDir string, test func(dir string) boo
 
 type fakeChartUtils struct{}
 
-func (v fakeChartUtils) IsChartDir(dir string) bool {
-	return dir != "stable/this-is-no-chart-dir"
+func (v fakeChartUtils) LookupChartDir(chartDirs []string, dir string) (string, error) {
+	if strings.HasPrefix(dir, "foo")  {
+		return "", errors.New("no chart dir")
+	}
+	return dir, nil
 }
 
 func (v fakeChartUtils) ReadChartYaml(dir string) (*util.ChartYaml, error) {

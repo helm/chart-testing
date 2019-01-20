@@ -23,6 +23,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -121,8 +122,22 @@ func (l DirectoryLister) ListChildDirs(parentDir string, test func(dir string) b
 
 type ChartUtils struct{}
 
-func (u ChartUtils) IsChartDir(dir string) bool {
-	return FileExists(path.Join(dir, "Chart.yaml"))
+func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, error) {
+	for _, chartDir := range chartDirs {
+		currentDir := dir
+		for {
+			if FileExists(path.Join(currentDir, "Chart.yaml")) {
+				return currentDir, nil
+			}
+			currentDir = filepath.Dir(currentDir)
+			relativeDir, _ := filepath.Rel(chartDir, currentDir)
+			joined := filepath.Join(chartDir, relativeDir)
+			if joined == chartDir {
+				break
+			}
+		}
+	}
+	return "", errors.New("no chart directory")
 }
 
 func (u ChartUtils) ReadChartYaml(dir string) (*ChartYaml, error) {
