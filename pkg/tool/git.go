@@ -51,7 +51,7 @@ func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, er
 	changedChartFilesString, err :=
 		g.exec.RunProcessAndCaptureOutput("git", "diff", "--find-renames", "--name-only", commit, "--", dirs)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not determined changed charts: Error creating diff.")
+		return nil, errors.Wrap(err, "Error creating diff")
 	}
 	if changedChartFilesString == "" {
 		return nil, nil
