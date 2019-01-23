@@ -42,50 +42,17 @@ func (g fakeGit) MergeBase(commit1 string, commit2 string) (string, error) {
 
 func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error) {
 	return []string{
-		"fileAtRoot",
-		"incubator/excluded/Chart.yaml",
-		"incubator/excluded/values.yaml",
-		"incubator/bar/README.md",
-		"incubator/bar/README.md",
-		"incubator/excluded/templates/configmap.yaml",
-		"incubator/excluded/values.yaml",
-		"stable/blah/Chart.yaml",
-		"stable/blah/README.md",
-		"foo/this-is-no-chart-dir/foo.md",
+		"test_charts/foo/Chart.yaml",
+		"test_charts/bar/Chart.yaml",
+		"test_charts/bar/bar_sub/templates/bar_sub.yaml",
+		"test_chart_at_root/templates/foo.yaml",
+		"some_non_chart_dir/some_non_chart_file",
+		"some_non_chart_file",
 	}, nil
 }
 
 func (g fakeGit) GetUrlForRemote(remote string) (string, error) {
 	return "git@github.com/helm/chart-testing", nil
-}
-
-type fakeDirLister struct{}
-
-func (l fakeDirLister) ListChildDirs(parentDir string, test func(dir string) bool) ([]string, error) {
-	if parentDir == "stable" {
-		var dirs []string
-		for _, dir := range []string{"stable/foo", "stable/excluded"} {
-			if test(dir) {
-				dirs = append(dirs, dir)
-			}
-		}
-		return dirs, nil
-	}
-	return []string{"incubator/bar"}, nil
-}
-
-type fakeChartUtils struct{}
-
-func (v fakeChartUtils) LookupChartDir(chartDirs []string, dir string) (string, error) {
-	if strings.HasPrefix(dir, "foo")  {
-		return "", errors.New("no chart dir")
-	}
-	return dir, nil
-}
-
-func (v fakeChartUtils) ReadChartYaml(dir string) (*util.ChartYaml, error) {
-	chartUtils := util.ChartUtils{}
-	return chartUtils.ReadChartYaml(dir)
 }
 
 type fakeAccountValidator struct{}
@@ -129,16 +96,16 @@ var ct Testing
 func init() {
 	cfg := config.Configuration{
 		ExcludedCharts: []string{"excluded"},
-		ChartDirs:      []string{"stable", "incubator"},
+		ChartDirs:      []string{"test_charts", "."},
 	}
 
 	fakeMockLinter := new(fakeLinter)
 
 	ct = Testing{
 		config:           cfg,
-		directoryLister:  fakeDirLister{},
+		directoryLister:  util.DirectoryLister{},
 		git:              fakeGit{},
-		chartUtils:       fakeChartUtils{},
+		chartUtils:       util.ChartUtils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
 		helm:             fakeHelm{},
@@ -147,16 +114,22 @@ func init() {
 
 func TestComputeChangedChartDirectories(t *testing.T) {
 	actual, err := ct.ComputeChangedChartDirectories()
-	expected := []string{"incubator/bar", "stable/blah"}
+	expected := []string{"test_charts/foo", "test_charts/bar", "test_chart_at_root"}
+	for _, chart := range actual {
+		assert.Contains(t, expected, chart)
+	}
+	assert.Len(t, actual, 3)
 	assert.Nil(t, err)
-	assert.Equal(t, actual, expected)
 }
 
 func TestReadAllChartDirectories(t *testing.T) {
 	actual, err := ct.ReadAllChartDirectories()
-	expected := []string{"stable/foo", "incubator/bar"}
+	expected := []string{"test_charts/foo", "test_charts/bar", "test_chart_at_root"}
+	for _, chart := range actual {
+		assert.Contains(t, expected, chart)
+	}
+	assert.Len(t, actual, 3)
 	assert.Nil(t, err)
-	assert.Equal(t, actual, expected)
 }
 
 func TestValidateMaintainers(t *testing.T) {

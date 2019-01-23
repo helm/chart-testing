@@ -126,13 +126,19 @@ func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, erro
 	for _, chartDir := range chartDirs {
 		currentDir := dir
 		for {
-			if FileExists(path.Join(currentDir, "Chart.yaml")) {
+			chartYaml := path.Join(currentDir, "Chart.yaml")
+			parent := path.Dir(path.Dir(chartYaml))
+
+			// check directory has a Chart.yaml and that it is in a
+			// direct subdirectory of a configured charts directory
+			if FileExists(chartYaml) && (parent == chartDir) {
 				return currentDir, nil
 			}
-			currentDir = filepath.Dir(currentDir)
+
+			currentDir = path.Dir(currentDir)
 			relativeDir, _ := filepath.Rel(chartDir, currentDir)
-			joined := filepath.Join(chartDir, relativeDir)
-			if joined == chartDir {
+			joined := path.Join(chartDir, relativeDir)
+			if (joined == chartDir) || strings.HasPrefix(relativeDir, "..") {
 				break
 			}
 		}

@@ -457,7 +457,7 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 	for _, chartParentDir := range cfg.ChartDirs {
 		dirs, err := t.directoryLister.ListChildDirs(chartParentDir,
 			func(dir string) bool {
-				_, err := t.chartUtils.LookupChartDir(chartDirs, dir)
+				_, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
 				return err == nil && !util.StringSliceContains(cfg.ExcludedCharts, path.Base(dir))
 			})
 		if err != nil {
