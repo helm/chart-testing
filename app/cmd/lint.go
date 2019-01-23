@@ -78,14 +78,14 @@ func lint(cmd *cobra.Command, args []string) {
 
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, bindRootFlags, bindLintFlags)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
 	}
 
 	testing := chart.NewTesting(*configuration)
 	results, err := testing.LintCharts()
 	if err != nil {
-		fmt.Println("Error linting charts")
+		fmt.Printf("Error linting charts: %s\n", err)
 	} else {
 		fmt.Println("All charts linted successfully")
 	}

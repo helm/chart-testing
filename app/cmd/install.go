@@ -76,14 +76,14 @@ func install(cmd *cobra.Command, args []string) {
 
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, bindRootFlags, bindInstallFlags)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
 	}
 
 	testing := chart.NewTesting(*configuration)
 	results, err := testing.InstallCharts()
 	if err != nil {
-		fmt.Println("Error installing charts:", err)
+		fmt.Printf("Error installing charts: %s\n", err)
 	} else {
 		fmt.Println("All charts installed successfully")
 	}

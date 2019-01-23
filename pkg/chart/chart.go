@@ -419,11 +419,11 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 
 	mergeBase, err := t.git.MergeBase(fmt.Sprintf("%s/%s", cfg.Remote, cfg.TargetBranch), "HEAD")
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not determine changed charts: Error identifying merge base.")
+		return nil, errors.Wrap(err, "Error identifying merge base")
 	}
 	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, cfg.ChartDirs...)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not determine changed charts: Error creating diff.")
+		return nil, errors.Wrap(err, "Error creating diff")
 	}
 
 	var changedChartDirs []string
