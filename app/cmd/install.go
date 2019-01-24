@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/viper"
-
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
@@ -74,7 +72,7 @@ func addInstallFlags(flags *flag.FlagSet) {
 func install(cmd *cobra.Command, args []string) {
 	fmt.Println("Installing charts...")
 
-	configuration, err := config.LoadConfiguration(cfgFile, cmd, bindRootFlags, bindInstallFlags)
+	configuration, err := config.LoadConfiguration(cfgFile, cmd)
 	if err != nil {
 		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
@@ -93,9 +91,4 @@ func install(cmd *cobra.Command, args []string) {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func bindInstallFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"build-id", "helm-extra-args", "namespace", "release-label"}
-	return bindFlags(options, flagSet, v)
 }
