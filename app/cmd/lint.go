@@ -23,7 +23,6 @@ import (
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 func newLintCmd() *cobra.Command {
@@ -76,7 +75,7 @@ func addLintFlags(flags *flag.FlagSet) {
 func lint(cmd *cobra.Command, args []string) {
 	fmt.Println("Linting charts...")
 
-	configuration, err := config.LoadConfiguration(cfgFile, cmd, bindRootFlags, bindLintFlags)
+	configuration, err := config.LoadConfiguration(cfgFile, cmd)
 	if err != nil {
 		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
@@ -97,7 +96,3 @@ func lint(cmd *cobra.Command, args []string) {
 	}
 }
 
-func bindLintFlags(flagSet *flag.FlagSet, v *viper.Viper) error {
-	options := []string{"lint-conf", "chart-yaml-schema", "validate-maintainers", "check-version-increment", "validate-chart-schema", "validate-yaml"}
-	return bindFlags(options, flagSet, v)
-}

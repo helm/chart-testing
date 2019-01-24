@@ -60,13 +60,18 @@ type Configuration struct {
 	ReleaseLabel          string   `mapstructure:"release-label"`
 }
 
-func LoadConfiguration(cfgFile string, cmd *cobra.Command, bindFlagsFunc ...func(flagSet *flag.FlagSet, viper *viper.Viper) error) (*Configuration, error) {
+func LoadConfiguration(cfgFile string, cmd *cobra.Command) (*Configuration, error) {
 	v := viper.New()
-	for _, bindFunc := range bindFlagsFunc {
-		if err := bindFunc(cmd.Flags(), v); err != nil {
-			return nil, errors.Wrap(err, "Error binding flags")
+
+	cmd.Flags().VisitAll(func(flag *flag.Flag) {
+		flagName := flag.Name
+		if flagName != "config" && flagName != "help" {
+			if err := v.BindPFlag(flagName, flag); err != nil {
+				// can't really happen
+				panic(fmt.Sprintln(errors.Wrapf(err, "Error binding flag '%s'", flagName)))
+			}
 		}
-	}
+	})
 
 	v.AutomaticEnv()
 	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))

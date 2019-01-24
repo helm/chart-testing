@@ -43,7 +43,7 @@ func newLintAndInstallCmd() *cobra.Command {
 func lintAndInstall(cmd *cobra.Command, args []string) {
 	fmt.Println("Linting and installing charts...")
 
-	configuration, err := config.LoadConfiguration(cfgFile, cmd, bindRootFlags, bindLintFlags, bindInstallFlags)
+	configuration, err := config.LoadConfiguration(cfgFile, cmd)
 	if err != nil {
 		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
