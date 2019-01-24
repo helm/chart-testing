@@ -321,6 +321,9 @@ func (t *Testing) LintChart(chart string, valuesFiles []string) TestResult {
 	}
 
 	for _, valuesFile := range valuesFiles {
+		if valuesFile != "" {
+			fmt.Printf("\nLinting chart with values file '%s'...\n\n", valuesFile)
+		}
 		if err := t.helm.LintWithValues(chart, valuesFile); err != nil {
 			result.Error = err
 			break
@@ -343,6 +346,9 @@ func (t *Testing) InstallChart(chart string, valuesFiles []string) TestResult {
 	}
 
 	for _, valuesFile := range valuesFiles {
+		if valuesFile != "" {
+			fmt.Printf("\nInstalling chart with values file '%s'...\n\n", valuesFile)
+		}
 		var namespace, release, releaseSelector string
 
 		// Use anonymous function. Otherwise deferred calls would pile up
