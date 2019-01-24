@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 jobs:
   lint-scripts:
     docker:
@@ -6,42 +6,27 @@ jobs:
     steps:
       - checkout
       - run:
-          name: lint
-          command: |
-            shellcheck -x test/e2e-kind.sh
+          command: shellcheck -x test/e2e-kind.sh
+
   lint-charts:
     docker:
       - image: quay.io/helmpack/chart-testing:v2.2.0
     steps:
       - checkout
       - run:
-          name: lint
-          command: |
-            git remote add k8s https://github.com/your_git_repo/charts
-            git fetch k8s master
-            ct lint --config test/ct.yaml
+          command: ct lint --config test/ct.yaml
+
   install-charts:
     machine: true
-    environment:
-      CHART_TESTING_IMAGE: quay.io/helmpack/chart-testing
-      CHART_TESTING_TAG: v2.2.0
-      CHARTS_REPO: https://github.com/your_git_repo/charts
-      K8S_VERSION: "v1.12.3"
     steps:
       - checkout
       - run:
-          name: install
-          command: |
-            test/e2e-kind.sh
-          no_output_timeout: 3600
+          command: test/e2e-kind.sh
+
 workflows:
   version: 2
-  lint_and_install:
+  untagged-build:
     jobs:
       - lint-scripts
-      - lint-charts:
-          requires:
-            - lint-scripts
-      - install-charts:
-          requires:
-            - lint-charts
+      - lint-charts
+      - install-charts
