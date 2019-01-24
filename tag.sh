@@ -52,7 +52,7 @@ main() {
                 debug=true
                 ;;
             -t|--tag)
-                if [ -n "${2:-}" ]; then
+                if [[ -n "${2:-}" ]]; then
                     tag="$2"
                     shift
                 else
@@ -62,7 +62,7 @@ main() {
                 fi
                 ;;
             -r|--remote)
-                if [ -n "${2:-}" ]; then
+                if [[ -n "${2:-}" ]]; then
                     remote="$2"
                     shift
                 else

@@ -148,6 +148,14 @@ Build ct using Goreleaser.
 
 ## Releasing
 
+### Prepare Release
+
+Before a release is created, versions have to be updated in the examples.
+A pull request needs to be created for this, which should be merged right before the release is cut.
+Here's a previous one for reference: https://github.com/helm/chart-testing/pull/89
+
+### Create Release
+
 CircleCI creates releases automatically when a new tag is pushed. Tags are created using `tag.sh`.
 
 ```console
@@ -163,6 +171,16 @@ Create and push a tag.
     -t, --tag         The name of the tag to create
     -s, --skip-push   Skip pushing the tag
 ```
+
+By default, the script assumes that `origin` points to your own fork and that you have a remote `upstream` that points to the upstream `chart-testing` repo.
+Run the script specifying the version for the new release.
+
+```console
+./tag.sh --tag <release_version>
+```
+
+Versions must start with a lower-case `v`, e. g. `v2.2.0`.
+
 
 ## Supported versions
 
