@@ -16,50 +16,44 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"os"
 
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
-
 	"github.com/spf13/cobra"
 )
 
-func newLintAndInstallCmd() *cobra.Command {
+func newListChangedCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "lint-and-install",
-		Aliases: []string{"li"},
-		Short:   "Lint, install, and test a chart",
-		Long:    "Combines 'lint' and 'install' commands.",
-		Run:     lintAndInstall,
+		Use:     "list-changed",
+		Aliases: []string{"ls-changed", "lsc"},
+		Short:   "List changed charts",
+		Long: heredoc.Doc(`
+			"List changed charts based on configured charts directories,
+			"remote, and target branch`),
+		Run: listChanged,
 	}
 
 	flags := cmd.Flags()
-	addLintFlags(flags)
-	addInstallFlags(flags)
-	addCommonLintAndInstallFlags(flags)
+	addCommonFlags(flags)
 	return cmd
 }
 
-func lintAndInstall(cmd *cobra.Command, args []string) {
-	fmt.Println("Linting and installing charts...")
-
-	configuration, err := config.LoadConfiguration(cfgFile, cmd, true)
+func listChanged(cmd *cobra.Command, args []string) {
+	configuration, err := config.LoadConfiguration(cfgFile, cmd, false)
 	if err != nil {
 		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
 	}
 
 	testing := chart.NewTesting(*configuration)
-	results, err := testing.LintAndInstallCharts()
-	if err != nil {
-		fmt.Printf("Error linting and installing charts: %s\n", err)
-	} else {
-		fmt.Println("All charts linted and installed successfully")
-	}
-
-	testing.PrintResults(results)
-
+	chartDirs, err := testing.ComputeChangedChartDirectories()
 	if err != nil {
 		os.Exit(1)
+	}
+
+	for _, dir := range chartDirs {
+		fmt.Println(dir)
 	}
 }

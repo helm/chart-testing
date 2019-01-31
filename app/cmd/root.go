@@ -44,6 +44,7 @@ func NewRootCmd() *cobra.Command {
 	cmd.AddCommand(newLintCmd())
 	cmd.AddCommand(newInstallCmd())
 	cmd.AddCommand(newLintAndInstallCmd())
+	cmd.AddCommand(newListChangedCmd())
 	cmd.AddCommand(newVersionCmd())
 	cmd.AddCommand(newGenerateDocsCmd())
 
@@ -58,19 +59,26 @@ func Execute() {
 	}
 }
 
-func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
+func addCommonFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&cfgFile, "config", "", "Config file")
 	flags.String("remote", "origin", "The name of the Git remote used to identify changed charts")
 	flags.String("target-branch", "master", "The name of the target branch used to identify changed charts")
+	flags.StringSlice("chart-dirs", []string{"charts"}, heredoc.Doc(`
+		Directories containing Helm charts. May be specified multiple times
+		or separate values with commas`))
+	flags.StringSlice("excluded-charts", []string{}, heredoc.Doc(`
+		Charts that should be skipped. May be specified multiple times
+		or separate values with commas`))
+}
+
+func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
+	addCommonFlags(flags)
 	flags.Bool("all", false, heredoc.Doc(`
 		Process all charts except those explicitly excluded.
 		Disables changed charts detection and version increment checking`))
 	flags.StringSlice("charts", []string{}, heredoc.Doc(`
 		Specific charts to test. Disables changed charts detection and
 		version increment checking. May be specified multiple times
-		or separate values with commas`))
-	flags.StringSlice("chart-dirs", []string{"charts"}, heredoc.Doc(`
-		Directories containing Helm charts. May be specified multiple times
 		or separate values with commas`))
 	flags.StringSlice("chart-repos", []string{}, heredoc.Doc(`
 		Additional chart repositories for dependency resolutions.
@@ -81,9 +89,6 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		specified on a per-repo basis with an equals sign as delimiter
 		(e.g. 'myrepo=--username test --password secret'). May be specified
 		multiple times or separate values with commas`))
-	flags.StringSlice("excluded-charts", []string{}, heredoc.Doc(`
-		Charts that should be skipped. May be specified multiple times
-		or separate values with commas`))
 	flags.Bool("debug", false, heredoc.Doc(`
 		Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
 		passed, this may reveal sensitive data)`))
