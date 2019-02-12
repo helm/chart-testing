@@ -38,6 +38,7 @@ See documentation for individual commands:
 * [ct install](doc/ct_install.md)
 * [ct lint](doc/ct_lint.md)
 * [ct lint-and-install](doc/ct_lint-and-install.md)
+* [ct lint-changed](doc/ct_list-changed.md)
 * [ct version](doc/ct_version.md)
 
 
@@ -45,9 +46,11 @@ See documentation for individual commands:
 
 `ct` is a command-line application.
 All command-line flags can also be set via environment variables or config file.
-Environment variables must be prefixed with `CT_`. Underscores must be used instead of hyphens.
+Environment variables must be prefixed with `CT_`.
+Underscores must be used instead of hyphens.
 
-CLI flags, environment variables, and a config file can be mixed. The following order of precedence applies:
+CLI flags, environment variables, and a config file can be mixed.
+The following order of precedence applies:
 
 1. CLI flags
 1. Environment variables
@@ -97,7 +100,8 @@ Notice that if no config file is specified, then `ct.yaml` (or any of the suppor
 
 #### Using private chart repositories
 
-When adding chart-repos you can specify additional arguments for the `helm repo add` command using `helm-repo-extra-args` on a per-repo basis. This could for example be used to authenticate a private chart repository.
+When adding chart-repos you can specify additional arguments for the `helm repo add` command using `helm-repo-extra-args` on a per-repo basis.
+This could for example be used to authenticate a private chart repository.
 
 `config.yaml`:
 
@@ -118,7 +122,8 @@ helm-repo-extra-args:
 
 `build.sh` is used to build and release the tool. It uses [Goreleaser](https://goreleaser.com/) under the covers.
 
-Note: on MacOS you will need `GNU Coreutils readlink`. You can install it with:
+Note: on MacOS you will need `GNU Coreutils readlink`.
+You can install it with:
 
 ```console
 brew install coreutils
@@ -156,7 +161,8 @@ Here's a previous one for reference: https://github.com/helm/chart-testing/pull/
 
 ### Create Release
 
-CircleCI creates releases automatically when a new tag is pushed. Tags are created using `tag.sh`.
+CircleCI creates releases automatically when a new tag is pushed.
+Tags are created using `tag.sh`.
 
 ```console
 $ ./tag.sh -h
@@ -186,8 +192,11 @@ Versions must start with a lower-case `v`, e. g. `v2.2.0`.
 
 The previous MAJOR version will be supported for three months after each new MAJOR release.
 
-Within this support window, pull requests for the previous MAJOR version should be made against the previous release branch. For example, if the current MAJOR version is `v2`, the pull request base branch should be `release-v1`.
+Within this support window, pull requests for the previous MAJOR version should be made against the previous release branch.
+For example, if the current MAJOR version is `v2`, the pull request base branch should be `release-v1`.
 
 ## Upgrading
 
-When upgrading from `< v2.0.0` you will also need to change the usage in your scripts. This is because, while the [v2.0.0](https://github.com/helm/chart-testing/releases/tag/v2.0.0) release has parity with `v1`, it was refactored from a bash library to Go so there are minor syntax differences. Compare [v1 usage](https://github.com/helm/chart-testing/tree/release-v1#usage) with this (`v2`) version's README [usage](#usage) section above.
+When upgrading from `< v2.0.0` you will also need to change the usage in your scripts.
+This is because, while the [v2.0.0](https://github.com/helm/chart-testing/releases/tag/v2.0.0) release has parity with `v1`, it was refactored from a bash library to Go so there are minor syntax differences.
+Compare [v1 usage](https://github.com/helm/chart-testing/tree/release-v1#usage) with this (`v2`) version's README [usage](#usage) section above.
