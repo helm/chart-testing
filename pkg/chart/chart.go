@@ -25,6 +25,7 @@ import (
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/helm/chart-testing/pkg/tool"
 	"github.com/helm/chart-testing/pkg/util"
+	"github.com/otiai10/copy"
 	"github.com/pkg/errors"
 )
 
@@ -34,17 +35,31 @@ import (
 //
 // Show returns the contents of file on the specified remote/branch.
 //
+// CheckoutDir replaces the contents of a directory with the contents of the same directory at
+// the specified git ref. CheckoutDir does not switch branches.
+//
+// CleanDir resets a directory to HEAD by recursively removing untracked directories and files.
+//
+// IsDirClean returns true if there are no untracked changes since HEAD.
+//.
 // MergeBase returns the SHA1 of the merge base of commit1 and commit2.
 //
 // ListChangedFilesInDirs diffs commit against HEAD and returns changed files for the specified dirs.
 //
 // GetUrlForRemote returns the repo URL for the specified remote.
+//
+// ValidateRepository checks that the current working directory is a valid git repository,
+// and returns nil if valid.
 type Git interface {
 	FileExistsOnBranch(file string, remote string, branch string) bool
 	Show(file string, remote string, branch string) (string, error)
+	CheckoutDir(directory string, ref string) error
+	CleanDir(directory string) error
+	IsDirClean(directory string) (bool, error)
 	MergeBase(commit1 string, commit2 string) (string, error)
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
 	GetUrlForRemote(remote string) (string, error)
+	ValidateRepository() error
 }
 
 // Helm is the interface that wraps Helm operations
@@ -61,6 +76,11 @@ type Git interface {
 // InstallWithValues runs `helm install` for the given chart using the specified values file.
 // Pass a zero value for valuesFile in order to run install without specifying a values file.
 //
+// Upgrade runs `helm upgrade` against an existing release, and re-uses the previously computed values.
+//
+// Test runs `helm test` against an existing release. Set the cleanup argument to true in order
+// to clean up test pods created by helm after the test command completes.
+//
 // DeleteRelease purges the specified Helm release.
 type Helm interface {
 	Init() error
@@ -68,7 +88,8 @@ type Helm interface {
 	BuildDependencies(chart string) error
 	LintWithValues(chart string, valuesFile string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
-	Test(release string) error
+	Upgrade(chart string, release string) error
+	Test(release string, cleanup bool) error
 	DeleteRelease(release string)
 }
 
@@ -143,6 +164,7 @@ type Testing struct {
 	accountValidator AccountValidator
 	directoryLister  DirectoryLister
 	chartUtils       ChartUtils
+	mergeBase        string
 }
 
 // TestResults holds results and overall status
@@ -161,7 +183,7 @@ type TestResult struct {
 func NewTesting(config config.Configuration) Testing {
 	procExec := exec.NewProcessExecutor(config.Debug)
 	extraArgs := strings.Fields(config.HelmExtraArgs)
-	testing := Testing{
+	return Testing{
 		config:           config,
 		helm:             tool.NewHelm(procExec, extraArgs),
 		git:              tool.NewGit(procExec),
@@ -171,7 +193,18 @@ func NewTesting(config config.Configuration) Testing {
 		directoryLister:  util.DirectoryLister{},
 		chartUtils:       util.ChartUtils{},
 	}
-	return testing
+}
+
+// tempChartDir converts a chart parent directory path to a temp directory path
+func tempChartParentDir(parentDir string) string {
+	return fmt.Sprintf("%s.chart-testing.tmp", parentDir)
+}
+
+// tempChartPath converts a chart path to its corresponding temp path
+func tempChartPath(chart string) string {
+	parentDir := path.Dir(chart)
+	chartName := path.Base(chart)
+	return path.Join(tempChartParentDir(parentDir), chartName)
 }
 
 func (t *Testing) processCharts(action func(chart string, valuesFiles []string) TestResult) ([]TestResult, error) {
@@ -181,6 +214,19 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 		return nil, errors.Wrap(err, "Error identifying charts to process")
 	} else if len(charts) == 0 {
 		return results, nil
+	}
+
+	if t.config.Upgrade {
+		// Validate that working directory is in a git repository
+		err := t.git.ValidateRepository()
+		if err != nil {
+			return results, fmt.Errorf("Must be in a git repository to test chart upgrades")
+		}
+		mergeBase, err := t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), "HEAD")
+		if err != nil {
+			return results, errors.Wrap(err, "Error identifying merge base")
+		}
+		t.mergeBase = mergeBase
 	}
 
 	fmt.Println()
@@ -222,11 +268,40 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 		TestResults:    results,
 	}
 
+	if t.config.Upgrade {
+		changedParentDirs := map[string]bool{}
+		for _, dir := range charts {
+			changedParentDirs[path.Dir(dir)] = true
+		}
+		for dir := range changedParentDirs {
+			// Check for uncommitted changes that would be lost when checking out older revision
+			clean, _ := t.git.IsDirClean(dir)
+			if !clean {
+				return results, fmt.Errorf("Directory %s has uncommitted changes", dir)
+			}
+			// Set contents of charts directory to the target branch
+			t.git.CheckoutDir(dir, t.mergeBase)
+			// Copy charts directory contents to a temp directory
+			prevRevisionDir := tempChartParentDir(dir)
+			copy.Copy(dir, prevRevisionDir)
+			// Reset charts directory to last commit
+			t.git.CheckoutDir(dir, "HEAD")
+			// Schedule cleanup of untracked temp directory
+			defer t.git.CleanDir(prevRevisionDir)
+		}
+	}
+
 	for _, chart := range charts {
 		valuesFiles := t.FindValuesFilesForCI(chart)
 
 		if err := t.helm.BuildDependencies(chart); err != nil {
 			return nil, errors.Wrapf(err, "Error building dependencies for chart '%s'", chart)
+		}
+
+		if t.config.Upgrade {
+			if err := t.helm.BuildDependencies(tempChartPath(chart)); err != nil {
+				return nil, errors.Wrapf(err, "Error building dependencies for previous revision of chart '%s'", chart)
+			}
 		}
 
 		result := action(chart, valuesFiles)
@@ -336,9 +411,54 @@ func (t *Testing) LintChart(chart string, valuesFiles []string) TestResult {
 // InstallChart installs the specified chart into a new namespace, waits for resources to become ready, and eventually
 // uninstalls it and deletes the namespace again.
 func (t *Testing) InstallChart(chart string, valuesFiles []string) TestResult {
-	fmt.Printf("Installing chart '%s'...\n", chart)
+	var result TestResult
 
+	if t.config.Upgrade {
+		// Test upgrade from previous version
+		result = t.UpgradeChart(chart)
+		if result.Error != nil {
+			return result
+		}
+		// Test upgrade of current version (related: https://github.com/helm/chart-testing/issues/19)
+		if err := t.testUpgrade(chart, chart, true); err != nil {
+			result.Error = err
+			return result
+		}
+	}
+
+	result = TestResult{Chart: chart}
+	if err := t.testInstall(chart); err != nil {
+		result.Error = err
+	}
+
+	return result
+}
+
+// UpgradeChart tests in-place upgrades of the specified chart relative to its previous revisions. If the
+// initial install or helm test of a previous revision of the chart fails, that release is ignored and no
+// error will be returned. If the latest revision of the chart introduces a potentially breaking change
+// according to the SemVer specification, upgrade testing will be skipped.
+func (t *Testing) UpgradeChart(chart string) TestResult {
 	result := TestResult{Chart: chart}
+
+	breakingChangeAllowed, reasons, err := t.checkBreakingChangeAllowed(chart)
+	if err != nil {
+		fmt.Printf("Error comparing chart versions for '%s'\n", chart)
+		result.Error = err
+	} else if breakingChangeAllowed {
+		for _, r := range reasons {
+			fmt.Println(errors.Wrap(r, fmt.Sprintf("Skipping upgrade test of '%s' because", chart)))
+		}
+	} else {
+		result.Error = t.testUpgrade(tempChartPath(chart), chart, false)
+	}
+
+	return result
+}
+
+func (t *Testing) testInstall(chart string) error {
+	fmt.Printf("Installing chart '%s'...\n", chart)
+	valuesFiles := t.FindValuesFilesForCI(chart)
 
 	// Test with defaults if no values files are specified.
 	if len(valuesFiles) == 0 {
@@ -349,45 +469,104 @@ func (t *Testing) InstallChart(chart string, valuesFiles []string) TestResult {
 		if valuesFile != "" {
 			fmt.Printf("\nInstalling chart with values file '%s'...\n\n", valuesFile)
 		}
-		var namespace, release, releaseSelector string
 
 		// Use anonymous function. Otherwise deferred calls would pile up
 		// and be executed in reverse order after the loop.
 		fun := func() error {
-			if t.config.Namespace != "" {
-				namespace = t.config.Namespace
-				release, _ = util.CreateInstallParams(chart, t.config.BuildId)
-				releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
-			} else {
-				release, namespace = util.CreateInstallParams(chart, t.config.BuildId)
-				defer t.kubectl.DeleteNamespace(namespace)
-			}
-
-			defer t.helm.DeleteRelease(release)
-			defer t.PrintPodDetailsAndLogs(namespace, releaseSelector)
+			namespace, release, releaseSelector, cleanup := t.generateInstallConfig(chart)
+			defer cleanup()
 
 			if err := t.helm.InstallWithValues(chart, valuesFile, namespace, release); err != nil {
-				result.Error = err
 				return err
 			}
-			if err := t.kubectl.WaitForDeployments(namespace, releaseSelector); err != nil {
-				result.Error = err
-				return err
-			}
-			if err := t.helm.Test(release); err != nil {
-				result.Error = err
-				return err
-			}
-
-			return nil
+			return t.testRelease(release, namespace, releaseSelector, false)
 		}
 
 		if err := fun(); err != nil {
-			break
+			return err
 		}
 	}
 
-	return result
+	return nil
+}
+
+func (t *Testing) testUpgrade(oldChart, newChart string, oldChartMustPass bool) error {
+	fmt.Printf("Testing upgrades of chart '%s' relative to previous revision '%s'...\n", newChart, oldChart)
+	valuesFiles := t.FindValuesFilesForCI(oldChart)
+	if len(valuesFiles) == 0 {
+		valuesFiles = append(valuesFiles, "")
+	}
+	for _, valuesFile := range valuesFiles {
+		if valuesFile != "" {
+			fmt.Printf("\nInstalling chart '%s' with values file '%s'...\n\n", oldChart, valuesFile)
+		}
+
+		// Use anonymous function. Otherwise deferred calls would pile up
+		// and be executed in reverse order after the loop.
+		fun := func() error {
+			namespace, release, releaseSelector, cleanup := t.generateInstallConfig(oldChart)
+			defer cleanup()
+
+			// Install previous version of chart. If installation fails, ignore this release.
+			if err := t.helm.InstallWithValues(oldChart, valuesFile, namespace, release); err != nil {
+				if oldChartMustPass {
+					return err
+				}
+				fmt.Println(errors.Wrap(err, fmt.Sprintf("Upgrade testing for release '%s' skipped because of previous revision installation error", release)))
+				return nil
+			}
+			if err := t.testRelease(release, namespace, releaseSelector, true); err != nil {
+				if oldChartMustPass {
+					return err
+				}
+				fmt.Println(errors.Wrap(err, fmt.Sprintf("Upgrade testing for release '%s' skipped because of previous revision testing error", release)))
+				return nil
+			}
+
+			if err := t.helm.Upgrade(oldChart, release); err != nil {
+				return err
+			}
+
+			return t.testRelease(release, namespace, releaseSelector, false)
+		}
+
+		if err := fun(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (t *Testing) testRelease(release, namespace, releaseSelector string, cleanupHelmTests bool) error {
+	if err := t.kubectl.WaitForDeployments(namespace, releaseSelector); err != nil {
+		return err
+	}
+	if err := t.helm.Test(release, cleanupHelmTests); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *Testing) generateInstallConfig(chart string) (namespace, release, releaseSelector string, cleanup func()) {
+	if t.config.Namespace != "" {
+		namespace = t.config.Namespace
+		release, _ = util.CreateInstallParams(chart, t.config.BuildId)
+		releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
+		cleanup = func() {
+			t.PrintPodDetailsAndLogs(namespace, releaseSelector)
+			t.helm.DeleteRelease(release)
+		}
+	} else {
+		release, namespace = util.CreateInstallParams(chart, t.config.BuildId)
+		cleanup = func() {
+			t.PrintPodDetailsAndLogs(namespace, releaseSelector)
+			t.helm.DeleteRelease(release)
+			t.kubectl.DeleteNamespace(namespace)
+		}
+	}
+
+	return
 }
 
 // LintAndInstallChart first lints and then installs the specified chart.
@@ -423,11 +602,7 @@ func (t *Testing) FindValuesFilesForCI(chart string) []string {
 func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 	cfg := t.config
 
-	mergeBase, err := t.git.MergeBase(fmt.Sprintf("%s/%s", cfg.Remote, cfg.TargetBranch), "HEAD")
-	if err != nil {
-		return nil, errors.Wrap(err, "Error identifying merge base")
-	}
-	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, cfg.ChartDirs...)
+	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(t.mergeBase, cfg.ChartDirs...)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error creating diff")
 	}
@@ -507,6 +682,24 @@ func (t *Testing) CheckVersionIncrement(chart string) error {
 
 	fmt.Println("Chart version ok.")
 	return nil
+}
+
+func (t *Testing) checkBreakingChangeAllowed(chart string) (allowed bool, reasons []error, err error) {
+	oldVersion, err := t.GetOldChartVersion(chart)
+	if err != nil {
+		return false, nil, err
+	}
+	if oldVersion == "" {
+		// new chart, skip upgrade check
+		return true, []error{fmt.Errorf("chart has no previous revision")}, nil
+	}
+
+	newVersion, err := t.GetNewChartVersion(chart)
+	if err != nil {
+		return false, nil, err
+	}
+
+	return util.BreakingChangeAllowed(oldVersion, newVersion)
 }
 
 // GetOldChartVersion gets the version of the old Chart.yaml file from the target branch.

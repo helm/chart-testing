@@ -31,13 +31,17 @@ func newInstallCmd() *cobra.Command {
 		Use:   "install",
 		Short: "Install and test a chart",
 		Long: heredoc.Doc(`
-			Run 'helm install' and ' helm test' on
+			Run 'helm install', 'helm test', and optionally 'helm upgrade' on
 
 			* changed charts (default)
 			* specific charts (--charts)
 			* all charts (--all)
 
-			in given chart directories.
+			in given chart directories. If upgrade (--upgrade) is true, then this
+			command will validate that 'helm test' passes for the following upgrade paths:
+
+			* previous chart revision => current chart version (if non-breaking SemVer change)
+			* current chart version => current chart version
 
 			Charts may have multiple custom values files matching the glob pattern
 			'*-values.yaml' in a directory named 'ci' in the root of the chart's
@@ -61,12 +65,15 @@ func addInstallFlags(flags *flag.FlagSet) {
 	flags.String("helm-extra-args", "", heredoc.Doc(`
 		Additional arguments for Helm. Must be passed as a single quoted string
 		(e.g. "--timeout 500 --tiller-namespace tiller"`))
+	flags.Bool("upgrade", false, heredoc.Doc(`
+		Whether to test an in-place upgrade of each chart from its previous revision if the
+		current version should not introduce a breaking change according to the SemVer spec`))
 	flags.String("namespace", "", heredoc.Doc(`
 		Namespace to install the release(s) into. If not specified, each release will be
-		installed in its own randomly generated namespace.`))
+		installed in its own randomly generated namespace`))
 	flags.String("release-label", "app.kubernetes.io/instance", heredoc.Doc(`
 		The label to be used as a selector when inspecting resources created by charts.
-		This is only used if namespace is specified.`))
+		This is only used if namespace is specified`))
 }
 
 func install(cmd *cobra.Command, args []string) {

@@ -51,8 +51,24 @@ func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string
 	}, nil
 }
 
+func (g fakeGit) CheckoutDir(directory string, ref string) error {
+	return nil
+}
+
+func (g fakeGit) CleanDir(directory string) error {
+	return nil
+}
+
+func (g fakeGit) IsDirClean(directory string) (bool, error) {
+	return true, nil
+}
+
 func (g fakeGit) GetUrlForRemote(remote string) (string, error) {
 	return "git@github.com/helm/chart-testing", nil
+}
+
+func (g fakeGit) ValidateRepository() error {
+	return nil
 }
 
 type fakeAccountValidator struct{}
@@ -86,7 +102,10 @@ func (h fakeHelm) LintWithValues(chart string, valuesFile string) error { return
 func (h fakeHelm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {
 	return nil
 }
-func (h fakeHelm) Test(release string) error {
+func (h fakeHelm) Upgrade(chart string, release string) error {
+	return nil
+}
+func (h fakeHelm) Test(release string, cleanup bool) error {
 	return nil
 }
 func (h fakeHelm) DeleteRelease(release string) {}
@@ -99,9 +118,12 @@ func init() {
 		ChartDirs:      []string{"test_charts", "."},
 	}
 
-	fakeMockLinter := new(fakeLinter)
+	ct = newTestingMock(cfg)
+}
 
-	ct = Testing{
+func newTestingMock(cfg config.Configuration) Testing {
+	fakeMockLinter := new(fakeLinter)
+	return Testing{
 		config:           cfg,
 		directoryLister:  util.DirectoryLister{},
 		git:              fakeGit{},
@@ -273,4 +295,56 @@ func TestLintYamlValidation(t *testing.T) {
 
 	runTests(true, 2, 0)
 	runTests(false, 0, 0)
+}
+
+func TestGenerateInstallConfig(t *testing.T) {
+	type testData struct {
+		name     string
+		cfg      config.Configuration
+		chartDir string
+	}
+
+	testCases := []testData{
+		{
+			"custom namespace",
+			config.Configuration{
+				Namespace:    "default",
+				ReleaseLabel: "app.kubernetes.io/instance",
+			},
+			"test_charts/bar",
+		},
+		{
+			"random namespace",
+			config.Configuration{
+				ReleaseLabel: "app.kubernetes.io/instance",
+			},
+			"test_charts/bar",
+		},
+		{
+			"long chart name",
+			config.Configuration{
+				ReleaseLabel: "app.kubernetes.io/instance",
+			},
+			"test_charts/barbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbar",
+		},
+	}
+
+	for _, testData := range testCases {
+		t.Run(testData.name, func(t *testing.T) {
+			ct := newTestingMock(testData.cfg)
+
+			namespace, release, releaseSelector, _ := ct.generateInstallConfig(testData.chartDir)
+			assert.NotEqual(t, "", namespace)
+			assert.NotEqual(t, "", release)
+			assert.True(t, len(release) < 64, "release should be less than 64 chars")
+			assert.True(t, len(namespace) < 64, "namespace should be less than 64 chars")
+			if testData.cfg.Namespace != "" {
+				assert.Equal(t, testData.cfg.Namespace, namespace)
+				assert.Equal(t, fmt.Sprintf("%s=%s", testData.cfg.ReleaseLabel, release), releaseSelector)
+			} else {
+				assert.Equal(t, "", releaseSelector)
+				assert.Contains(t, namespace, release)
+			}
+		})
+	}
 }

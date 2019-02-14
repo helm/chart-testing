@@ -16,9 +16,6 @@ package util
 
 import (
 	"fmt"
-	"github.com/Masterminds/semver"
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -27,6 +24,10 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Masterminds/semver"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 const chars = "1234567890abcdefghijklmnopqrstuvwxyz"
@@ -177,6 +178,30 @@ func CompareVersions(left string, right string) (int, error) {
 	return leftVersion.Compare(rightVersion), nil
 }
 
+func BreakingChangeAllowed(left string, right string) (bool, []error, error) {
+	leftVersion, err := semver.NewVersion(left)
+	if err != nil {
+		return false, nil, errors.Wrap(err, "Error parsing semantic version")
+	}
+	rightVersion, err := semver.NewVersion(right)
+	if err != nil {
+		return false, nil, errors.Wrap(err, "Error parsing semantic version")
+	}
+
+	constraintOp := "^"
+	if leftVersion.Major() == 0 {
+		constraintOp = "~"
+	}
+	c, err := semver.NewConstraint(fmt.Sprintf("%s %s", constraintOp, leftVersion.String()))
+	if err != nil {
+		return false, nil, errors.Wrap(err, "Error parsing semantic version constraint")
+	}
+
+	minor, reasons := c.Validate(rightVersion)
+
+	return !minor, reasons, nil
+}
+
 func CreateInstallParams(chart string, buildId string) (release string, namespace string) {
 	release = path.Base(chart)
 	namespace = release
@@ -205,7 +230,7 @@ func TruncateLeft(s string, maxLength int) string {
 	return s
 }
 
-func GetRandomPort() (int , error) {
+func GetRandomPort() (int, error) {
 	listener, err := net.Listen("tcp", ":0")
 	defer listener.Close()
 	if err != nil {

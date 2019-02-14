@@ -38,6 +38,24 @@ func (g Git) FileExistsOnBranch(file string, remote string, branch string) bool 
 	return err == nil
 }
 
+func (g Git) CheckoutDir(directory string, ref string) error {
+	_, err := g.exec.RunProcessAndCaptureOutput("git", "checkout", ref, "--", directory)
+	return err
+}
+
+func (g Git) CleanDir(directory string) error {
+	_, err := g.exec.RunProcessAndCaptureOutput("git", "clean", "-d", "--force", "--", directory)
+	return err
+}
+
+func (g Git) IsDirClean(dir string) (bool, error) {
+	err := g.exec.RunProcess("git", "diff-index", "--quiet", "HEAD", "--", dir)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (g Git) Show(file string, remote string, branch string) (string, error) {
 	fileSpec := fmt.Sprintf("%s/%s:%s", remote, branch, file)
 	return g.exec.RunProcessAndCaptureOutput("git", "show", fileSpec)
@@ -61,4 +79,8 @@ func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, er
 
 func (g Git) GetUrlForRemote(remote string) (string, error) {
 	return g.exec.RunProcessAndCaptureOutput("git", "ls-remote", "--get-url", remote)
+}
+
+func (g Git) ValidateRepository() error {
+	return g.exec.RunProcess("git", "rev-parse", "--is-inside-work-tree")
 }

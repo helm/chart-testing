@@ -56,6 +56,7 @@ type Configuration struct {
 	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
 	HelmRepoExtraArgs     []string `mapstructure:"helm-repo-extra-args"`
 	Debug                 bool     `mapstructure:"debug"`
+	Upgrade               bool     `mapstructure:"upgrade"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
 }
@@ -108,6 +109,10 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 
 	if cfg.Namespace != "" && cfg.ReleaseLabel == "" {
 		return nil, errors.New("specifying '--namespace' without '--release-label' is not allowed")
+	}
+
+	if (cfg.TargetBranch == "" || cfg.Remote == "") && cfg.Upgrade {
+		return nil, errors.New("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
 	}
 
 	isLint := strings.Contains(cmd.Use, "lint")

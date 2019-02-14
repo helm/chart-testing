@@ -67,8 +67,17 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 	return nil
 }
 
-func (h Helm) Test(release string) error {
-	return h.exec.RunProcess("helm", "test", release, h.extraArgs)
+func (h Helm) Upgrade(chart string, release string) error {
+	if err := h.exec.RunProcess("helm", "upgrade", release, chart, "--reuse-values",
+		"--wait", h.extraArgs); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h Helm) Test(release string, cleanup bool) error {
+	return h.exec.RunProcess("helm", "test", release, h.extraArgs, fmt.Sprintf("--cleanup=%t", cleanup))
 }
 
 func (h Helm) DeleteRelease(release string) {
