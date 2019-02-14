@@ -136,11 +136,8 @@ type DirectoryLister interface {
 // ChartUtils is the interface that wraps chart-related methods
 //
 // LookupChartDir looks up the chart's root directory based on some chart file that has changed
-//
-// ReadChartYaml reads the `Chart.yaml` from the specified directory
 type ChartUtils interface {
 	LookupChartDir(chartDirs []string, dir string) (string, error)
-	ReadChartYaml(dir string) (*util.ChartYaml, error)
 }
 
 // AccountValidator is the interface that wraps Git account validation
@@ -697,7 +694,7 @@ func (t *Testing) GetOldChartVersion(chart string) (string, error) {
 		return "", errors.Wrap(err, "Error reading old Chart.yaml")
 	}
 
-	chartYaml, err := util.ReadChartYaml([]byte(chartYamlContents))
+	chartYaml, err := util.UnmarshalChartYaml([]byte(chartYamlContents))
 	if err != nil {
 		return "", errors.Wrap(err, "Error reading old chart version")
 	}
@@ -707,7 +704,7 @@ func (t *Testing) GetOldChartVersion(chart string) (string, error) {
 
 // GetNewChartVersion gets the new version from the currently checked out Chart.yaml file.
 func (t *Testing) GetNewChartVersion(chart string) (string, error) {
-	chartYaml, err := t.chartUtils.ReadChartYaml(chart)
+	chartYaml, err := util.ReadChartYaml(chart)
 	if err != nil {
 		return "", errors.Wrap(err, "Error reading new chart version")
 	}
@@ -719,7 +716,7 @@ func (t *Testing) GetNewChartVersion(chart string) (string, error) {
 func (t *Testing) ValidateMaintainers(chart string) error {
 	fmt.Println("Validating maintainers...")
 
-	chartYaml, err := t.chartUtils.ReadChartYaml(chart)
+	chartYaml, err := util.ReadChartYaml(chart)
 	if err != nil {
 		return err
 	}
