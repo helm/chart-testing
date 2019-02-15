@@ -1,5 +1,7 @@
 # Chart Testing
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/helm/chart-testing)](https://goreportcard.com/report/github.com/helm/chart-testing)
+
 `ct` is the the tool for testing Helm charts.
 It is meant to be used for linting and testing pull requests.
 It automatically detects charts changed against the target branch.
