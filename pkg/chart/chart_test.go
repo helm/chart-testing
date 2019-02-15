@@ -166,8 +166,10 @@ func TestValidateMaintainers(t *testing.T) {
 
 	for _, testData := range testDataSlice {
 		t.Run(testData.name, func(t *testing.T) {
-			err := ct.ValidateMaintainers(testData.chartDir)
-			assert.Equal(t, testData.expected, err == nil)
+			chart, err := NewChart(testData.chartDir)
+			assert.Nil(t, err)
+			validationErr := ct.ValidateMaintainers(chart)
+			assert.Equal(t, testData.expected, validationErr == nil)
 		})
 	}
 }
@@ -196,7 +198,9 @@ func TestLintChartMaintainerValidation(t *testing.T) {
 
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
-				result := ct.LintChart(testData.chartDir, []string{})
+				chart, err := NewChart(testData.chartDir)
+				assert.Nil(t, err)
+				result := ct.LintChart(chart)
 				assert.Equal(t, testData.expected, result.Error == nil)
 			})
 		}
@@ -237,7 +241,9 @@ func TestLintChartSchemaValidation(t *testing.T) {
 
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
-				result := ct.LintChart(testData.chartDir, []string{})
+				chart, err := NewChart(testData.chartDir)
+				assert.Nil(t, err)
+				result := ct.LintChart(chart)
 				assert.Equal(t, testData.expected, result.Error == nil)
 				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
 				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
@@ -281,7 +287,9 @@ func TestLintYamlValidation(t *testing.T) {
 
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
-				result := ct.LintChart(testData.chartDir, []string{})
+				chart, err := NewChart(testData.chartDir)
+				assert.Nil(t, err)
+				result := ct.LintChart(chart)
 				assert.Equal(t, testData.expected, result.Error == nil)
 				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
 				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
@@ -295,9 +303,9 @@ func TestLintYamlValidation(t *testing.T) {
 
 func TestGenerateInstallConfig(t *testing.T) {
 	type testData struct {
-		name     string
-		cfg      config.Configuration
-		chartDir string
+		name  string
+		cfg   config.Configuration
+		chart *Chart
 	}
 
 	testCases := []testData{
@@ -307,21 +315,33 @@ func TestGenerateInstallConfig(t *testing.T) {
 				Namespace:    "default",
 				ReleaseLabel: "app.kubernetes.io/instance",
 			},
-			"test_charts/bar",
+			&Chart{
+				yaml: &util.ChartYaml{
+					Name: "bar",
+				},
+			},
 		},
 		{
 			"random namespace",
 			config.Configuration{
 				ReleaseLabel: "app.kubernetes.io/instance",
 			},
-			"test_charts/bar",
+			&Chart{
+				yaml: &util.ChartYaml{
+					Name: "bar",
+				},
+			},
 		},
 		{
 			"long chart name",
 			config.Configuration{
 				ReleaseLabel: "app.kubernetes.io/instance",
 			},
-			"test_charts/barbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbar",
+			&Chart{
+				yaml: &util.ChartYaml{
+					Name: "test_charts/barbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbarbar",
+				},
+			},
 		},
 	}
 
@@ -329,7 +349,7 @@ func TestGenerateInstallConfig(t *testing.T) {
 		t.Run(testData.name, func(t *testing.T) {
 			ct := newTestingMock(testData.cfg)
 
-			namespace, release, releaseSelector, _ := ct.generateInstallConfig(testData.chartDir)
+			namespace, release, releaseSelector, _ := ct.generateInstallConfig(testData.chart)
 			assert.NotEqual(t, "", namespace)
 			assert.NotEqual(t, "", release)
 			assert.True(t, len(release) < 64, "release should be less than 64 chars")

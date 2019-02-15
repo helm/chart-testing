@@ -32,7 +32,6 @@ import (
 )
 
 const chars = "1234567890abcdefghijklmnopqrstuvwxyz"
-const maxNameLength = 63
 
 type Maintainer struct {
 	Name  string `yaml:"name"`
@@ -207,24 +206,6 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 	}
 
 	return !minor, err
-}
-
-// CreateInstallParams generates a randomized release name and namespace based on the chart path
-// and optional buildID. If a buildID is specified, it will be part of the generated namespace.
-func CreateInstallParams(chart string, buildID string) (release string, namespace string) {
-	release = path.Base(chart)
-	if release == "." || release == "/" {
-		yaml, _ := ReadChartYaml(chart)
-		release = yaml.Name
-	}
-	namespace = release
-	if buildID != "" {
-		namespace = fmt.Sprintf("%s-%s", namespace, buildID)
-	}
-	randomSuffix := RandomString(10)
-	release = TruncateLeft(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
-	namespace = TruncateLeft(fmt.Sprintf("%s-%s", namespace, randomSuffix), maxNameLength)
-	return
 }
 
 func PrintDelimiterLine(delimiterChar string) {
