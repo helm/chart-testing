@@ -167,7 +167,7 @@ func (c *Chart) Path() string {
 }
 
 func (c *Chart) String() string {
-	return c.Path()
+	return fmt.Sprintf(`%s => (version: "%s", path: "%s")`, c.yaml.Name, c.yaml.Version, c.Path())
 }
 
 // ValuesFilePathsForCI returns all file paths in the 'ci' subfolder of the chart directory matching the pattern '*-values.yaml'
