@@ -1,6 +1,6 @@
 project_name: chart-testing
 builds:
-  - main: app/main.go
+  - main: ct/main.go
     binary: ct
     env:
       - CGO_ENABLED=0
@@ -13,9 +13,9 @@ builds:
       - windows
     ldflags:
       - >-
-        -X github.com/helm/chart-testing/app/cmd.Version={{ .Tag }}
-        -X github.com/helm/chart-testing/app/cmd.GitCommit={{ .Commit }}
-        -X github.com/helm/chart-testing/app/cmd.BuildDate={{ .Date }}
+        -X github.com/helm/chart-testing/ct/cmd.Version={{ .Tag }}
+        -X github.com/helm/chart-testing/ct/cmd.GitCommit={{ .Commit }}
+        -X github.com/helm/chart-testing/ct/cmd.BuildDate={{ .Date }}
 archive:
   format_overrides:
     - goos: windows
