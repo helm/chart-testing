@@ -28,6 +28,10 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - checkout
       - run:
+          name: gofmt
+          command: |
+            gofmt -w -s . && git diff --exit-code
+      - run:
           name: Build
           command: |
             set -e
