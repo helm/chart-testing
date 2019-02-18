@@ -96,3 +96,16 @@ func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) 
 
 	return nil
 }
+
+func (p ProcessExecutor) RunLongRunningProcess(executable string, execArgs ...interface{}) (*exec.Cmd, error) {
+	args, err := util.Flatten(execArgs)
+	if p.debug {
+		fmt.Println(">>>", executable, strings.Join(args, " "))
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "Invalid arguments supplied")
+	}
+	cmd := exec.Command(executable, args...)
+
+	return cmd, nil
+}
