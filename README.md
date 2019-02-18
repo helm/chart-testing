@@ -30,6 +30,16 @@ Unpack the `ct` binary, add it to your PATH, and you are good to go!
 A Docker image is available at `quay.io/helmpack/chart-testing` with list of
 available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags).
 
+### From Source
+
+To install from head with [Go](https://golang.org) v1.10.1 or higher:
+
+```cli
+go get github.com/helm/chart-testing/ct
+```
+
+This will put `ct` in `$(go env GOPATH)/bin`. You may need to add that directory to your `$PATH` as shown [here](https://golang.org/doc/code.html#GOPATH) if you encounter the error `ct: command not found` after installation.
+
 ## Usage
 
 See documentation for individual commands:
