@@ -66,9 +66,9 @@ configure_kubectl() {
     port=$(get_apiserver_arg "$apiserver_id" --secure-port)
 
     docker cp "$HOME/.kube" "$testcontainer_id:/root/.kube"
-    docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster "--server=https://$ip:$port"
-    docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster --insecure-skip-tls-verify=true
-    docker exec "$testcontainer_id" kubectl config use-context docker-for-desktop
+    docker exec "$testcontainer_id" kubectl config set-cluster docker-desktop "--server=https://$ip:$port"
+    docker exec "$testcontainer_id" kubectl config set-cluster docker-desktop --insecure-skip-tls-verify=true
+    docker exec "$testcontainer_id" kubectl config use-context docker-desktop
 }
 
 run_test() {
