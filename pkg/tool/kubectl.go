@@ -24,12 +24,12 @@ func NewKubectl(exec exec.ProcessExecutor) Kubectl {
 // namespace and, eventually, the namespace itself are force-deleted.
 func (k Kubectl) DeleteNamespace(namespace string) {
 
-	fmt.Println("deleting pvcs...")
+	fmt.Println("Deleting pvcs...")
 	if err := k.exec.RunProcess("kubectl", "delete", "pvc", "--namespace", namespace, "--all"); err != nil {
 		fmt.Println("Error deleting pvc(s):", err)
 	}
 
-	fmt.Println("deleting pvs...")
+	fmt.Println("Deleting pvs...")
 	if err := k.exec.RunProcess("kubectl", "delete", "pv", "--namespace", namespace, "--all"); err != nil {
 		fmt.Println("Error deleting pv(s):", err)
 	}
