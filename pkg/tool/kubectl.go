@@ -23,6 +23,17 @@ func NewKubectl(exec exec.ProcessExecutor) Kubectl {
 // DeleteNamespace deletes the specified namespace. If the namespace does not terminate within 90s, pods running in the
 // namespace and, eventually, the namespace itself are force-deleted.
 func (k Kubectl) DeleteNamespace(namespace string) {
+
+	fmt.Println("deleting pvcs...")
+	if err := k.exec.RunProcess("kubectl", "delete", "pvc", "--namespace", namespace, "--all"); err != nil {
+		fmt.Println("Error deleting pvc(s):", err)
+	}
+
+	fmt.Println("deleting pvs...")
+	if err := k.exec.RunProcess("kubectl", "delete", "pv", "--namespace", namespace, "--all"); err != nil {
+		fmt.Println("Error deleting pv(s):", err)
+	}
+
 	fmt.Printf("Deleting namespace '%s'...\n", namespace)
 	timeoutSec := "120s"
 	if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--timeout", timeoutSec); err != nil {
