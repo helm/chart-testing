@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -46,68 +45,63 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 
 	time.Sleep(3 * time.Second)
 
-	if err := k.exec.RunProcess("kubectl", "get", "namespace", namespace); err != nil {
+	if err := k.exec.RunWithProxy(k.forceNamespaceDeletion, namespace); err != nil {
+		fmt.Println("Error force deleting namespace:", err)
+	}
+
+}
+
+func (k Kubectl) forceNamespaceDeletion(namespace string) error {
+	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
+		fmt.Printf("Namespace '%s' terminated.\n", namespace)
+		return nil
+	} else {
+
 		fmt.Printf("Removing finalizers from namespace '%s'...\n", namespace)
 		// Getting the namespace json to remove the finalizer
 		cmdOutput, err := k.exec.RunProcessAndCaptureOutput(
 			"kubectl", "get", "namespace", namespace, "--output=json")
 		if err != nil {
 			fmt.Println("Error getting namespace json:", err)
-			return
+			return err
 		}
 
 		namespaceUpdate := map[string]interface{}{}
 		err = json.Unmarshal([]byte(cmdOutput), &namespaceUpdate)
 		if err != nil {
 			fmt.Println("Error in unmarshalling the payload:", err)
-			return
+			return err
 		}
 		namespaceUpdate["spec"] = nil
 		namespaceUpdateByte, err := json.Marshal(namespaceUpdate)
 		if err != nil {
 			fmt.Println("Error in marshalling the payload:", err)
-			return
+			return err
 		}
-
-		// Start 'kubectl proxy'
-		cmdProxy, err := k.exec.RunLongRunningProcess("kubectl", "proxy")
-		if err != nil {
-			fmt.Println("Error creating the kubectl proxy:", err)
-			return
-		}
-
-		go func() {
-			err = cmdProxy.Start()
-			if err != nil {
-				fmt.Println("Error starting the kubectl proxy:", err)
-				return
-			}
-			err = cmdProxy.Wait()
-			fmt.Printf("Command finished with error: %v", err)
-		}()
 
 		// Update the namespace
 		k8sURL := fmt.Sprintf("http://127.0.0.1:8001/api/v1/namespaces/%s/finalize", namespace)
 		req, err := http.NewRequest("PUT", k8sURL, bytes.NewReader(namespaceUpdateByte))
 		if err != nil {
 			fmt.Println("Error creating the request to update the namespace:", err)
-			return
+			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			fmt.Println("Error updating the namespace:", err)
-			return
+			return err
 		}
 		defer resp.Body.Close()
-
-		cmdProxy.Process.Signal(os.Kill)
 
 		fmt.Printf("Force-deleting namespace '%s'...\n", namespace)
 		if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--force", "--grace-period=0", "--ignore-not-found=true"); err != nil {
 			fmt.Println("Error deleting namespace:", err)
+			return err
 		}
+
+		return nil
 	}
 }
 

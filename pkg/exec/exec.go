@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -97,7 +98,7 @@ func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) 
 	return nil
 }
 
-func (p ProcessExecutor) RunLongRunningProcess(executable string, execArgs ...interface{}) (*exec.Cmd, error) {
+func (p ProcessExecutor) CreateProcess(executable string, execArgs ...interface{}) (*exec.Cmd, error) {
 	args, err := util.Flatten(execArgs)
 	if p.debug {
 		fmt.Println(">>>", executable, strings.Join(args, " "))
@@ -108,4 +109,34 @@ func (p ProcessExecutor) RunLongRunningProcess(executable string, execArgs ...in
 	cmd := exec.Command(executable, args...)
 
 	return cmd, nil
+}
+
+type fn func(namespace string) error
+
+func (p ProcessExecutor) RunWithProxy(withProxy fn, namespace string) error {
+	// Start 'kubectl proxy'
+	cmdProxy, err := p.CreateProcess("kubectl", "proxy")
+	if err != nil {
+		fmt.Println("Error creating the kubectl proxy:", err)
+		return err
+	}
+
+	go func() {
+		err = cmdProxy.Start()
+		if err != nil {
+			fmt.Println("Error starting the kubectl proxy:", err)
+			return
+		}
+		err = cmdProxy.Wait()
+		fmt.Printf("Command finished with error: %v", err)
+	}()
+	defer cmdProxy.Process.Signal(os.Kill)
+
+	err = withProxy(namespace)
+	if err != nil {
+		fmt.Println("Error in the proxy function:", err)
+		return err
+	}
+
+	return nil
 }
