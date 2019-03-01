@@ -121,10 +121,6 @@ func (p ProcessExecutor) RunWithProxy(withProxy fn) error {
 		return errors.Wrap(err, "Error starting the 'kubectl proxy' process")
 	}
 
-	go func() {
-		cmdProxy.Wait()
-	}()
-
 	err = withProxy(randomPort)
 
 	cmdProxy.Process.Signal(os.Kill)

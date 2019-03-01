@@ -67,7 +67,6 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 }
 
 func (k Kubectl) forceNamespaceDeletion(namespace string) error {
-	fmt.Printf("Removing finalizers from namespace '%s'...\n", namespace)
 	// Getting the namespace json to remove the finalizer
 	cmdOutput, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace, "--output=json")
 	if err != nil {
@@ -90,6 +89,8 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 
 	// Remove finalizer from the namespace
 	fun := func(port int) error {
+		fmt.Printf("Removing finalizers from namespace '%s'...\n", namespace)
+
 		k8sURL := fmt.Sprintf("http://127.0.0.1:%d/api/v1/namespaces/%s/finalize", port, namespace)
 		req, err := retryablehttp.NewRequest("PUT", k8sURL, bytes.NewReader(namespaceUpdateBytes))
 		if err != nil {
