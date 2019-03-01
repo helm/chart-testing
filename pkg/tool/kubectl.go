@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/helm/chart-testing/pkg/exec"
 	"github.com/pkg/errors"
 )
@@ -90,7 +91,7 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 	// Remove finalizer from the namespace
 	fun := func(port int) error {
 		k8sURL := fmt.Sprintf("http://127.0.0.1:%d/api/v1/namespaces/%s/finalize", port, namespace)
-		req, err := http.NewRequest("PUT", k8sURL, bytes.NewReader(namespaceUpdateBytes))
+		req, err := retryablehttp.NewRequest("PUT", k8sURL, bytes.NewReader(namespaceUpdateBytes))
 		if err != nil {
 			fmt.Println("Error creating the request to update the namespace:", err)
 			return err
@@ -98,7 +99,9 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 		req.Header.Set("Content-Type", "application/json")
 
 		errMsg := "Error removing finalizer from namespace"
-		if resp, err := http.DefaultClient.Do(req); err != nil {
+		client := retryablehttp.NewClient()
+		client.Logger = nil
+		if resp, err := client.Do(req); err != nil {
 			return errors.Wrap(err, errMsg)
 		} else if resp.StatusCode != http.StatusOK {
 			return errors.New(errMsg)

@@ -42,6 +42,22 @@
   version = "v1.4.7"
 
 [[projects]]
+  digest = "1:05334858a0cfb538622a066e065287f63f42bee26a7fda93a789674225057201"
+  name = "github.com/hashicorp/go-cleanhttp"
+  packages = ["."]
+  pruneopts = ""
+  revision = "e8ab9daed8d1ddd2d3c4efba338fe2eeae2e4f18"
+  version = "v0.5.0"
+
+[[projects]]
+  digest = "1:776139dc18d63ef223ffaca5d8e9a3057174890f84393d3c881e934100b66dbc"
+  name = "github.com/hashicorp/go-retryablehttp"
+  packages = ["."]
+  pruneopts = ""
+  revision = "73489d0a1476f0c9e6fb03f9c39241523a496dfd"
+  version = "v0.5.2"
+
+[[projects]]
   digest = "1:d14365c51dd1d34d5c79833ec91413bfbb166be978724f15701e17080dc06dec"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -235,6 +251,7 @@
   input-imports = [
     "github.com/MakeNowJust/heredoc",
     "github.com/Masterminds/semver",
+    "github.com/hashicorp/go-retryablehttp",
     "github.com/mitchellh/go-homedir",
     "github.com/pkg/errors",
     "github.com/spf13/cobra",

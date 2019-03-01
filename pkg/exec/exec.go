@@ -17,15 +17,12 @@ package exec
 import (
 	"bufio"
 	"fmt"
+	"github.com/helm/chart-testing/pkg/util"
+	"github.com/pkg/errors"
 	"io"
-	"net"
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
-
-	"github.com/helm/chart-testing/pkg/util"
-	"github.com/pkg/errors"
 )
 
 type ProcessExecutor struct {
@@ -109,34 +106,27 @@ func (p ProcessExecutor) CreateProcess(executable string, execArgs ...interface{
 type fn func(port int) error
 
 func (p ProcessExecutor) RunWithProxy(withProxy fn) error {
-	listener, err := net.Listen("tcp", ":0")
-	defer listener.Close()
+	randomPort, err := util.GetRandomPort()
 	if err != nil {
-		return errors.Wrap(err, "Could not find a free port to run 'kubectl proxy'")
+		return errors.Wrap(err, "Could not find a free port for running 'kubectl proxy'")
 	}
 
-	randomPort := listener.Addr().(*net.TCPAddr).Port
-	fmt.Printf("Running ' kubectl proxy on port %d\n", randomPort)
-	cmdProxy, err := p.CreateProcess("kubectl", "proxy", "--port", randomPort)
+	fmt.Printf("Running 'kubectl proxy' on port %d\n", randomPort)
+	cmdProxy, err := p.CreateProcess("kubectl", "proxy", fmt.Sprintf("--port=%d", randomPort))
 	if err != nil {
 		return errors.Wrap(err, "Error creating the 'kubectl proxy' process")
 	}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
+	err = cmdProxy.Start()
+	if err != nil {
+		return errors.Wrap(err, "Error starting the 'kubectl proxy' process")
+	}
 
 	go func() {
-		err = cmdProxy.Start()
-		if err != nil {
-			fmt.Println("Error starting the 'kubectl proxy' process:", err)
-			return
-		}
-		wg.Wait()
+		cmdProxy.Wait()
 	}()
 
 	err = withProxy(randomPort)
 
-	wg.Done()
 	cmdProxy.Process.Signal(os.Kill)
 
 	if err != nil {
