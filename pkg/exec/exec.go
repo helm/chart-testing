@@ -18,9 +18,11 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 
 	"github.com/helm/chart-testing/pkg/util"
 	"github.com/pkg/errors"
@@ -41,14 +43,11 @@ func (p ProcessExecutor) RunProcessAndCaptureOutput(executable string, execArgs 
 }
 
 func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string, executable string, execArgs ...interface{}) (string, error) {
-	args, err := util.Flatten(execArgs)
-	if p.debug {
-		fmt.Println(">>>", executable, strings.Join(args, " "))
-	}
+	cmd, err := p.CreateProcess(executable, execArgs...)
 	if err != nil {
-		return "", errors.Wrap(err, "Invalid arguments supplied")
+		return "", err
 	}
-	cmd := exec.Command(executable, args...)
+
 	cmd.Dir = workingDirectory
 	bytes, err := cmd.CombinedOutput()
 
@@ -59,14 +58,10 @@ func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string
 }
 
 func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) error {
-	args, err := util.Flatten(execArgs)
-	if p.debug {
-		fmt.Println(">>>", executable, strings.Join(args, " "))
-	}
+	cmd, err := p.CreateProcess(executable, execArgs...)
 	if err != nil {
-		return errors.Wrap(err, "Invalid arguments supplied")
+		return err
 	}
-	cmd := exec.Command(executable, args...)
 
 	outReader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -111,31 +106,41 @@ func (p ProcessExecutor) CreateProcess(executable string, execArgs ...interface{
 	return cmd, nil
 }
 
-type fn func(namespace string) error
+type fn func(port int) error
 
-func (p ProcessExecutor) RunWithProxy(withProxy fn, namespace string) error {
-	// Start 'kubectl proxy'
-	cmdProxy, err := p.CreateProcess("kubectl", "proxy")
+func (p ProcessExecutor) RunWithProxy(withProxy fn) error {
+	listener, err := net.Listen("tcp", ":0")
+	defer listener.Close()
 	if err != nil {
-		fmt.Println("Error creating the kubectl proxy:", err)
-		return err
+		return errors.Wrap(err, "Could not find a free port to run 'kubectl proxy'")
 	}
+
+	randomPort := listener.Addr().(*net.TCPAddr).Port
+	fmt.Printf("Running ' kubectl proxy on port %d\n", randomPort)
+	cmdProxy, err := p.CreateProcess("kubectl", "proxy", "--port", randomPort)
+	if err != nil {
+		return errors.Wrap(err, "Error creating the 'kubectl proxy' process")
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	go func() {
 		err = cmdProxy.Start()
 		if err != nil {
-			fmt.Println("Error starting the kubectl proxy:", err)
+			fmt.Println("Error starting the 'kubectl proxy' process:", err)
 			return
 		}
-		err = cmdProxy.Wait()
-		fmt.Printf("Command finished with error: %v", err)
+		wg.Wait()
 	}()
-	defer cmdProxy.Process.Signal(os.Kill)
 
-	err = withProxy(namespace)
+	err = withProxy(randomPort)
+
+	wg.Done()
+	cmdProxy.Process.Signal(os.Kill)
+
 	if err != nil {
-		fmt.Println("Error in the proxy function:", err)
-		return err
+		return errors.Wrap(err, "Error running command with proxy")
 	}
 
 	return nil
