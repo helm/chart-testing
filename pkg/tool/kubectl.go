@@ -25,17 +25,6 @@ func NewKubectl(exec exec.ProcessExecutor) Kubectl {
 // DeleteNamespace deletes the specified namespace. If the namespace does not terminate within 120s, pods running in the
 // namespace and, eventually, the namespace itself are force-deleted.
 func (k Kubectl) DeleteNamespace(namespace string) {
-
-	fmt.Println("Deleting pvcs...")
-	if err := k.exec.RunProcess("kubectl", "delete", "pvc", "--namespace", namespace, "--all"); err != nil {
-		fmt.Println("Error deleting pvc(s):", err)
-	}
-
-	fmt.Println("Deleting pvs...")
-	if err := k.exec.RunProcess("kubectl", "delete", "pv", "--namespace", namespace, "--all"); err != nil {
-		fmt.Println("Error deleting pv(s):", err)
-	}
-
 	fmt.Printf("Deleting namespace '%s'...\n", namespace)
 	timeoutSec := "120s"
 	if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--timeout", timeoutSec); err != nil {
@@ -54,66 +43,91 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 		fmt.Println("Error deleting pods:", err)
 	}
 
-	time.Sleep(3 * time.Second)
-
-	if err := k.exec.RunWithProxy(k.forceNamespaceDeletion, namespace); err != nil {
-		fmt.Println("Error force deleting namespace:", err)
+	fmt.Println("Force-deleting pvcs...")
+	if err := k.exec.RunProcess("kubectl", "delete", "pvc", "--namespace", namespace, "--all", "--force", "--grace-period=0"); err != nil {
+		fmt.Println("Error deleting pvc(s):", err)
 	}
 
+	fmt.Println("Force-deleting pvs...")
+	if err := k.exec.RunProcess("kubectl", "delete", "pv", "--namespace", namespace, "--all", "--force", "--grace-period=0"); err != nil {
+		fmt.Println("Error deleting pv(s):", err)
+	}
+
+	// Give it some more time to be deleted by K8s
+	time.Sleep(5 * time.Second)
+
+	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
+		fmt.Printf("Namespace '%s' terminated.\n", namespace)
+	} else {
+		if err := k.forceNamespaceDeletion(namespace); err != nil {
+			fmt.Println("Error force deleting namespace:", err)
+		}
+	}
 }
 
 func (k Kubectl) forceNamespaceDeletion(namespace string) error {
-	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
-		fmt.Printf("Namespace '%s' terminated.\n", namespace)
-		return nil
-	} else {
+	fmt.Printf("Removing finalizers from namespace '%s'...\n", namespace)
+	// Getting the namespace json to remove the finalizer
+	cmdOutput, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace, "--output=json")
+	if err != nil {
+		fmt.Println("Error getting namespace json:", err)
+		return err
+	}
 
-		fmt.Printf("Removing finalizers from namespace '%s'...\n", namespace)
-		// Getting the namespace json to remove the finalizer
-		cmdOutput, err := k.exec.RunProcessAndCaptureOutput(
-			"kubectl", "get", "namespace", namespace, "--output=json")
-		if err != nil {
-			fmt.Println("Error getting namespace json:", err)
-			return err
-		}
+	namespaceUpdate := map[string]interface{}{}
+	err = json.Unmarshal([]byte(cmdOutput), &namespaceUpdate)
+	if err != nil {
+		fmt.Println("Error in unmarshalling the payload:", err)
+		return err
+	}
+	namespaceUpdate["spec"] = nil
+	namespaceUpdateBytes, err := json.Marshal(&namespaceUpdate)
+	if err != nil {
+		fmt.Println("Error in marshalling the payload:", err)
+		return err
+	}
 
-		namespaceUpdate := map[string]interface{}{}
-		err = json.Unmarshal([]byte(cmdOutput), &namespaceUpdate)
-		if err != nil {
-			fmt.Println("Error in unmarshalling the payload:", err)
-			return err
-		}
-		namespaceUpdate["spec"] = nil
-		namespaceUpdateByte, err := json.Marshal(namespaceUpdate)
-		if err != nil {
-			fmt.Println("Error in marshalling the payload:", err)
-			return err
-		}
-
-		// Update the namespace
-		k8sURL := fmt.Sprintf("http://127.0.0.1:8001/api/v1/namespaces/%s/finalize", namespace)
-		req, err := http.NewRequest("PUT", k8sURL, bytes.NewReader(namespaceUpdateByte))
+	// Remove finalizer from the namespace
+	fun := func(port int) error {
+		k8sURL := fmt.Sprintf("http://127.0.0.1:%d/api/v1/namespaces/%s/finalize", port, namespace)
+		req, err := http.NewRequest("PUT", k8sURL, bytes.NewReader(namespaceUpdateBytes))
 		if err != nil {
 			fmt.Println("Error creating the request to update the namespace:", err)
 			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			fmt.Println("Error updating the namespace:", err)
-			return err
-		}
-		defer resp.Body.Close()
-
-		fmt.Printf("Force-deleting namespace '%s'...\n", namespace)
-		if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--force", "--grace-period=0", "--ignore-not-found=true"); err != nil {
-			fmt.Println("Error deleting namespace:", err)
-			return err
+		errMsg := "Error removing finalizer from namespace"
+		if resp, err := http.DefaultClient.Do(req); err != nil {
+			return errors.Wrap(err, errMsg)
+		} else if resp.StatusCode != http.StatusOK {
+			return errors.New(errMsg)
 		}
 
 		return nil
 	}
+
+	err = k.exec.RunWithProxy(fun)
+	if err != nil {
+		return errors.Wrapf(err, "Cannot force-delete namespace '%s'", namespace)
+	}
+
+	// Give it some more time to be deleted by K8s
+	time.Sleep(5 * time.Second)
+
+	// Check again
+	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
+		fmt.Printf("Namespace '%s' terminated.\n", namespace)
+		return nil
+	}
+
+	fmt.Printf("Force-deleting namespace '%s'...\n", namespace)
+	if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--force", "--grace-period=0", "--ignore-not-found=true"); err != nil {
+		fmt.Println("Error deleting namespace:", err)
+		return err
+	}
+
+	return nil
 }
 
 func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
