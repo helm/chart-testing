@@ -4,5 +4,4 @@
 .vscode
 /dist
 /config.*
-/ct
 vendor

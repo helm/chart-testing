@@ -12,7 +12,7 @@ jobs:
             shellcheck -x tag.sh
   build:
     docker:
-      - image: golang:1.11.1-alpine3.8
+      - image: golang:1.11.5-alpine3.9
     working_directory: /go/src/github.com/helm/chart-testing
     steps:
       - setup_remote_docker
