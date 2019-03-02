@@ -74,18 +74,15 @@ install_tiller() {
     echo
 }
 
-install_hostpath-provisioner() {
-    # kind doesn't support Dynamic PVC provisioning yet, this is one way to get it working
-    # https://github.com/rimusz/charts/tree/master/stable/hostpath-provisioner
+install_local-path-provisioner() {
+    # kind doesn't support Dynamic PVC provisioning yet, this is one ways to get it working
+    # https://github.com/rancher/local-path-provisioner
 
-    echo 'Installing hostpath-provisioner...'
-
-    # Remove default storage class. Will be recreated by hostpath -provisioner
+    # Remove default storage class. It will be recreated by local-path-provisioner
     docker_exec kubectl delete storageclass standard
 
-    docker_exec helm repo add rimusz https://charts.rimusz.net
-    docker_exec helm repo update
-    docker_exec helm install rimusz/hostpath-provisioner --name hostpath-provisioner --namespace kube-system --wait
+    echo 'Installing local-path-provisioner...'
+    docker_exec kubectl apply -f test/local-path-provisioner.yaml
     echo
 }
 
@@ -99,8 +96,8 @@ main() {
     trap cleanup EXIT
 
     create_kind_cluster
+    install_local-path-provisioner
     install_tiller
-    install_hostpath-provisioner
     install_charts
 }
 
