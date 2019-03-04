@@ -30,3 +30,7 @@
 [[constraint]]
     name = "gopkg.in/yaml.v2"
     version = "v2.2.1"
+
+[[constraint]]
+    name = "github.com/hashicorp/go-retryablehttp"
+    version = "v0.5.2"

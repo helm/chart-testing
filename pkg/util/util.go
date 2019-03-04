@@ -21,6 +21,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -202,4 +203,14 @@ func TruncateLeft(s string, maxLength int) string {
 		return s[excess:]
 	}
 	return s
+}
+
+func GetRandomPort() (int , error) {
+	listener, err := net.Listen("tcp", ":0")
+	defer listener.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	return listener.Addr().(*net.TCPAddr).Port, nil
 }
