@@ -109,12 +109,12 @@
   version = "v1.1.2"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a4c2e29d2fb620f39ab706071791242a25df5c62e4793f9b401b07e490d535e9"
+  digest = "1:f55dbdd667c57775be87afc7e3921b6135ebea61350e098d92d6ee8542f44060"
   name = "github.com/otiai10/copy"
   packages = ["."]
   pruneopts = ""
-  revision = "7e9a647135a142c2669943d4a4d29be015ce9392"
+  revision = "a15b9cb96cf2f7930107fe0a9a6faf1b91e69df4"
+  version = "v1.0.1"
 
 [[projects]]
   digest = "1:894aef961c056b6d85d12bac890bf60c44e99b46292888bfa66caf529f804457"
