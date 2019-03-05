@@ -38,22 +38,12 @@ func (g Git) FileExistsOnBranch(file string, remote string, branch string) bool 
 	return err == nil
 }
 
-func (g Git) CheckoutDir(directory string, ref string) error {
-	_, err := g.exec.RunProcessAndCaptureOutput("git", "checkout", ref, "--", directory)
-	return err
+func (g Git) AddWorkingTree(path string, ref string) error {
+	return g.exec.RunProcess("git", "worktree", "add", path, ref)
 }
 
-func (g Git) CleanDir(directory string) error {
-	_, err := g.exec.RunProcessAndCaptureOutput("git", "clean", "-d", "--force", "--", directory)
-	return err
-}
-
-func (g Git) IsDirClean(dir string) (bool, error) {
-	err := g.exec.RunProcess("git", "diff-index", "--quiet", "HEAD", "--", dir)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+func (g Git) RemoveWorkingTree(path string) error {
+	return g.exec.RunProcess("git", "worktree", "remove", path)
 }
 
 func (g Git) Show(file string, remote string, branch string) (string, error) {

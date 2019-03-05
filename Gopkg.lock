@@ -109,14 +109,6 @@
   version = "v1.1.2"
 
 [[projects]]
-  digest = "1:f55dbdd667c57775be87afc7e3921b6135ebea61350e098d92d6ee8542f44060"
-  name = "github.com/otiai10/copy"
-  packages = ["."]
-  pruneopts = ""
-  revision = "a15b9cb96cf2f7930107fe0a9a6faf1b91e69df4"
-  version = "v1.0.1"
-
-[[projects]]
   digest = "1:894aef961c056b6d85d12bac890bf60c44e99b46292888bfa66caf529f804457"
   name = "github.com/pelletier/go-toml"
   packages = ["."]
@@ -261,7 +253,6 @@
     "github.com/Masterminds/semver",
     "github.com/hashicorp/go-retryablehttp",
     "github.com/mitchellh/go-homedir",
-    "github.com/otiai10/copy",
     "github.com/pkg/errors",
     "github.com/spf13/cobra",
     "github.com/spf13/cobra/doc",

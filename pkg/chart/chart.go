@@ -25,7 +25,6 @@ import (
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/helm/chart-testing/pkg/tool"
 	"github.com/helm/chart-testing/pkg/util"
-	"github.com/otiai10/copy"
 	"github.com/pkg/errors"
 )
 
@@ -35,13 +34,10 @@ import (
 //
 // Show returns the contents of file on the specified remote/branch.
 //
-// CheckoutDir replaces the contents of a directory with the contents of the same directory at
-// the specified git ref. CheckoutDir does not switch branches.
+// AddWorkingTree checks out the contents of the repository at a commit ref into the specified path.
 //
-// CleanDir resets a directory to HEAD by recursively removing untracked directories and files.
+// RemoveWorkingTree removes the working tree at the specified path.
 //
-// IsDirClean returns true if there are no untracked changes since HEAD.
-//.
 // MergeBase returns the SHA1 of the merge base of commit1 and commit2.
 //
 // ListChangedFilesInDirs diffs commit against HEAD and returns changed files for the specified dirs.
@@ -53,9 +49,8 @@ import (
 type Git interface {
 	FileExistsOnBranch(file string, remote string, branch string) bool
 	Show(file string, remote string, branch string) (string, error)
-	CheckoutDir(directory string, ref string) error
-	CleanDir(directory string) error
-	IsDirClean(directory string) (bool, error)
+	AddWorkingTree(path string, ref string) error
+	RemoveWorkingTree(path string) error
 	MergeBase(commit1 string, commit2 string) (string, error)
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
 	GetUrlForRemote(remote string) (string, error)
@@ -164,7 +159,6 @@ type Testing struct {
 	accountValidator AccountValidator
 	directoryLister  DirectoryLister
 	chartUtils       ChartUtils
-	mergeBase        string
 }
 
 // TestResults holds results and overall status
@@ -195,16 +189,12 @@ func NewTesting(config config.Configuration) Testing {
 	}
 }
 
-// tempChartDir converts a chart parent directory path to a temp directory path
-func tempChartParentDir(parentDir string) string {
-	return fmt.Sprintf("%s.chart-testing.tmp", parentDir)
-}
+const ctPreviousRevisionTree = "ct_previous_revision"
 
-// tempChartPath converts a chart path to its corresponding temp path
-func tempChartPath(chart string) string {
-	parentDir := path.Dir(chart)
-	chartName := path.Base(chart)
-	return path.Join(tempChartParentDir(parentDir), chartName)
+// computePreviousRevisionPath converts any file or directory path to the same path in the
+// previous revision's working tree.
+func computePreviousRevisionPath(dir string) string {
+	return path.Join(ctPreviousRevisionTree, dir)
 }
 
 func (t *Testing) processCharts(action func(chart string, valuesFiles []string) TestResult) ([]TestResult, error) {
@@ -214,19 +204,6 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 		return nil, errors.Wrap(err, "Error identifying charts to process")
 	} else if len(charts) == 0 {
 		return results, nil
-	}
-
-	if t.config.Upgrade {
-		// Validate that working directory is in a git repository
-		err := t.git.ValidateRepository()
-		if err != nil {
-			return results, fmt.Errorf("Must be in a git repository to test chart upgrades")
-		}
-		mergeBase, err := t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), "HEAD")
-		if err != nil {
-			return results, errors.Wrap(err, "Error identifying merge base")
-		}
-		t.mergeBase = mergeBase
 	}
 
 	fmt.Println()
@@ -268,26 +245,20 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 		TestResults:    results,
 	}
 
+	// Checkout previous chart revisions and build their dependencies
 	if t.config.Upgrade {
-		changedParentDirs := map[string]bool{}
-		for _, dir := range charts {
-			changedParentDirs[path.Dir(dir)] = true
+		mergeBase, err := t.computeMergeBase()
+		if err != nil {
+			return results, errors.Wrap(err, "Error identifying merge base")
 		}
-		for dir := range changedParentDirs {
-			// Check for uncommitted changes that would be lost when checking out older revision
-			clean, _ := t.git.IsDirClean(dir)
-			if !clean {
-				return results, fmt.Errorf("Directory %s has uncommitted changes", dir)
+		t.git.AddWorkingTree(ctPreviousRevisionTree, mergeBase)
+		defer t.git.RemoveWorkingTree(ctPreviousRevisionTree)
+
+		for _, chart := range charts {
+			if err := t.helm.BuildDependencies(computePreviousRevisionPath(chart)); err != nil {
+				// Only print error (don't exit) if building dependencies for previous revision fails.
+				fmt.Println(errors.Wrap(err, fmt.Sprintf("Error building dependencies for previous revision of chart '%s'", chart)))
 			}
-			// Set contents of charts directory to the target branch
-			t.git.CheckoutDir(dir, t.mergeBase)
-			// Copy charts directory contents to a temp directory
-			prevRevisionDir := tempChartParentDir(dir)
-			copy.Copy(dir, prevRevisionDir)
-			// Reset charts directory to last commit
-			t.git.CheckoutDir(dir, "HEAD")
-			// Schedule cleanup of untracked temp directory
-			defer t.git.CleanDir(prevRevisionDir)
 		}
 	}
 
@@ -296,12 +267,6 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 
 		if err := t.helm.BuildDependencies(chart); err != nil {
 			return nil, errors.Wrapf(err, "Error building dependencies for chart '%s'", chart)
-		}
-
-		if t.config.Upgrade {
-			if err := t.helm.BuildDependencies(tempChartPath(chart)); err != nil {
-				return nil, errors.Wrapf(err, "Error building dependencies for previous revision of chart '%s'", chart)
-			}
 		}
 
 		result := action(chart, valuesFiles)
@@ -450,7 +415,7 @@ func (t *Testing) UpgradeChart(chart string) TestResult {
 			fmt.Println(errors.Wrap(r, fmt.Sprintf("Skipping upgrade test of '%s' because", chart)))
 		}
 	} else {
-		result.Error = t.testUpgrade(tempChartPath(chart), chart, false)
+		result.Error = t.testUpgrade(computePreviousRevisionPath(chart), chart, false)
 	}
 
 	return result
@@ -597,12 +562,25 @@ func (t *Testing) FindValuesFilesForCI(chart string) []string {
 	return matches
 }
 
+func (t *Testing) computeMergeBase() (string, error) {
+	err := t.git.ValidateRepository()
+	if err != nil {
+		return "", fmt.Errorf("Must be in a git repository")
+	}
+	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), "HEAD")
+}
+
 // ComputeChangedChartDirectories takes the merge base of HEAD and the configured remote and target branch and computes a
 // slice of changed charts from that in the configured chart directories excluding those configured to be excluded.
 func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 	cfg := t.config
 
-	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(t.mergeBase, cfg.ChartDirs...)
+	mergeBase, err := t.computeMergeBase()
+	if err != nil {
+		return nil, err
+	}
+
+	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, cfg.ChartDirs...)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error creating diff")
 	}

@@ -34,7 +34,3 @@
 [[constraint]]
     name = "github.com/hashicorp/go-retryablehttp"
     version = "v0.5.2"
-
-[[constraint]]
-  name = "github.com/otiai10/copy"
-  version = "1.0.1"

@@ -51,16 +51,12 @@ func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string
 	}, nil
 }
 
-func (g fakeGit) CheckoutDir(directory string, ref string) error {
+func (g fakeGit) AddWorkingTree(path string, ref string) error {
 	return nil
 }
 
-func (g fakeGit) CleanDir(directory string) error {
+func (g fakeGit) RemoveWorkingTree(path string) error {
 	return nil
-}
-
-func (g fakeGit) IsDirClean(directory string) (bool, error) {
-	return true, nil
 }
 
 func (g fakeGit) GetUrlForRemote(remote string) (string, error) {
