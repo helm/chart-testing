@@ -205,7 +205,7 @@ func TruncateLeft(s string, maxLength int) string {
 	return s
 }
 
-func GetRandomPort() (int , error) {
+func GetRandomPort() (int, error) {
 	listener, err := net.Listen("tcp", ":0")
 	defer listener.Close()
 	if err != nil {
