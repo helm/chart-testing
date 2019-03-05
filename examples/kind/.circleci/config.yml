@@ -22,6 +22,7 @@ jobs:
       - checkout
       - run:
           command: test/e2e-kind.sh
+          no_output_timeout: 1h
 
 workflows:
   version: 2
@@ -29,4 +30,7 @@ workflows:
     jobs:
       - lint-scripts
       - lint-charts
-      - install-charts
+      - install-charts:
+          requires:
+            - lint-scripts
+            - lint-charts
