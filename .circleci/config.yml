@@ -20,7 +20,7 @@ jobs:
           name: Install tools
           command: |
             apk add bash build-base ca-certificates curl docker git openssh
-            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.95.2/goreleaser_Linux_x86_64.tar.gz
+            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.102.0/goreleaser_Linux_x86_64.tar.gz
             mkdir -p /usr/local/goreleaser
             tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
             ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser
