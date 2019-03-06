@@ -50,7 +50,7 @@ See documentation for individual commands:
 * [ct install](doc/ct_install.md)
 * [ct lint](doc/ct_lint.md)
 * [ct lint-and-install](doc/ct_lint-and-install.md)
-* [ct lint-changed](doc/ct_list-changed.md)
+* [ct list-changed](doc/ct_list-changed.md)
 * [ct version](doc/ct_version.md)
 
 
