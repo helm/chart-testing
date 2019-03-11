@@ -42,12 +42,28 @@
   version = "v1.4.7"
 
 [[projects]]
+  digest = "1:8e3bd93036b4a925fe2250d3e4f38f21cadb8ef623561cd80c3c50c114b13201"
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  pruneopts = ""
+  revision = "8a6fb523712970c966eefc6b39ed2c5e74880354"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:05334858a0cfb538622a066e065287f63f42bee26a7fda93a789674225057201"
   name = "github.com/hashicorp/go-cleanhttp"
   packages = ["."]
   pruneopts = ""
   revision = "e8ab9daed8d1ddd2d3c4efba338fe2eeae2e4f18"
   version = "v0.5.0"
+
+[[projects]]
+  digest = "1:72308fdd6d5ef61106a95be7ca72349a5565809042b6426a3cfb61d99483b824"
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  pruneopts = ""
+  revision = "886a7fbe3eb1c874d46f623bfa70af45f425b3d1"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:776139dc18d63ef223ffaca5d8e9a3057174890f84393d3c881e934100b66dbc"
@@ -251,6 +267,7 @@
   input-imports = [
     "github.com/MakeNowJust/heredoc",
     "github.com/Masterminds/semver",
+    "github.com/hashicorp/go-multierror",
     "github.com/hashicorp/go-retryablehttp",
     "github.com/mitchellh/go-homedir",
     "github.com/pkg/errors",

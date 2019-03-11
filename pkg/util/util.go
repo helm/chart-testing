@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
+	multierror "github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
@@ -178,14 +179,14 @@ func CompareVersions(left string, right string) (int, error) {
 	return leftVersion.Compare(rightVersion), nil
 }
 
-func BreakingChangeAllowed(left string, right string) (bool, []error, error) {
+func BreakingChangeAllowed(left string, right string) (bool, error) {
 	leftVersion, err := semver.NewVersion(left)
 	if err != nil {
-		return false, nil, errors.Wrap(err, "Error parsing semantic version")
+		return false, errors.Wrap(err, "Error parsing semantic version")
 	}
 	rightVersion, err := semver.NewVersion(right)
 	if err != nil {
-		return false, nil, errors.Wrap(err, "Error parsing semantic version")
+		return false, errors.Wrap(err, "Error parsing semantic version")
 	}
 
 	constraintOp := "^"
@@ -194,12 +195,15 @@ func BreakingChangeAllowed(left string, right string) (bool, []error, error) {
 	}
 	c, err := semver.NewConstraint(fmt.Sprintf("%s %s", constraintOp, leftVersion.String()))
 	if err != nil {
-		return false, nil, errors.Wrap(err, "Error parsing semantic version constraint")
+		return false, errors.Wrap(err, "Error parsing semantic version constraint")
 	}
 
 	minor, reasons := c.Validate(rightVersion)
+	if len(reasons) > 0 {
+		err = multierror.Append(err, reasons...)
+	}
 
-	return !minor, reasons, nil
+	return !minor, err
 }
 
 func CreateInstallParams(chart string, buildId string) (release string, namespace string) {

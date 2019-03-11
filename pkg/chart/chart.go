@@ -406,18 +406,20 @@ func (t *Testing) InstallChart(chart string, valuesFiles []string) TestResult {
 func (t *Testing) UpgradeChart(chart string) TestResult {
 	result := TestResult{Chart: chart}
 
-	breakingChangeAllowed, reasons, err := t.checkBreakingChangeAllowed(chart)
-	if err != nil {
+	breakingChangeAllowed, err := t.checkBreakingChangeAllowed(chart)
+
+	if breakingChangeAllowed {
+		if err != nil {
+			fmt.Println(errors.Wrap(err, fmt.Sprintf("Skipping upgrade test of '%s' because", chart)))
+		}
+		return result
+	} else if err != nil {
 		fmt.Printf("Error comparing chart versions for '%s'\n", chart)
 		result.Error = err
-	} else if breakingChangeAllowed {
-		for _, r := range reasons {
-			fmt.Println(errors.Wrap(r, fmt.Sprintf("Skipping upgrade test of '%s' because", chart)))
-		}
-	} else {
-		result.Error = t.doUpgrade(computePreviousRevisionPath(chart), chart, false)
+		return result
 	}
 
+	result.Error = t.doUpgrade(computePreviousRevisionPath(chart), chart, false)
 	return result
 }
 
@@ -662,19 +664,19 @@ func (t *Testing) CheckVersionIncrement(chart string) error {
 	return nil
 }
 
-func (t *Testing) checkBreakingChangeAllowed(chart string) (allowed bool, reasons []error, err error) {
+func (t *Testing) checkBreakingChangeAllowed(chart string) (allowed bool, err error) {
 	oldVersion, err := t.GetOldChartVersion(chart)
 	if err != nil {
-		return false, nil, err
+		return false, err
 	}
 	if oldVersion == "" {
 		// new chart, skip upgrade check
-		return true, []error{fmt.Errorf("chart has no previous revision")}, nil
+		return true, fmt.Errorf("chart has no previous revision")
 	}
 
 	newVersion, err := t.GetNewChartVersion(chart)
 	if err != nil {
-		return false, nil, err
+		return false, err
 	}
 
 	return util.BreakingChangeAllowed(oldVersion, newVersion)

@@ -105,11 +105,13 @@ func TestBreakingChangeAllowed(t *testing.T) {
 		{"1.2.3", "1.3.0", false},
 		{"1.2.3", "2.0.0", true},
 		{"1.2.3", "10.0.0", true},
+		{"foo", "1.0.0", false}, // version parse error
+		{"1.0.0", "bar", false}, // version parse error
 	}
 
 	for index, testData := range testDataSlice {
 		t.Run(string(index), func(t *testing.T) {
-			actual, _, _ := BreakingChangeAllowed(testData.left, testData.right)
+			actual, _ := BreakingChangeAllowed(testData.left, testData.right)
 			assert.Equal(t, testData.breaking, actual, fmt.Sprintf("input: %s,%s\n", testData.left, testData.right))
 		})
 	}
