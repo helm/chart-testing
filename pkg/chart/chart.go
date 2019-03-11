@@ -385,14 +385,14 @@ func (t *Testing) InstallChart(chart string, valuesFiles []string) TestResult {
 			return result
 		}
 		// Test upgrade of current version (related: https://github.com/helm/chart-testing/issues/19)
-		if err := t.testUpgrade(chart, chart, true); err != nil {
+		if err := t.doUpgrade(chart, chart, true); err != nil {
 			result.Error = err
 			return result
 		}
 	}
 
 	result = TestResult{Chart: chart}
-	if err := t.testInstall(chart); err != nil {
+	if err := t.doInstall(chart); err != nil {
 		result.Error = err
 	}
 
@@ -415,13 +415,13 @@ func (t *Testing) UpgradeChart(chart string) TestResult {
 			fmt.Println(errors.Wrap(r, fmt.Sprintf("Skipping upgrade test of '%s' because", chart)))
 		}
 	} else {
-		result.Error = t.testUpgrade(computePreviousRevisionPath(chart), chart, false)
+		result.Error = t.doUpgrade(computePreviousRevisionPath(chart), chart, false)
 	}
 
 	return result
 }
 
-func (t *Testing) testInstall(chart string) error {
+func (t *Testing) doInstall(chart string) error {
 	fmt.Printf("Installing chart '%s'...\n", chart)
 	valuesFiles := t.FindValuesFilesForCI(chart)
 
@@ -455,7 +455,7 @@ func (t *Testing) testInstall(chart string) error {
 	return nil
 }
 
-func (t *Testing) testUpgrade(oldChart, newChart string, oldChartMustPass bool) error {
+func (t *Testing) doUpgrade(oldChart, newChart string, oldChartMustPass bool) error {
 	fmt.Printf("Testing upgrades of chart '%s' relative to previous revision '%s'...\n", newChart, oldChart)
 	valuesFiles := t.FindValuesFilesForCI(oldChart)
 	if len(valuesFiles) == 0 {
