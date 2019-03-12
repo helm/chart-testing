@@ -257,7 +257,7 @@ func (t *Testing) processCharts(action func(chart string, valuesFiles []string) 
 		for _, chart := range charts {
 			if err := t.helm.BuildDependencies(computePreviousRevisionPath(chart)); err != nil {
 				// Only print error (don't exit) if building dependencies for previous revision fails.
-				fmt.Println(errors.Wrap(err, fmt.Sprintf("Error building dependencies for previous revision of chart '%s'", chart)))
+				fmt.Println(errors.Wrapf(err, "Error building dependencies for previous revision of chart '%s'\n", chart))
 			}
 		}
 	}
