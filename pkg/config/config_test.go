@@ -30,7 +30,9 @@ func TestUnmarshalJson(t *testing.T) {
 }
 
 func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
-	cfg, _ := LoadConfiguration(configFile, &cobra.Command{}, true)
+	cfg, _ := LoadConfiguration(configFile, &cobra.Command{
+		Use: "install",
+	}, true)
 
 	require.Equal(t, "origin", cfg.Remote)
 	require.Equal(t, "master", cfg.TargetBranch)
