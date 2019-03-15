@@ -1,6 +1,8 @@
 # Chart Testing
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go Report Card](https://goreportcard.com/badge/github.com/helm/chart-testing)](https://goreportcard.com/report/github.com/helm/chart-testing)
+[![CircleCI](https://circleci.com/gh/helm/chart-testing/tree/master.svg?style=svg)](https://circleci.com/gh/helm/chart-testing/tree/master)
 
 `ct` is the the tool for testing Helm charts.
 It is meant to be used for linting and testing pull requests.
