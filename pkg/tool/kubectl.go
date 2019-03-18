@@ -151,21 +151,16 @@ func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 
 		// 'kubectl rollout status' does not return a non-zero exit code when rollouts fail.
 		// We, thus, need to double-check here.
-
-		pods, err := k.GetPodsforDeployment(namespace, deployment)
+		//
+		// Just after rollout, pods from the previous deployment revision may still be in a
+		// terminating state.
+		unavailable, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "deployment", deployment, "--namespace", namespace, "--output",
+			`jsonpath={.status.unavailableReplicas}`)
 		if err != nil {
 			return err
 		}
-		for _, pod := range pods {
-			pod = strings.Trim(pod, "'")
-			ready, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "pod", pod, "--namespace", namespace, "--output",
-				`jsonpath={.status.conditions[?(@.type=="Ready")].status}`)
-			if err != nil {
-				return err
-			}
-			if ready != "True" {
-				return errors.New(fmt.Sprintf("Pods '%s' did not reach ready state!", pod))
-			}
+		if unavailable != "" && unavailable != "0" {
+			return fmt.Errorf("%s replicas unavailable", unavailable)
 		}
 	}
 

@@ -16,8 +16,9 @@ package util
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFlatten(t *testing.T) {
@@ -85,6 +86,33 @@ func TestTruncateLeft(t *testing.T) {
 			actual := TruncateLeft(testData.input, testData.maxLength)
 			fmt.Printf("actual: %s,%d, input: %s,%d\n", actual, len(actual), testData.input, testData.maxLength)
 			assert.Equal(t, testData.expected, actual)
+		})
+	}
+}
+
+func TestBreakingChangeAllowed(t *testing.T) {
+	var testDataSlice = []struct {
+		left     string
+		right    string
+		breaking bool
+	}{
+		{"0.1.0", "0.1.0", false},
+		{"0.1.0", "0.1.1", false},
+		{"0.1.0", "0.2.0", true},
+		{"0.1.0", "0.2.1", true},
+		{"1.2.3", "1.2.3", false},
+		{"1.2.3", "1.2.4", false},
+		{"1.2.3", "1.3.0", false},
+		{"1.2.3", "2.0.0", true},
+		{"1.2.3", "10.0.0", true},
+		{"foo", "1.0.0", false}, // version parse error
+		{"1.0.0", "bar", false}, // version parse error
+	}
+
+	for index, testData := range testDataSlice {
+		t.Run(string(index), func(t *testing.T) {
+			actual, _ := BreakingChangeAllowed(testData.left, testData.right)
+			assert.Equal(t, testData.breaking, actual, fmt.Sprintf("input: %s,%s\n", testData.left, testData.right))
 		})
 	}
 }

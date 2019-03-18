@@ -30,7 +30,9 @@ func TestUnmarshalJson(t *testing.T) {
 }
 
 func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
-	cfg, _ := LoadConfiguration(configFile, &cobra.Command{}, true)
+	cfg, _ := LoadConfiguration(configFile, &cobra.Command{
+		Use: "install",
+	}, true)
 
 	require.Equal(t, "origin", cfg.Remote)
 	require.Equal(t, "master", cfg.TargetBranch)
@@ -47,6 +49,7 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, []string{"stable", "incubator"}, cfg.ChartDirs)
 	require.Equal(t, []string{"common"}, cfg.ExcludedCharts)
 	require.Equal(t, "--timeout 300", cfg.HelmExtraArgs)
+	require.Equal(t, true, cfg.Upgrade)
 	require.Equal(t, "default", cfg.Namespace)
 	require.Equal(t, "release", cfg.ReleaseLabel)
 }

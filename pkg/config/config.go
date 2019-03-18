@@ -56,6 +56,7 @@ type Configuration struct {
 	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
 	HelmRepoExtraArgs     []string `mapstructure:"helm-repo-extra-args"`
 	Debug                 bool     `mapstructure:"debug"`
+	Upgrade               bool     `mapstructure:"upgrade"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
 }
@@ -97,6 +98,9 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		}
 	}
 
+	isLint := strings.Contains(cmd.Use, "lint")
+	isInstall := strings.Contains(cmd.Use, "install")
+
 	cfg := &Configuration{}
 	if err := v.Unmarshal(cfg); err != nil {
 		return nil, errors.Wrap(err, "Error unmarshaling configuration")
@@ -110,7 +114,13 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		return nil, errors.New("specifying '--namespace' without '--release-label' is not allowed")
 	}
 
-	isLint := strings.Contains(cmd.Use, "lint")
+	// Disable upgrade (this does some expensive dependency building on previous revisions)
+	// when neither "install" nor "lint-and-install" have not been specified.
+	cfg.Upgrade = isInstall && cfg.Upgrade
+	if (cfg.TargetBranch == "" || cfg.Remote == "") && cfg.Upgrade {
+		return nil, errors.New("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
+	}
+
 	chartYamlSchemaPath := cfg.ChartYamlSchema
 	if chartYamlSchemaPath == "" {
 		var err error

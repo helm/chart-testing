@@ -19,5 +19,6 @@ chart-dirs:
 excluded-charts:
   - common
 helm-extra-args: --timeout 300
+upgrade: true
 namespace: default
 release-label: release

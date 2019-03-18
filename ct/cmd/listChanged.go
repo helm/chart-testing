@@ -16,8 +16,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/MakeNowJust/heredoc"
 	"os"
+
+	"github.com/MakeNowJust/heredoc"
 
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"

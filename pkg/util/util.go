@@ -16,9 +16,6 @@ package util
 
 import (
 	"fmt"
-	"github.com/Masterminds/semver"
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -27,6 +24,11 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Masterminds/semver"
+	multierror "github.com/hashicorp/go-multierror"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 const chars = "1234567890abcdefghijklmnopqrstuvwxyz"
@@ -175,6 +177,33 @@ func CompareVersions(left string, right string) (int, error) {
 		return 0, errors.Wrap(err, "Error parsing semantic version")
 	}
 	return leftVersion.Compare(rightVersion), nil
+}
+
+func BreakingChangeAllowed(left string, right string) (bool, error) {
+	leftVersion, err := semver.NewVersion(left)
+	if err != nil {
+		return false, errors.Wrap(err, "Error parsing semantic version")
+	}
+	rightVersion, err := semver.NewVersion(right)
+	if err != nil {
+		return false, errors.Wrap(err, "Error parsing semantic version")
+	}
+
+	constraintOp := "^"
+	if leftVersion.Major() == 0 {
+		constraintOp = "~"
+	}
+	c, err := semver.NewConstraint(fmt.Sprintf("%s %s", constraintOp, leftVersion.String()))
+	if err != nil {
+		return false, errors.Wrap(err, "Error parsing semantic version constraint")
+	}
+
+	minor, reasons := c.Validate(rightVersion)
+	if len(reasons) > 0 {
+		err = multierror.Append(err, reasons...)
+	}
+
+	return !minor, err
 }
 
 func CreateInstallParams(chart string, buildId string) (release string, namespace string) {
