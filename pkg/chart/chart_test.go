@@ -16,6 +16,8 @@ package chart
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -29,15 +31,21 @@ import (
 type fakeGit struct{}
 
 func (g fakeGit) FileExistsOnBranch(file string, remote string, branch string) bool {
-	return true
+	_, err := os.Open(computePreviousRevisionPath(file))
+	fmt.Println(err)
+	return err == nil
 }
 
 func (g fakeGit) Show(file string, remote string, branch string) (string, error) {
-	return "", nil
+	b, err := ioutil.ReadFile(computePreviousRevisionPath(file))
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 func (g fakeGit) MergeBase(commit1 string, commit2 string) (string, error) {
-	return "", nil
+	return "HEAD", nil
 }
 
 func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error) {
@@ -142,11 +150,18 @@ func TestComputeChangedChartDirectories(t *testing.T) {
 
 func TestReadAllChartDirectories(t *testing.T) {
 	actual, err := ct.ReadAllChartDirectories()
-	expected := []string{"test_charts/foo", "test_charts/bar", "test_chart_at_root"}
+	expected := []string{
+		"test_charts/foo",
+		"test_charts/bar",
+		"test_charts/must-pass-upgrade-install",
+		"test_charts/mutating-deployment-selector",
+		"test_charts/mutating-sfs-volumeclaim",
+		"test_chart_at_root",
+	}
 	for _, chart := range actual {
 		assert.Contains(t, expected, chart)
 	}
-	assert.Len(t, actual, 3)
+	assert.Len(t, actual, 6)
 	assert.Nil(t, err)
 }
 

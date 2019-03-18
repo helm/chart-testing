@@ -10,6 +10,29 @@ jobs:
           command: |
             shellcheck -x build.sh
             shellcheck -x tag.sh
+  test:
+    machine:
+      enabled: true
+    working_directory: /home/circleci/.go_workspace/src/github.com/helm/chart-testing
+    steps:
+      - run:
+          name: Install tools
+          command: |
+            mkdir /home/circleci/.go_workspace/bin
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash
+            curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/0.1.0/kind-linux-amd64"
+            chmod +x kind
+            sudo mv kind /usr/local/bin/kind
+      - checkout
+      - run:
+          name: Test
+          command: |
+            dep ensure -v
+            ./e2e-kind.sh
   build:
     docker:
       - image: golang:1.11.5-alpine3.9
@@ -50,6 +73,7 @@ workflows:
   untagged-build:
     jobs:
       - lint
+      - test
       - build
   tagged-build:
     jobs:
