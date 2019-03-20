@@ -3,6 +3,8 @@ builds:
   - main: ct/main.go
     binary: ct
     env:
+      - GO111MODULE=on
+      - GOPROXY=https://gocenter.io
       - CGO_ENABLED=0
     goarch:
       - amd64

@@ -14,18 +14,20 @@ jobs:
     docker:
       - image: golang:1.11.5-alpine3.9
     working_directory: /go/src/github.com/helm/chart-testing
+    environment:
+      GO111MODULE: "on"
+      GOPROXY: https://gocenter.io
     steps:
       - setup_remote_docker
       - run:
           name: Install tools
           command: |
             apk add bash build-base ca-certificates curl docker git openssh
-            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.102.0/goreleaser_Linux_x86_64.tar.gz
+            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.103.1/goreleaser_Linux_x86_64.tar.gz
             mkdir -p /usr/local/goreleaser
             tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
             ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser
             rm -rf goreleaser_Linux_x86_64.tar.gz
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - checkout
       - run:
           name: gofmt
