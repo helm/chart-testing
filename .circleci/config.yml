@@ -10,6 +10,7 @@ jobs:
           command: |
             shellcheck -x build.sh
             shellcheck -x tag.sh
+            shellcheck -x e2e-kind.sh
   test:
     machine:
       enabled: true
