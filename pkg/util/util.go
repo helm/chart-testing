@@ -26,13 +26,12 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
-	multierror "github.com/hashicorp/go-multierror"
+	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
 const chars = "1234567890abcdefghijklmnopqrstuvwxyz"
-const maxNameLength = 63
 
 type Maintainer struct {
 	Name  string `yaml:"name"`
@@ -149,21 +148,24 @@ func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, erro
 	return "", errors.New("no chart directory")
 }
 
-func (u ChartUtils) ReadChartYaml(dir string) (*ChartYaml, error) {
+// ReadChartYaml attempts to parse Chart.yaml within the specified directory
+// and return a newly allocated ChartYaml object. If no Chart.yaml is present
+// or there is an error unmarshaling the file contents, an error will be returned.
+func ReadChartYaml(dir string) (*ChartYaml, error) {
 	yamlBytes, err := ioutil.ReadFile(path.Join(dir, "Chart.yaml"))
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not read 'Chart.yaml'")
 	}
-	return ReadChartYaml(yamlBytes)
+	return UnmarshalChartYaml(yamlBytes)
 }
 
-func ReadChartYaml(yamlBytes []byte) (*ChartYaml, error) {
+// UnmarshalChartYaml parses the yaml encoded data and returns a newly
+// allocated ChartYaml object.
+func UnmarshalChartYaml(yamlBytes []byte) (*ChartYaml, error) {
 	chartYaml := &ChartYaml{}
-
 	if err := yaml.Unmarshal(yamlBytes, chartYaml); err != nil {
 		return nil, errors.Wrap(err, "Could not unmarshal 'Chart.yaml'")
 	}
-
 	return chartYaml, nil
 }
 
@@ -204,18 +206,6 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 	}
 
 	return !minor, err
-}
-
-func CreateInstallParams(chart string, buildId string) (release string, namespace string) {
-	release = path.Base(chart)
-	namespace = release
-	if buildId != "" {
-		namespace = fmt.Sprintf("%s-%s", namespace, buildId)
-	}
-	randomSuffix := RandomString(10)
-	release = TruncateLeft(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
-	namespace = TruncateLeft(fmt.Sprintf("%s-%s", namespace, randomSuffix), maxNameLength)
-	return
 }
 
 func PrintDelimiterLine(delimiterChar string) {
