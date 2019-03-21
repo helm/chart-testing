@@ -71,15 +71,6 @@ func TestInstallChart(t *testing.T) {
 			"test_charts/must-pass-upgrade-install",
 			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
 		},
-		{
-			"fix previous chart version with breaking semver change",
-			config.Configuration{
-				Debug:   true,
-				Upgrade: true,
-			},
-			"test_charts/must-pass-upgrade-install", // previous revision is at path ct_prev_revision/must-pass-upgrade-install
-			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
-		},
 	}
 
 	for _, tc := range cases {
