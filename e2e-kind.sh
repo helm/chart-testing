@@ -10,7 +10,8 @@ readonly K8S_VERSION=v1.13.2
 
 create_kind_cluster() {
     kind create cluster --name "$CLUSTER_NAME" --config examples/kind/test/kind-config.yaml --image "kindest/node:$K8S_VERSION" --wait 10s
-    export KUBECONFIG="$(kind get kubeconfig-path --name=$CLUSTER_NAME)"
+    KUBECONFIG="$(kind get kubeconfig-path --name=$CLUSTER_NAME)"
+    export KUBECONFIG
 
     kubectl cluster-info || kubectl cluster-info dump
     echo
