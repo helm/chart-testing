@@ -61,7 +61,7 @@ func TestInstallChart(t *testing.T) {
 				ReleaseLabel: "app.kubernetes.io/instance",
 			},
 			"test_charts/must-pass-upgrade-install",
-			TestResult{"test_charts/must-pass-upgrade-install", nil},
+			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
 		},
 		{
 			"install only in random namespace",
@@ -69,7 +69,7 @@ func TestInstallChart(t *testing.T) {
 				Debug: true,
 			},
 			"test_charts/must-pass-upgrade-install",
-			TestResult{"test_charts/must-pass-upgrade-install", nil},
+			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
 		},
 		{
 			"fix previous chart version with breaking semver change",
@@ -78,14 +78,14 @@ func TestInstallChart(t *testing.T) {
 				Upgrade: true,
 			},
 			"test_charts/must-pass-upgrade-install", // previous revision is at path ct_prev_revision/must-pass-upgrade-install
-			TestResult{"test_charts/must-pass-upgrade-install", nil},
+			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			ct := newTestingHelmIntegration(tc.cfg)
-			result := ct.InstallChart(tc.chartDir, []string{})
+			result := ct.InstallChart(mustNewChart(tc.chartDir))
 
 			if result.Error != tc.output.Error {
 				if result.Error != nil && tc.output.Error != nil {
@@ -136,7 +136,7 @@ func TestUpgradeChart(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := ct.doUpgrade(tc.old, tc.new, true)
+			err := ct.doUpgrade(mustNewChart(tc.old), mustNewChart(tc.new), true)
 
 			if err != tc.err {
 				if err != nil && tc.err != nil {
@@ -147,4 +147,12 @@ func TestUpgradeChart(t *testing.T) {
 			}
 		})
 	}
+}
+
+func mustNewChart(chartPath string) *Chart {
+	c, err := NewChart(chartPath)
+	if err != nil {
+		panic(err)
+	}
+	return c
 }
