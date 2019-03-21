@@ -9,7 +9,7 @@ readonly CLUSTER_NAME=chart-testing
 readonly K8S_VERSION=v1.13.2
 
 create_kind_cluster() {
-    kind create cluster --name "$CLUSTER_NAME" --config examples/kind/test/kind-config.yaml --image "kindest/node:$K8S_VERSION" --wait 10s
+    kind create cluster --name "$CLUSTER_NAME" --image "kindest/node:$K8S_VERSION" --wait 10s
     KUBECONFIG="$(kind get kubeconfig-path --name=$CLUSTER_NAME)"
     export KUBECONFIG
 
