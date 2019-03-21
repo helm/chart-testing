@@ -57,6 +57,7 @@ type Configuration struct {
 	HelmRepoExtraArgs     []string `mapstructure:"helm-repo-extra-args"`
 	Debug                 bool     `mapstructure:"debug"`
 	Upgrade               bool     `mapstructure:"upgrade"`
+	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
 }

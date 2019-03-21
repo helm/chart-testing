@@ -175,6 +175,17 @@ func (c *Chart) ValuesFilePathsForCI() []string {
 	return c.ciValuesPaths
 }
 
+// HasCIValuesFile checks whether a given CI values file is present.
+func (c *Chart) HasCIValuesFile(filePath string) bool {
+	fileName := path.Base(filePath)
+	for _, file := range c.ValuesFilePathsForCI() {
+		if fileName == path.Base(file) {
+			return true
+		}
+	}
+	return false
+}
+
 // CreateInstallParams generates a randomized release name and namespace based on the chart path
 // and optional buildID. If a buildID is specified, it will be part of the generated namespace.
 func (c *Chart) CreateInstallParams(buildID string) (release string, namespace string) {
@@ -530,7 +541,11 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 	}
 	for _, valuesFile := range valuesFiles {
 		if valuesFile != "" {
-			fmt.Printf("\nInstalling chart '%s' with values file '%s'...\n\n", oldChart.Path(), valuesFile)
+			if t.config.SkipMissingValues && !newChart.HasCIValuesFile(valuesFile) {
+				fmt.Printf("Upgrade testing for values file '%s' skipped because a corresponding values file was not found in %s/ci", valuesFile, newChart.Path())
+				continue
+			}
+			fmt.Printf("\nInstalling chart '%s' with values file '%s'...\n\n", oldChart, valuesFile)
 		}
 
 		// Use anonymous function. Otherwise deferred calls would pile up
