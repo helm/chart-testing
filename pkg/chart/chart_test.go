@@ -59,11 +59,11 @@ func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string
 	}, nil
 }
 
-func (g fakeGit) AddWorkingTree(path string, ref string) error {
+func (g fakeGit) AddWorkTree(path string, ref string) error {
 	return nil
 }
 
-func (g fakeGit) RemoveWorkingTree(path string) error {
+func (g fakeGit) RemoveWorkTree(path string) error {
 	return nil
 }
 

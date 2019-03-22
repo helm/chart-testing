@@ -35,9 +35,9 @@ const maxNameLength = 63
 //
 // Show returns the contents of file on the specified remote/branch.
 //
-// AddWorkingTree checks out the contents of the repository at a commit ref into the specified path.
+// AddWorkTree checks out the contents of the repository at a commit ref into the specified path.
 //
-// RemoveWorkingTree removes the working tree at the specified path.
+// RemoveWorkTree removes the working tree at the specified path.
 //
 // MergeBase returns the SHA1 of the merge base of commit1 and commit2.
 //
@@ -50,8 +50,8 @@ const maxNameLength = 63
 type Git interface {
 	FileExistsOnBranch(file string, remote string, branch string) bool
 	Show(file string, remote string, branch string) (string, error)
-	AddWorkingTree(path string, ref string) error
-	RemoveWorkingTree(path string) error
+	AddWorkTree(path string, ref string) error
+	RemoveWorkTree(path string) error
 	MergeBase(commit1 string, commit2 string) (string, error)
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
 	GetUrlForRemote(remote string) (string, error)
@@ -324,8 +324,8 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		if err != nil {
 			return results, errors.Wrap(err, "Error identifying merge base")
 		}
-		t.git.AddWorkingTree(ctPreviousRevisionTree, mergeBase)
-		defer t.git.RemoveWorkingTree(ctPreviousRevisionTree)
+		t.git.AddWorkTree(ctPreviousRevisionTree, mergeBase)
+		defer t.git.RemoveWorkTree(ctPreviousRevisionTree)
 
 		for _, chart := range charts {
 			if err := t.helm.BuildDependencies(computePreviousRevisionPath(chart.Path())); err != nil {
