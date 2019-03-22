@@ -16,6 +16,7 @@ It is recommended to use the provided Docker image which can be [found on Quay](
 It comes with all necessary tools installed.
 
 * [helm](http://helm.sh)
+* [git](https://git-scm.com) (2.17.0 or later)
 * [yamllint](https://github.com/adrienverge/yamllint)
 * [yamale](https://github.com/23andMe/Yamale)
 * [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
