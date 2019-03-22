@@ -25,7 +25,7 @@ jobs:
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
             curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash
-            curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/0.1.0/kind-linux-amd64"
+            curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/0.2.0/kind-linux-amd64"
             chmod +x kind
             sudo mv kind /usr/local/bin/kind
       - checkout
