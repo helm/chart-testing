@@ -15,11 +15,10 @@ It automatically detects charts changed against the target branch.
 It is recommended to use the provided Docker image which can be [found on Quay](https://quay.io/helmpack/chart-testing/).
 It comes with all necessary tools installed.
 
-* Helm (http://helm.sh)
-* yamllint (https://github.com/adrienverge/yamllint)
-* yamale (https://github.com/23andMe/Yamale)
-* kubectl (https://kubernetes.io/docs/reference/kubectl/overview/)
-* Tooling for your cluster
+* [helm](http://helm.sh)
+* [yamllint](https://github.com/adrienverge/yamllint)
+* [yamale](https://github.com/23andMe/Yamale)
+* [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
 
 ### Binary Distribution
 
