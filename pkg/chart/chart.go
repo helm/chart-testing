@@ -16,7 +16,6 @@ package chart
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -175,10 +174,21 @@ func (c *Chart) ValuesFilePathsForCI() []string {
 	return c.ciValuesPaths
 }
 
+// HasCIValuesFile checks whether a given CI values file is present.
+func (c *Chart) HasCIValuesFile(path string) bool {
+	fileName := filepath.Base(path)
+	for _, file := range c.ValuesFilePathsForCI() {
+		if fileName == filepath.Base(file) {
+			return true
+		}
+	}
+	return false
+}
+
 // CreateInstallParams generates a randomized release name and namespace based on the chart path
 // and optional buildID. If a buildID is specified, it will be part of the generated namespace.
 func (c *Chart) CreateInstallParams(buildID string) (release string, namespace string) {
-	release = path.Base(c.Path())
+	release = filepath.Base(c.Path())
 	if release == "." || release == "/" {
 		yaml := c.Yaml()
 		release = yaml.Name
@@ -200,7 +210,7 @@ func NewChart(chartPath string) (*Chart, error) {
 	if err != nil {
 		return nil, err
 	}
-	matches, _ := filepath.Glob(path.Join(chartPath, "ci/*-values.yaml"))
+	matches, _ := filepath.Glob(filepath.Join(chartPath, "ci", "*-values.yaml"))
 	return &Chart{chartPath, yaml, matches}, nil
 }
 
@@ -248,7 +258,7 @@ const ctPreviousRevisionTree = "ct_previous_revision"
 // computePreviousRevisionPath converts any file or directory path to the same path in the
 // previous revision's working tree.
 func computePreviousRevisionPath(fileOrDirPath string) string {
-	return path.Join(ctPreviousRevisionTree, fileOrDirPath)
+	return filepath.Join(ctPreviousRevisionTree, fileOrDirPath)
 }
 
 func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestResult, error) {
@@ -389,8 +399,8 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 		}
 	}
 
-	chartYaml := path.Join(chart.Path(), "Chart.yaml")
-	valuesYaml := path.Join(chart.Path(), "values.yaml")
+	chartYaml := filepath.Join(chart.Path(), "Chart.yaml")
+	valuesYaml := filepath.Join(chart.Path(), "values.yaml")
 	valuesFiles := chart.ValuesFilePathsForCI()
 
 	if t.config.ValidateChartSchema {
@@ -530,7 +540,11 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 	}
 	for _, valuesFile := range valuesFiles {
 		if valuesFile != "" {
-			fmt.Printf("\nInstalling chart '%s' with values file '%s'...\n\n", oldChart.Path(), valuesFile)
+			if t.config.SkipMissingValues && !newChart.HasCIValuesFile(valuesFile) {
+				fmt.Printf("Upgrade testing for values file '%s' skipped because a corresponding values file was not found in %s/ci", valuesFile, newChart.Path())
+				continue
+			}
+			fmt.Printf("\nInstalling chart '%s' with values file '%s'...\n\n", oldChart, valuesFile)
 		}
 
 		// Use anonymous function. Otherwise deferred calls would pile up
@@ -677,7 +691,7 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 		dirs, err := t.directoryLister.ListChildDirs(chartParentDir,
 			func(dir string) bool {
 				_, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
-				return err == nil && !util.StringSliceContains(cfg.ExcludedCharts, path.Base(dir))
+				return err == nil && !util.StringSliceContains(cfg.ExcludedCharts, filepath.Base(dir))
 			})
 		if err != nil {
 			return nil, errors.Wrap(err, "Error reading chart directories")
@@ -739,7 +753,7 @@ func (t *Testing) checkBreakingChangeAllowed(chart *Chart) (allowed bool, err er
 func (t *Testing) GetOldChartVersion(chartPath string) (string, error) {
 	cfg := t.config
 
-	chartYamlFile := path.Join(chartPath, "Chart.yaml")
+	chartYamlFile := filepath.Join(chartPath, "Chart.yaml")
 	if !t.git.FileExistsOnBranch(chartYamlFile, cfg.Remote, cfg.TargetBranch) {
 		fmt.Printf("Unable to find chart on %s. New chart detected.\n", cfg.TargetBranch)
 		return "", nil

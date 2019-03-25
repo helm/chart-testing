@@ -379,3 +379,46 @@ func TestGenerateInstallConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestChart_HasCIValuesFile(t *testing.T) {
+	type testData struct {
+		name     string
+		chart    *Chart
+		file     string
+		expected bool
+	}
+
+	testCases := []testData{
+		{
+			name: "has file",
+			chart: &Chart{
+				ciValuesPaths: []string{"foo-values.yaml"},
+			},
+			file:     "foo-values.yaml",
+			expected: true,
+		},
+		{
+			name: "different paths",
+			chart: &Chart{
+				ciValuesPaths: []string{"ci/foo-values.yaml"},
+			},
+			file:     "foo/bar/foo-values.yaml",
+			expected: true,
+		},
+		{
+			name: "does not have file",
+			chart: &Chart{
+				ciValuesPaths: []string{"foo-values.yaml"},
+			},
+			file:     "bar-values.yaml",
+			expected: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual := tc.chart.HasCIValuesFile(tc.file)
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
