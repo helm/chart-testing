@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,24 +21,15 @@ set -o pipefail
 readonly IMAGE_TAG=v2.2.0
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 
-run_ct_container() {
-    echo 'Running ct container...'
-    docker container run --rm --interactive --detach --name ct \
-        --volume "$(pwd):/workdir" \
-        --workdir /workdir \
-        "$IMAGE_REPOSITORY:$IMAGE_TAG"
-    echo
-}
+main() {
+    local testcontainer_id
+    testcontainer_id=$(create_testcontainer)
 
-cleanup() {
-    echo 'Removing ct container...'
-    docker kill ct > /dev/null 2>&1
+    # shellcheck disable=SC2064
+    trap "docker container rm --force $testcontainer_id > /dev/null" EXIT
 
-    echo 'Done!'
-}
-
-docker_exec() {
-    docker exec --interactive -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true ct "$@"
+    configure_kubectl "$testcontainer_id"
+    run_test
 }
 
 lookup_apiserver_container_id() {
@@ -51,7 +42,15 @@ get_apiserver_arg() {
     docker container inspect "$container_id" | jq -r ".[].Args[] | capture(\"$arg=(?<arg>.*)\") | .arg"
 }
 
-connect_to_cluster() {
+create_testcontainer() {
+    docker container run --interactive --tty --detach \
+        --volume "$(pwd):/workdir" --workdir /workdir \
+        "$IMAGE_REPOSITORY:$IMAGE_TAG" cat
+}
+
+configure_kubectl() {
+    local testcontainer_id="$1"
+
     local apiserver_id
     apiserver_id=$(lookup_apiserver_container_id)
 
@@ -66,37 +65,17 @@ connect_to_cluster() {
     local port
     port=$(get_apiserver_arg "$apiserver_id" --secure-port)
 
-    docker cp "$HOME/.kube" ct:/root/.kube
-    docker_exec kubectl config set-cluster docker-desktop "--server=https://$ip:$port"
-    docker_exec kubectl config set-cluster docker-desktop --insecure-skip-tls-verify=true
-    docker_exec kubectl config use-context docker-desktop
+    docker cp "$HOME/.kube" "$testcontainer_id:/root/.kube"
+    docker exec "$testcontainer_id" kubectl config set-cluster docker-desktop "--server=https://$ip:$port"
+    docker exec "$testcontainer_id" kubectl config set-cluster docker-desktop --insecure-skip-tls-verify=true
+    docker exec "$testcontainer_id" kubectl config use-context docker-desktop
 }
 
-install_tiller() {
-    echo 'Installing Tiller...'
-    docker_exec kubectl --namespace kube-system create sa tiller
-    docker_exec kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-    docker_exec helm init --service-account tiller --upgrade --wait
-    echo
-}
-
-install_charts() {
-    echo "Add git remote k8s ${CHARTS_REPO}"
-    git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
-    git fetch k8s master
-    echo
-    # shellcheck disable=SC2086
-    docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
-    echo
-}
-
-main() {
-    run_ct_container
-    trap cleanup EXIT
-
-    connect_to_cluster
-    install_tiller
-    install_charts
+run_test() {
+    git remote add k8s https://github.com/helm/charts.git &> /dev/null || true
+    git fetch k8s
+    docker exec "$testcontainer_id" ct lint --chart-dirs stable,incubator --remote k8s
+    docker exec "$testcontainer_id" ct install --chart-dirs stable,incubator --remote k8s
 }
 
 main
