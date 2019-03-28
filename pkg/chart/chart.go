@@ -223,7 +223,7 @@ type Testing struct {
 	accountValidator         AccountValidator
 	directoryLister          DirectoryLister
 	chartUtils               ChartUtils
-	previousRevisionWorkTree string
+	previousRevisionWorktree string
 }
 
 // TestResults holds results and overall status
@@ -257,7 +257,7 @@ func NewTesting(config config.Configuration) Testing {
 // computePreviousRevisionPath converts any file or directory path to the same path in the
 // previous revision's working tree.
 func (t *Testing) computePreviousRevisionPath(fileOrDirPath string) string {
-	return filepath.Join(t.previousRevisionWorkTree, fileOrDirPath)
+	return filepath.Join(t.previousRevisionWorktree, fileOrDirPath)
 }
 
 func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestResult, error) {
@@ -328,7 +328,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		if err != nil {
 			return results, errors.Wrap(err, "Could not create previous revision directory")
 		}
-		t.previousRevisionWorkTree = worktreePath
+		t.previousRevisionWorktree = worktreePath
 		err = t.git.AddWorktree(worktreePath, mergeBase)
 		if err != nil {
 			return results, errors.Wrap(err, "Could not create worktree for previous revision")
