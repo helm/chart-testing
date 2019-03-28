@@ -16,30 +16,37 @@ package tool
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 	"regexp"
+
+	"github.com/pkg/errors"
 )
 
 type AccountValidator struct{}
 
 var repoDomainPattern = regexp.MustCompile("(?:https://|git@)([^/:]+)")
 
-func (v AccountValidator) Validate(repoUrl string, account string) error {
-	domain := parseOutGitRepoDomain(repoUrl)
+func (v AccountValidator) Validate(repoURL string, account string) error {
+	domain, err := parseOutGitRepoDomain(repoURL)
+	if err != nil {
+		return err
+	}
 	url := fmt.Sprintf("https://%s/%s", domain, account)
 	response, err := http.Head(url)
 	if err != nil {
 		return errors.Wrap(err, "Error validating maintainers")
 	}
 	if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Error validating maintainer '%s': %s", account, response.Status))
+		return fmt.Errorf("Error validating maintainer '%s': %s", account, response.Status)
 	}
 	return nil
 }
 
-func parseOutGitRepoDomain(repoUrl string) string {
+func parseOutGitRepoDomain(repoURL string) (string, error) {
 	// This works for GitHub, Bitbucket, and Gitlab
-	submatch := repoDomainPattern.FindStringSubmatch(repoUrl)
-	return submatch[1]
+	submatch := repoDomainPattern.FindStringSubmatch(repoURL)
+	if submatch == nil || len(submatch) < 2 {
+		return "", fmt.Errorf("Could not parse git repository domain for '%s'", repoURL)
+	}
+	return submatch[1], nil
 }

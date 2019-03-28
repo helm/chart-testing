@@ -1,8 +1,10 @@
 package tool
 
 import (
-	"github.com/stretchr/testify/assert"
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseOutGitDomain(t *testing.T) {
@@ -10,18 +12,21 @@ func TestParseOutGitDomain(t *testing.T) {
 		name     string
 		repoUrl  string
 		expected string
+		err      error
 	}{
-		{"GitHub SSH", "git@github.com:foo/bar", "github.com"},
-		{"GitHub HTTPS", "https://github.com/foo/bar", "github.com"},
-		{"Gitlab SSH", "git@gitlab.com:foo/bar", "gitlab.com"},
-		{"Gitlab HTTPS", "https://gitlab.com/foo/bar", "gitlab.com"},
-		{"Bitbucket SSH", "git@bitbucket.com:foo/bar", "bitbucket.com"},
-		{"Bitbucket HTTPS", "https://bitbucket.com/foo/bar", "bitbucket.com"},
+		{"GitHub SSH", "git@github.com:foo/bar", "github.com", nil},
+		{"GitHub HTTPS", "https://github.com/foo/bar", "github.com", nil},
+		{"Gitlab SSH", "git@gitlab.com:foo/bar", "gitlab.com", nil},
+		{"Gitlab HTTPS", "https://gitlab.com/foo/bar", "gitlab.com", nil},
+		{"Bitbucket SSH", "git@bitbucket.com:foo/bar", "bitbucket.com", nil},
+		{"Bitbucket HTTPS", "https://bitbucket.com/foo/bar", "bitbucket.com", nil},
+		{"Invalid", "foo/bar", "", fmt.Errorf("Could not parse git repository domain for 'foo/bar'")},
 	}
 
 	for _, testData := range testDataSlice {
 		t.Run(testData.name, func(t *testing.T) {
-			actual := parseOutGitRepoDomain(testData.repoUrl)
+			actual, err := parseOutGitRepoDomain(testData.repoUrl)
+			assert.Equal(t, err, testData.err)
 			assert.Equal(t, testData.expected, actual)
 		})
 	}
