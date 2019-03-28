@@ -38,11 +38,11 @@ func (g Git) FileExistsOnBranch(file string, remote string, branch string) bool 
 	return err == nil
 }
 
-func (g Git) AddWorkTree(path string, ref string) error {
+func (g Git) AddWorktree(path string, ref string) error {
 	return g.exec.RunProcess("git", "worktree", "add", path, ref)
 }
 
-func (g Git) RemoveWorkTree(path string) error {
+func (g Git) RemoveWorktree(path string) error {
 	return g.exec.RunProcess("git", "worktree", "remove", path)
 }
 

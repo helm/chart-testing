@@ -35,9 +35,9 @@ const maxNameLength = 63
 //
 // Show returns the contents of file on the specified remote/branch.
 //
-// AddWorkTree checks out the contents of the repository at a commit ref into the specified path.
+// AddWorktree checks out the contents of the repository at a commit ref into the specified path.
 //
-// RemoveWorkTree removes the working tree at the specified path.
+// RemoveWorktree removes the working tree at the specified path.
 //
 // MergeBase returns the SHA1 of the merge base of commit1 and commit2.
 //
@@ -50,8 +50,8 @@ const maxNameLength = 63
 type Git interface {
 	FileExistsOnBranch(file string, remote string, branch string) bool
 	Show(file string, remote string, branch string) (string, error)
-	AddWorkTree(path string, ref string) error
-	RemoveWorkTree(path string) error
+	AddWorktree(path string, ref string) error
+	RemoveWorktree(path string) error
 	MergeBase(commit1 string, commit2 string) (string, error)
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
 	GetUrlForRemote(remote string) (string, error)
@@ -329,11 +329,11 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 			return results, errors.Wrap(err, "Could not create previous revision directory")
 		}
 		t.previousRevisionWorkTree = worktreePath
-		err = t.git.AddWorkTree(worktreePath, mergeBase)
+		err = t.git.AddWorktree(worktreePath, mergeBase)
 		if err != nil {
 			return results, errors.Wrap(err, "Could not create worktree for previous revision")
 		}
-		defer t.git.RemoveWorkTree(worktreePath)
+		defer t.git.RemoveWorktree(worktreePath)
 
 		for _, chart := range charts {
 			if err := t.helm.BuildDependencies(t.computePreviousRevisionPath(chart.Path())); err != nil {
