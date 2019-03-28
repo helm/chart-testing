@@ -16,8 +16,6 @@ package chart
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"strings"
 	"testing"
 
@@ -31,17 +29,11 @@ import (
 type fakeGit struct{}
 
 func (g fakeGit) FileExistsOnBranch(file string, remote string, branch string) bool {
-	_, err := os.Open(computePreviousRevisionPath(file))
-	fmt.Println(err)
-	return err == nil
+	return true
 }
 
 func (g fakeGit) Show(file string, remote string, branch string) (string, error) {
-	b, err := ioutil.ReadFile(computePreviousRevisionPath(file))
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	return "", nil
 }
 
 func (g fakeGit) MergeBase(commit1 string, commit2 string) (string, error) {
@@ -59,11 +51,11 @@ func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string
 	}, nil
 }
 
-func (g fakeGit) AddWorkingTree(path string, ref string) error {
+func (g fakeGit) AddWorktree(path string, ref string) error {
 	return nil
 }
 
-func (g fakeGit) RemoveWorkingTree(path string) error {
+func (g fakeGit) RemoveWorktree(path string) error {
 	return nil
 }
 

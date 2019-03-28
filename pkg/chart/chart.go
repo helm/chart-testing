@@ -16,12 +16,12 @@ package chart
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"strings"
 
-	"github.com/helm/chart-testing/pkg/exec"
-
 	"github.com/helm/chart-testing/pkg/config"
+	"github.com/helm/chart-testing/pkg/exec"
 	"github.com/helm/chart-testing/pkg/tool"
 	"github.com/helm/chart-testing/pkg/util"
 	"github.com/pkg/errors"
@@ -35,9 +35,9 @@ const maxNameLength = 63
 //
 // Show returns the contents of file on the specified remote/branch.
 //
-// AddWorkingTree checks out the contents of the repository at a commit ref into the specified path.
+// AddWorktree checks out the contents of the repository at a commit ref into the specified path.
 //
-// RemoveWorkingTree removes the working tree at the specified path.
+// RemoveWorktree removes the working tree at the specified path.
 //
 // MergeBase returns the SHA1 of the merge base of commit1 and commit2.
 //
@@ -50,8 +50,8 @@ const maxNameLength = 63
 type Git interface {
 	FileExistsOnBranch(file string, remote string, branch string) bool
 	Show(file string, remote string, branch string) (string, error)
-	AddWorkingTree(path string, ref string) error
-	RemoveWorkingTree(path string) error
+	AddWorktree(path string, ref string) error
+	RemoveWorktree(path string) error
 	MergeBase(commit1 string, commit2 string) (string, error)
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
 	GetUrlForRemote(remote string) (string, error)
@@ -215,14 +215,15 @@ func NewChart(chartPath string) (*Chart, error) {
 }
 
 type Testing struct {
-	config           config.Configuration
-	helm             Helm
-	kubectl          Kubectl
-	git              Git
-	linter           Linter
-	accountValidator AccountValidator
-	directoryLister  DirectoryLister
-	chartUtils       ChartUtils
+	config                   config.Configuration
+	helm                     Helm
+	kubectl                  Kubectl
+	git                      Git
+	linter                   Linter
+	accountValidator         AccountValidator
+	directoryLister          DirectoryLister
+	chartUtils               ChartUtils
+	previousRevisionWorktree string
 }
 
 // TestResults holds results and overall status
@@ -253,12 +254,10 @@ func NewTesting(config config.Configuration) Testing {
 	}
 }
 
-const ctPreviousRevisionTree = "ct_previous_revision"
-
 // computePreviousRevisionPath converts any file or directory path to the same path in the
 // previous revision's working tree.
-func computePreviousRevisionPath(fileOrDirPath string) string {
-	return filepath.Join(ctPreviousRevisionTree, fileOrDirPath)
+func (t *Testing) computePreviousRevisionPath(fileOrDirPath string) string {
+	return filepath.Join(t.previousRevisionWorktree, fileOrDirPath)
 }
 
 func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestResult, error) {
@@ -324,11 +323,20 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		if err != nil {
 			return results, errors.Wrap(err, "Error identifying merge base")
 		}
-		t.git.AddWorkingTree(ctPreviousRevisionTree, mergeBase)
-		defer t.git.RemoveWorkingTree(ctPreviousRevisionTree)
+		// Add worktree for the target revision
+		worktreePath, err := ioutil.TempDir("./", "ct_previous_revision")
+		if err != nil {
+			return results, errors.Wrap(err, "Could not create previous revision directory")
+		}
+		t.previousRevisionWorktree = worktreePath
+		err = t.git.AddWorktree(worktreePath, mergeBase)
+		if err != nil {
+			return results, errors.Wrap(err, "Could not create worktree for previous revision")
+		}
+		defer t.git.RemoveWorktree(worktreePath)
 
 		for _, chart := range charts {
-			if err := t.helm.BuildDependencies(computePreviousRevisionPath(chart.Path())); err != nil {
+			if err := t.helm.BuildDependencies(t.computePreviousRevisionPath(chart.Path())); err != nil {
 				// Only print error (don't exit) if building dependencies for previous revision fails.
 				fmt.Println(errors.Wrapf(err, "Error building dependencies for previous revision of chart '%s'\n", chart))
 			}
@@ -491,7 +499,7 @@ func (t *Testing) UpgradeChart(chart *Chart) TestResult {
 		return result
 	}
 
-	if oldChart, err := NewChart(computePreviousRevisionPath(chart.Path())); err == nil {
+	if oldChart, err := NewChart(t.computePreviousRevisionPath(chart.Path())); err == nil {
 		result.Error = t.doUpgrade(oldChart, chart, false)
 	}
 
