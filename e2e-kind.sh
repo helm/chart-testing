@@ -52,6 +52,7 @@ install_local-path-provisioner() {
 }
 
 test_e2e() {
+    go mod download
     go test -cover -race -tags=integration ./...
     echo
 }

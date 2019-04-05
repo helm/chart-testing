@@ -36,13 +36,13 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 
 ### From Source
 
-To install from head with [Go](https://golang.org) v1.10.1 or higher:
+To install from head with [Go](https://golang.org) v1.12.1 or higher:
 
 ```cli
-go get github.com/helm/chart-testing/ct
+git clone github.com/helm/chart-releaser
+go mod download
+go install
 ```
-
-This will put `ct` in `$(go env GOPATH)/bin`. You may need to add that directory to your `$PATH` as shown [here](https://golang.org/doc/code.html#GOPATH) if you encounter the error `ct: command not found` after installation.
 
 ## Usage
 

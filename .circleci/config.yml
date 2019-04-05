@@ -14,13 +14,10 @@ jobs:
   test:
     machine:
       enabled: true
-    working_directory: /home/circleci/.go_workspace/src/github.com/helm/chart-testing
     steps:
       - run:
           name: Install tools
           command: |
-            mkdir /home/circleci/.go_workspace/bin
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
@@ -32,24 +29,21 @@ jobs:
       - run:
           name: Test
           command: |
-            dep ensure -v
-            ./e2e-kind.sh
+            docker run --volume "$(pwd):/project" --workdir /project golang:1.12.1-alpine3.9 sh -c 'apk add bash && ./e2e-kind.sh'
   build:
     docker:
-      - image: golang:1.11.5-alpine3.9
-    working_directory: /go/src/github.com/helm/chart-testing
+      - image: golang:1.12.1-alpine3.9
     steps:
       - setup_remote_docker
       - run:
           name: Install tools
           command: |
-            apk add bash build-base ca-certificates curl docker git openssh
+            apk add bash build-base ca-certificates curl docker git openssl
             curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.102.0/goreleaser_Linux_x86_64.tar.gz
             mkdir -p /usr/local/goreleaser
             tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
             ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser
             rm -rf goreleaser_Linux_x86_64.tar.gz
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - checkout
       - run:
           name: gofmt

@@ -71,7 +71,7 @@ main() {
 
     pushd "$SCRIPT_DIR" > /dev/null
 
-    dep ensure -v
+    go mod download
     go test ./...
     goreleaser "${goreleaser_args[@]}"
 
