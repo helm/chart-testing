@@ -198,8 +198,8 @@ func (c *Chart) CreateInstallParams(buildID string) (release string, namespace s
 		namespace = fmt.Sprintf("%s-%s", namespace, buildID)
 	}
 	randomSuffix := util.RandomString(10)
-	release = util.TruncateLeft(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
-	namespace = util.TruncateLeft(fmt.Sprintf("%s-%s", namespace, randomSuffix), maxNameLength)
+	release = util.SanitizeName(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
+	namespace = util.SanitizeName(fmt.Sprintf("%s-%s", namespace, randomSuffix), maxNameLength)
 	return
 }
 

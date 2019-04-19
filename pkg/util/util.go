@@ -22,6 +22,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -216,12 +217,15 @@ func PrintDelimiterLine(delimiterChar string) {
 	fmt.Println(strings.Join(delim, ""))
 }
 
-func TruncateLeft(s string, maxLength int) string {
-	excess := len(s) - maxLength
+func SanitizeName(s string, maxLength int) string {
+	reg := regexp.MustCompile("^[^a-zA-Z0-9]+")
+	processed := reg.ReplaceAllString(s, "")
+
+	excess := len(processed) - maxLength
 	if excess > 0 {
-		return s[excess:]
+		return processed[excess:]
 	}
-	return s
+	return processed
 }
 
 func GetRandomPort() (int, error) {
