@@ -8,20 +8,11 @@ readonly CLUSTER_NAME=chart-testing
 readonly K8S_VERSION=v1.13.4
 
 create_kind_cluster() {
-    kind create cluster --name "$CLUSTER_NAME" --image "kindest/node:$K8S_VERSION" --wait 10s
-    KUBECONFIG="$(kind get kubeconfig-path --name=$CLUSTER_NAME)"
+    kind create cluster --name "$CLUSTER_NAME" --image "kindest/node:$K8S_VERSION" --wait 60s
+    KUBECONFIG="$(kind get kubeconfig-path --name="$CLUSTER_NAME")"
     export KUBECONFIG
 
     kubectl cluster-info || kubectl cluster-info dump
-    echo
-
-    echo -n 'Waiting for cluster to be ready...'
-    until ! grep --quiet 'NotReady' <(kubectl get nodes --no-headers); do
-        printf '.'
-        sleep 1
-    done
-
-    echo '✔︎'
     echo
 
     kubectl get nodes
