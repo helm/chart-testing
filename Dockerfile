@@ -19,7 +19,7 @@ ARG YAMALE_VERSION=1.8.0
 RUN pip install "yamale==$YAMALE_VERSION"
 
 # Install kubectl
-ARG KUBECTL_VERSION=v1.13.2
+ARG KUBECTL_VERSION=v1.14.1
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
