@@ -36,7 +36,7 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 
 ### From Source
 
-To install from head with [Go](https://golang.org) v1.10.1 or higher:
+To install from head with [Go](https://golang.org) 1.12.4 or higher:
 
 ```cli
 go get github.com/helm/chart-testing/ct
@@ -132,7 +132,7 @@ helm-repo-extra-args:
 
 ## Building from Source
 
-`ct` is built using Go 1.11. Older versions may work but have not been tested.
+`ct` is built using Go 1.12.4. Older versions may work but have not been tested.
 
 `build.sh` is used to build and release the tool. It uses [Goreleaser](https://goreleaser.com/) under the covers.
 
@@ -199,7 +199,7 @@ Run the script specifying the version for the new release.
 ./tag.sh --tag <release_version>
 ```
 
-Versions must start with a lower-case `v`, e. g. `v2.2.0`.
+Versions must start with a lower-case `v`, e. g. `v2.3.1`.
 
 
 ## Supported versions
