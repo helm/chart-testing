@@ -72,5 +72,6 @@ func (g Git) GetUrlForRemote(remote string) (string, error) {
 }
 
 func (g Git) ValidateRepository() error {
-	return g.exec.RunProcess("git", "rev-parse", "--is-inside-work-tree")
+	_, err := g.exec.RunProcessAndCaptureOutput("git", "rev-parse", "--is-inside-work-tree")
+	return err
 }

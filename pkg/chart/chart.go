@@ -269,7 +269,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		return results, nil
 	}
 
-	charts := []*Chart{}
+	var charts []*Chart
 	for _, dir := range chartDirs {
 		chart, err := NewChart(dir)
 		if err != nil {
@@ -647,7 +647,7 @@ func (t *Testing) FindChartDirsToBeProcessed() ([]string, error) {
 func (t *Testing) computeMergeBase() (string, error) {
 	err := t.git.ValidateRepository()
 	if err != nil {
-		return "", fmt.Errorf("Must be in a git repository")
+		return "", errors.New("Must be in a git repository")
 	}
 	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), "HEAD")
 }
