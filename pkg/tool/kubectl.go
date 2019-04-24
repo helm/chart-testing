@@ -27,41 +27,26 @@ func NewKubectl(exec exec.ProcessExecutor) Kubectl {
 // namespace and, eventually, the namespace itself are force-deleted.
 func (k Kubectl) DeleteNamespace(namespace string) {
 	fmt.Printf("Deleting namespace '%s'...\n", namespace)
-	timeoutSec := "120s"
+	timeoutSec := "180s"
 	if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--timeout", timeoutSec); err != nil {
 		fmt.Printf("Namespace '%s' did not terminate after %s.\n", namespace, timeoutSec)
 	}
 
-	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
-		fmt.Printf("Namespace '%s' terminated.\n", namespace)
-		return
-	}
+	if k.getNamespace(namespace) {
+		fmt.Printf("Namespace '%s' did not terminate after %s.\n", namespace, timeoutSec)
 
-	fmt.Printf("Namespace '%s' did not terminate after %s.\n", namespace, timeoutSec)
+		fmt.Println("Force-deleting everything...")
+		if err := k.exec.RunProcess("kubectl", "delete", "all", "--namespace", namespace, "--all", "--force", "--grace-period=0"); err != nil {
+			fmt.Printf("Error deleting everything in the namespace %v: %v", namespace, err)
+		}
 
-	fmt.Println("Force-deleting pods...")
-	if err := k.exec.RunProcess("kubectl", "delete", "pods", "--namespace", namespace, "--all", "--force", "--grace-period=0"); err != nil {
-		fmt.Println("Error deleting pods:", err)
-	}
+		// Give it some more time to be deleted by K8s
+		time.Sleep(5 * time.Second)
 
-	fmt.Println("Force-deleting pvcs...")
-	if err := k.exec.RunProcess("kubectl", "delete", "pvc", "--namespace", namespace, "--all", "--force", "--grace-period=0"); err != nil {
-		fmt.Println("Error deleting pvc(s):", err)
-	}
-
-	fmt.Println("Force-deleting pvs...")
-	if err := k.exec.RunProcess("kubectl", "delete", "pv", "--namespace", namespace, "--all", "--force", "--grace-period=0"); err != nil {
-		fmt.Println("Error deleting pv(s):", err)
-	}
-
-	// Give it some more time to be deleted by K8s
-	time.Sleep(5 * time.Second)
-
-	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
-		fmt.Printf("Namespace '%s' terminated.\n", namespace)
-	} else {
-		if err := k.forceNamespaceDeletion(namespace); err != nil {
-			fmt.Println("Error force deleting namespace:", err)
+		if k.getNamespace(namespace) {
+			if err := k.forceNamespaceDeletion(namespace); err != nil {
+				fmt.Println("Error force deleting namespace:", err)
+			}
 		}
 	}
 }
@@ -213,4 +198,13 @@ func (k Kubectl) GetInitContainers(namespace string, pod string) ([]string, erro
 
 func (k Kubectl) GetContainers(namespace string, pod string) ([]string, error) {
 	return k.GetPods(pod, "--no-headers", "--namespace", namespace, "--output", "jsonpath={.spec.containers[*].name}")
+}
+
+func (k Kubectl) getNamespace(namespace string) bool {
+	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
+		fmt.Printf("Namespace '%s' terminated.\n", namespace)
+		return false
+	}
+
+	return true
 }
