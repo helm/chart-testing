@@ -79,7 +79,7 @@ func TestSanitizeName(t *testing.T) {
 		{"way-longer-than-max-length", 10, "max-length"},
 		{"one-shorter-than-max-length", len("one-shorter-than-max-length") + 1, "one-shorter-than-max-length"},
 		{"oone-longer-than-max-length", len("oone-longer-than-max-length") - 1, "one-longer-than-max-length"},
-		{"-starts-with-invalid-char", 63, "starts-with-invalid-char"},
+		{"foo-would-start-with-hyphen-after-trimming", len("foo-would-start-with-hyphen-after-trimming") - 3, "would-start-with-hyphen-after-trimming"},
 	}
 
 	for index, testData := range testDataSlice {
