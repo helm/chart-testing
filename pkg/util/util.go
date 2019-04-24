@@ -219,13 +219,13 @@ func PrintDelimiterLine(delimiterChar string) {
 
 func SanitizeName(s string, maxLength int) string {
 	reg := regexp.MustCompile("^[^a-zA-Z0-9]+")
-	processed := reg.ReplaceAllString(s, "")
 
-	excess := len(processed) - maxLength
+	excess := len(s) - maxLength
+	result := s
 	if excess > 0 {
-		return processed[excess:]
+		result = s[excess:]
 	}
-	return processed
+	return reg.ReplaceAllString(result, "")
 }
 
 func GetRandomPort() (int, error) {
