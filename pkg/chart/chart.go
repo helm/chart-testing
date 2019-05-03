@@ -99,6 +99,8 @@ type Helm interface {
 //
 // GetPods gets pods for the given args
 //
+// GetEvents prints all events for namespace
+//
 // DescribePod prints the pod's description
 //
 // Logs prints the logs of container
@@ -111,6 +113,7 @@ type Kubectl interface {
 	WaitForDeployments(namespace string, selector string) error
 	GetPodsforDeployment(namespace string, deployment string) ([]string, error)
 	GetPods(args ...string) ([]string, error)
+	GetEvents(namespace string) error
 	DescribePod(namespace string, pod string) error
 	Logs(namespace string, pod string, container string) error
 	GetInitContainers(namespace string, pod string) ([]string, error)
@@ -608,13 +611,13 @@ func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, relea
 		release, _ = chart.CreateInstallParams(t.config.BuildId)
 		releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
 		cleanup = func() {
-			t.PrintPodDetailsAndLogs(namespace, releaseSelector)
+			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(release)
 		}
 	} else {
 		release, namespace = chart.CreateInstallParams(t.config.BuildId)
 		cleanup = func() {
-			t.PrintPodDetailsAndLogs(namespace, releaseSelector)
+			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(release)
 			t.kubectl.DeleteNamespace(namespace)
 		}
@@ -812,7 +815,13 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 	return nil
 }
 
-func (t *Testing) PrintPodDetailsAndLogs(namespace string, selector string) {
+func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string) {
+	util.PrintDelimiterLine("=")
+
+	printDetails(namespace, "Events of namespace", ".", func(item string) error {
+		return t.kubectl.GetEvents(namespace)
+	}, namespace)
+
 	pods, err := t.kubectl.GetPods(
 		"--no-headers",
 		"--namespace",
@@ -826,8 +835,6 @@ func (t *Testing) PrintPodDetailsAndLogs(namespace string, selector string) {
 		fmt.Println("Error printing logs:", err)
 		return
 	}
-
-	util.PrintDelimiterLine("=")
 
 	for _, pod := range pods {
 		printDetails(pod, "Description of pod", "~", func(item string) error {
@@ -861,12 +868,12 @@ func (t *Testing) PrintPodDetailsAndLogs(namespace string, selector string) {
 	util.PrintDelimiterLine("=")
 }
 
-func printDetails(pod string, text string, delimiterChar string, printFunc func(item string) error, items ...string) {
+func printDetails(resource string, text string, delimiterChar string, printFunc func(item string) error, items ...string) {
 	for _, item := range items {
 		item = strings.Trim(item, "'")
 
 		util.PrintDelimiterLine(delimiterChar)
-		fmt.Printf("==> %s %s\n", text, pod)
+		fmt.Printf("==> %s %s\n", text, resource)
 		util.PrintDelimiterLine(delimiterChar)
 
 		if err := printFunc(item); err != nil {
@@ -875,7 +882,7 @@ func printDetails(pod string, text string, delimiterChar string, printFunc func(
 		}
 
 		util.PrintDelimiterLine(delimiterChar)
-		fmt.Printf("<== %s %s\n", text, pod)
+		fmt.Printf("<== %s %s\n", text, resource)
 		util.PrintDelimiterLine(delimiterChar)
 	}
 }

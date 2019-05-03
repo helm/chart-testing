@@ -184,6 +184,10 @@ func (k Kubectl) GetPods(args ...string) ([]string, error) {
 	return strings.Fields(pods), nil
 }
 
+func (k Kubectl) GetEvents(namespace string) error {
+	return k.exec.RunProcess("kubectl", "get", "events", "--output", "wide", "--namespace", namespace)
+}
+
 func (k Kubectl) DescribePod(namespace string, pod string) error {
 	return k.exec.RunProcess("kubectl", "describe", "pod", pod, "--namespace", namespace)
 }
