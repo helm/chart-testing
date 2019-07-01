@@ -125,22 +125,24 @@ func (l DirectoryLister) ListChildDirs(parentDir string, test func(dir string) b
 
 type ChartUtils struct{}
 
-func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, error) {
+func (u ChartUtils) LookupChartDir(chartDirs []string, dir string, isIncludeSubChart bool) (string, error) {
 	for _, chartDir := range chartDirs {
 		currentDir := dir
+
 		for {
 			chartYaml := path.Join(currentDir, "Chart.yaml")
 			parent := path.Dir(path.Dir(chartYaml))
 
 			// check directory has a Chart.yaml and that it is in a
 			// direct subdirectory of a configured charts directory
-			if FileExists(chartYaml) && (parent == chartDir) {
+			if FileExists(chartYaml) && ((parent == chartDir) || isIncludeSubChart) {
 				return currentDir, nil
 			}
 
 			currentDir = path.Dir(currentDir)
 			relativeDir, _ := filepath.Rel(chartDir, currentDir)
 			joined := path.Join(chartDir, relativeDir)
+
 			if (joined == chartDir) || strings.HasPrefix(relativeDir, "..") {
 				break
 			}

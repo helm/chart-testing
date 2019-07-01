@@ -141,7 +141,7 @@ type DirectoryLister interface {
 //
 // LookupChartDir looks up the chart's root directory based on some chart file that has changed
 type ChartUtils interface {
-	LookupChartDir(chartDirs []string, dir string) (string, error)
+	LookupChartDir(chartDirs []string, dir string, isIncludeSubCharts bool) (string, error)
 }
 
 // AccountValidator is the interface that wraps Git account validation
@@ -677,8 +677,9 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 			continue
 		}
 		dir := filepath.Dir(file)
+
 		// Make sure directory is really a chart directory
-		chartDir, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
+		chartDir, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir, false)
 		if err == nil {
 			// Only add it if not already in the list
 			if !util.StringSliceContains(changedChartDirs, chartDir) {
@@ -687,8 +688,20 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		} else {
 			fmt.Printf("Directory '%s' is no chart directory. Skipping...", chartDir)
 		}
-	}
 
+		// Also include sub charts.
+		if t.config.IsIncludeSubCharts {
+			subChartDir, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir, true)
+			if err == nil {
+				if !util.StringSliceContains(changedChartDirs, subChartDir) {
+					changedChartDirs = append(changedChartDirs, subChartDir)
+				}
+			} else {
+				fmt.Printf("Directory '%s' is no chart directory. Skipping...", subChartDir)
+			}
+		}
+
+	}
 	return changedChartDirs, nil
 }
 
@@ -701,7 +714,7 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 	for _, chartParentDir := range cfg.ChartDirs {
 		dirs, err := t.directoryLister.ListChildDirs(chartParentDir,
 			func(dir string) bool {
-				_, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
+				_, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir, t.config.IsIncludeSubCharts)
 				return err == nil && !util.StringSliceContains(cfg.ExcludedCharts, filepath.Base(dir))
 			})
 		if err != nil {

@@ -19,10 +19,10 @@ import (
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
-
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func newListChangedCmd() *cobra.Command {
@@ -38,6 +38,7 @@ func newListChangedCmd() *cobra.Command {
 
 	flags := cmd.Flags()
 	addCommonFlags(flags)
+	addListChangedFlags(flags)
 	return cmd
 }
 
@@ -57,4 +58,8 @@ func listChanged(cmd *cobra.Command, args []string) {
 	for _, dir := range chartDirs {
 		fmt.Println(dir)
 	}
+}
+
+func addListChangedFlags(flags *pflag.FlagSet) {
+	flags.Bool("include-subcharts", false, heredoc.Doc("Whether to also include subcharts. (default: false)"))
 }
