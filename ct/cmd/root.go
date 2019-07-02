@@ -61,15 +61,20 @@ func Execute() {
 
 func addCommonFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&cfgFile, "config", "", "Config file")
-	flags.String("remote", "origin", "The name of the Git remote used to identify changed charts")
-	flags.String("target-branch", "master", "The name of the target branch used to identify changed charts")
-	flags.String("commit", "HEAD", "The commit used to identify changed charts")
 	flags.StringSlice("chart-dirs", []string{"charts"}, heredoc.Doc(`
 		Directories containing Helm charts. May be specified multiple times
 		or separate values with commas`))
 	flags.StringSlice("excluded-charts", []string{}, heredoc.Doc(`
 		Charts that should be skipped. May be specified multiple times
 		or separate values with commas`))
+	flags.String("since", "origin/master", heredoc.Doc(`
+		The git reference used to identify changed charts`))
+	// Deprecated: Please use `--since` instead.
+	flags.String("remote", "origin", heredoc.Doc(`
+		Deprecated: Use --since=$git-ref instead. The name of the Git remote used to identify changed charts`))
+	// Deprecated: Please use `--since` instead.
+	flags.String("target-branch", "master", heredoc.Doc(`
+		Deprecated: Use --since=$git-ref instead. The name of the target branch used to identify changed charts`))
 }
 
 func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {

@@ -32,8 +32,8 @@ func NewGit(exec exec.ProcessExecutor) Git {
 	}
 }
 
-func (g Git) FileExistsOnBranch(file string, remote string, branch string) bool {
-	fileSpec := fmt.Sprintf("%s/%s:%s", remote, branch, file)
+func (g Git) FileExistsOnBranch(file string, ref string) bool {
+	fileSpec := fmt.Sprintf("%s:%s", ref, file)
 	_, err := g.exec.RunProcessAndCaptureOutput("git", "cat-file", "-e", fileSpec)
 	return err == nil
 }
@@ -46,13 +46,13 @@ func (g Git) RemoveWorktree(path string) error {
 	return g.exec.RunProcess("git", "worktree", "remove", path)
 }
 
-func (g Git) Show(file string, remote string, branch string) (string, error) {
-	fileSpec := fmt.Sprintf("%s/%s:%s", remote, branch, file)
+func (g Git) Show(file string, ref string) (string, error) {
+	fileSpec := fmt.Sprintf("%s:%s", ref, file)
 	return g.exec.RunProcessAndCaptureOutput("git", "show", fileSpec)
 }
 
-func (g Git) MergeBase(commit1 string, commit2 string) (string, error) {
-	return g.exec.RunProcessAndCaptureOutput("git", "merge-base", commit1, commit2)
+func (g Git) MergeBase(commit string) (string, error) {
+	return g.exec.RunProcessAndCaptureOutput("git", "merge-base", commit, "HEAD")
 }
 
 func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error) {
@@ -67,8 +67,8 @@ func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, er
 	return strings.Split(changedChartFilesString, "\n"), nil
 }
 
-func (g Git) GetUrlForRemote(remote string) (string, error) {
-	return g.exec.RunProcessAndCaptureOutput("git", "ls-remote", "--get-url", remote)
+func (g Git) GetUrlForRemote(ref string) (string, error) {
+	return g.exec.RunProcessAndCaptureOutput("git", "ls-remote", "--get-url", ref)
 }
 
 func (g Git) ValidateRepository() error {

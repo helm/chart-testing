@@ -19,7 +19,6 @@ import (
 	"os"
 
 	"github.com/MakeNowJust/heredoc"
-
 	"github.com/helm/chart-testing/pkg/chart"
 	"github.com/helm/chart-testing/pkg/config"
 	"github.com/spf13/cobra"

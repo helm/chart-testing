@@ -48,11 +48,11 @@ const maxNameLength = 63
 // ValidateRepository checks that the current working directory is a valid git repository,
 // and returns nil if valid.
 type Git interface {
-	FileExistsOnBranch(file string, remote string, branch string) bool
-	Show(file string, remote string, branch string) (string, error)
+	FileExistsOnBranch(file string, ref string) bool
+	Show(file string, ref string) (string, error)
 	AddWorktree(path string, ref string) error
 	RemoveWorktree(path string) error
-	MergeBase(commit1 string, commit2 string) (string, error)
+	MergeBase(commit string) (string, error)
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
 	GetUrlForRemote(remote string) (string, error)
 	ValidateRepository() error
@@ -652,7 +652,7 @@ func (t *Testing) computeMergeBase() (string, error) {
 	if err != nil {
 		return "", errors.New("Must be in a git repository")
 	}
-	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Commit)
+	return t.git.MergeBase(t.config.Since)
 }
 
 // ComputeChangedChartDirectories takes the merge base of HEAD and the configured remote and target branch and computes a
@@ -765,12 +765,12 @@ func (t *Testing) GetOldChartVersion(chartPath string) (string, error) {
 	cfg := t.config
 
 	chartYamlFile := filepath.Join(chartPath, "Chart.yaml")
-	if !t.git.FileExistsOnBranch(chartYamlFile, cfg.Remote, cfg.TargetBranch) {
-		fmt.Printf("Unable to find chart on %s. New chart detected.\n", cfg.TargetBranch)
+	if !t.git.FileExistsOnBranch(chartYamlFile, cfg.Since) {
+		fmt.Printf("Unable to find chart on %s. New chart detected.\n", cfg.Since)
 		return "", nil
 	}
 
-	chartYamlContents, err := t.git.Show(chartYamlFile, cfg.Remote, cfg.TargetBranch)
+	chartYamlContents, err := t.git.Show(chartYamlFile, cfg.Since)
 	if err != nil {
 		return "", errors.Wrap(err, "Error reading old Chart.yaml")
 	}
@@ -801,7 +801,7 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 		return errors.New("Chart doesn't have maintainers")
 	}
 
-	repoUrl, err := t.git.GetUrlForRemote(t.config.Remote)
+	repoUrl, err := t.git.GetUrlForRemote(t.config.Since)
 	if err != nil {
 		return err
 	}

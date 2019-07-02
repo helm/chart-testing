@@ -36,6 +36,7 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 
 	require.Equal(t, "origin", cfg.Remote)
 	require.Equal(t, "master", cfg.TargetBranch)
+	require.Equal(t, "origin/master", cfg.Since)
 	require.Equal(t, "pr-42", cfg.BuildId)
 	require.Equal(t, "my-lint-conf.yaml", cfg.LintConf)
 	require.Equal(t, "my-chart-yaml-schema.yaml", cfg.ChartYamlSchema)

@@ -39,9 +39,7 @@ var (
 )
 
 type Configuration struct {
-	Remote                string   `mapstructure:"remote"`
-	TargetBranch          string   `mapstructure:"target-branch"`
-	Commit                string   `mapstructure:"commit"`
+	Since                 string   `mapstructure:"since"`
 	BuildId               string   `mapstructure:"build-id"`
 	LintConf              string   `mapstructure:"lint-conf"`
 	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`
@@ -61,6 +59,10 @@ type Configuration struct {
 	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
+	// Deprecated: Use Since instead.
+	Remote string `mapstructure:"remote"`
+	// Deprecated: Use Since instead.
+	TargetBranch string `mapstructure:"target-branch"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
@@ -119,8 +121,8 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	// Disable upgrade (this does some expensive dependency building on previous revisions)
 	// when neither "install" nor "lint-and-install" have not been specified.
 	cfg.Upgrade = isInstall && cfg.Upgrade
-	if (cfg.TargetBranch == "" || cfg.Remote == "") && cfg.Upgrade {
-		return nil, errors.New("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
+	if (cfg.Since == "") && cfg.Upgrade {
+		return nil, errors.New("specifying '--upgrade=true' without '--since' is not allowed")
 	}
 
 	chartYamlSchemaPath := cfg.ChartYamlSchema
@@ -146,6 +148,13 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	if len(cfg.Charts) > 0 || cfg.ProcessAllCharts {
 		fmt.Println("Version increment checking disabled.")
 		cfg.CheckVersionIncrement = false
+	}
+
+	// NOTE: Remote and TargetBranch are deprecated in favor of Since.
+	// This block can be removed once they no longer are present.
+	// Overwrite Since if Remote, TargetBranch are set and deviate from defaults.
+	if cfg.Remote != "origin" && cfg.TargetBranch != "master" {
+		cfg.Since = fmt.Sprintf("%s/%s", cfg.Remote, cfg.TargetBranch)
 	}
 
 	if printConfig {
