@@ -237,8 +237,27 @@ type TestResults struct {
 
 // TestResult holds test results for a specific chart
 type TestResult struct {
-	Chart *Chart
-	Error error
+	Chart   *Chart
+	Results []ChartProcessResult
+}
+
+func (tr TestResult) Success() (bool, string) {
+	for _, res := range tr.Results {
+		if !res.Success {
+			return false, res.Message
+		}
+	}
+
+	return true, ""
+}
+
+type ChartProcessResult struct {
+	Success bool
+	Message string
+}
+
+type ChartProcess interface {
+	Action(chart *Chart) ChartProcessResult
 }
 
 // NewTesting creates a new Testing struct with the given config.
@@ -263,15 +282,15 @@ func (t *Testing) computePreviousRevisionPath(fileOrDirPath string) string {
 	return filepath.Join(t.previousRevisionWorktree, fileOrDirPath)
 }
 
-func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestResult, error) {
-	var results []TestResult
+func (t *Testing) processCharts(processes []ChartProcess) ([]TestResult, error) {
 	chartDirs, err := t.FindChartDirsToBeProcessed()
 	if err != nil {
 		return nil, errors.Wrap(err, "Error identifying charts to process")
 	} else if len(chartDirs) == 0 {
-		return results, nil
+		return nil, nil
 	}
 
+	// Read in Chart YAML files that are to be processed
 	var charts []*Chart
 	for _, dir := range chartDirs {
 		chart, err := NewChart(dir)
@@ -315,26 +334,21 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 	}
 
-	testResults := TestResults{
-		OverallSuccess: true,
-		TestResults:    results,
-	}
-
 	// Checkout previous chart revisions and build their dependencies
 	if t.config.Upgrade {
 		mergeBase, err := t.computeMergeBase()
 		if err != nil {
-			return results, errors.Wrap(err, "Error identifying merge base")
+			return nil, errors.Wrap(err, "Error identifying merge base")
 		}
 		// Add worktree for the target revision
 		worktreePath, err := ioutil.TempDir("./", "ct_previous_revision")
 		if err != nil {
-			return results, errors.Wrap(err, "Could not create previous revision directory")
+			return nil, errors.Wrap(err, "Could not create previous revision directory")
 		}
 		t.previousRevisionWorktree = worktreePath
 		err = t.git.AddWorktree(worktreePath, mergeBase)
 		if err != nil {
-			return results, errors.Wrap(err, "Could not create worktree for previous revision")
+			return nil, errors.Wrap(err, "Could not create worktree for previous revision")
 		}
 		defer t.git.RemoveWorktree(worktreePath)
 
@@ -346,37 +360,72 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 	}
 
+	results := make([]TestResult, 0, len(charts))
+	overallSuccess := true
 	for _, chart := range charts {
 		if err := t.helm.BuildDependencies(chart.Path()); err != nil {
 			return nil, errors.Wrapf(err, "Error building dependencies for chart '%s'", chart)
 		}
 
-		result := action(chart)
-		if result.Error != nil {
-			testResults.OverallSuccess = false
+		processResults := make([]ChartProcessResult, 0, len(processes))
+		for _, p := range processes {
+			result := p.Action(chart)
+			processResults = append(processResults, result)
+
+			// Failfast if one of the linting tasks fail
+			if !result.Success {
+				overallSuccess = false
+				break
+			}
 		}
-		results = append(results, result)
-	}
-	if testResults.OverallSuccess {
-		return results, nil
+
+		results = append(results, TestResult{Chart: chart, Results: processResults})
 	}
 
-	return results, errors.New("Error processing charts")
+	if !overallSuccess {
+		return results, errors.New("at least one chart did not sucessfully pass all of the processes")
+	}
+
+	return results, nil
+}
+
+func (t *Testing) BuildLintProcesses() []ChartProcess {
+	var procs []ChartProcess
+
+	if t.config.CheckVersionIncrement {
+		procs = append(procs, ValidateVersionIncrementChartProcess{Configuration: t.config, Git: t.git})
+	}
+
+	if t.config.ValidateChartSchema {
+		procs = append(procs, ValidateSchemaChartProcess{Linter: t.linter, Configuration: t.config})
+	}
+
+	if t.config.ValidateYaml {
+		procs = append(procs, ValidateYamlChartProcess{Linter: t.linter, Configuration: t.config})
+	}
+
+	if t.config.ValidateMaintainers {
+		procs = append(procs, ValidateMaintainersChartProcess{Git: t.git, AccountValidator: t.accountValidator, Configuration: t.config})
+	}
+
+	procs = append(procs, LintWithValuesChartProcess{Helm: t.helm})
+
+	return procs
 }
 
 // LintCharts lints charts (changed, all, specific) depending on the configuration.
 func (t *Testing) LintCharts() ([]TestResult, error) {
-	return t.processCharts(t.LintChart)
+	return t.processCharts(t.BuildLintProcesses())
 }
 
 // InstallCharts install charts (changed, all, specific) depending on the configuration.
 func (t *Testing) InstallCharts() ([]TestResult, error) {
-	return t.processCharts(t.InstallChart)
+	return t.processCharts([]ChartProcess{InstallChartProcess{t}})
 }
 
 // LintAndInstallCharts first lints and then installs charts (changed, all, specific) depending on the configuration.
 func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
-	return t.processCharts(t.LintAndInstallChart)
+	return t.processCharts(append(t.BuildLintProcesses(), InstallChartProcess{t}))
 }
 
 // PrintResults writes test results to stdout.
@@ -384,9 +433,9 @@ func (t *Testing) PrintResults(results []TestResult) {
 	util.PrintDelimiterLine("-")
 	if results != nil {
 		for _, result := range results {
-			err := result.Error
-			if err != nil {
-				fmt.Printf(" %s %s > %s\n", "✖︎", result.Chart, err)
+			success, message := result.Success()
+			if !success {
+				fmt.Printf(" %s %s > %s\n", "✖︎", result.Chart, message)
 			} else {
 				fmt.Printf(" %s %s\n", "✔︎", result.Chart)
 			}
@@ -397,48 +446,125 @@ func (t *Testing) PrintResults(results []TestResult) {
 	util.PrintDelimiterLine("-")
 }
 
-// LintChart lints the specified chart.
-func (t *Testing) LintChart(chart *Chart) TestResult {
-	fmt.Printf("Linting chart '%s'\n", chart)
+type ValidateVersionIncrementChartProcess struct {
+	config.Configuration
+	Git
+}
 
-	result := TestResult{Chart: chart}
+func (proc ValidateVersionIncrementChartProcess) Action(chart *Chart) ChartProcessResult {
+	fmt.Printf("Checking chart '%s' for a version bump...\n", chart)
 
-	if t.config.CheckVersionIncrement {
-		if err := t.CheckVersionIncrement(chart); err != nil {
-			result.Error = err
-			return result
-		}
+	oldVersion, err := GetOldChartVersion(chart, proc.Remote, proc.TargetBranch, proc.Git)
+	if err != nil {
+		return ChartProcessResult{Success: false, Message: err.Error()}
 	}
 
+	if oldVersion == "" {
+		// new chart, skip version check
+		return ChartProcessResult{Success: true, Message: ""}
+	}
+
+	fmt.Println("Old chart version:", oldVersion)
+
+	chartYaml := chart.Yaml()
+	newVersion := chartYaml.Version
+	fmt.Println("New chart version:", newVersion)
+
+	result, err := util.CompareVersions(oldVersion, newVersion)
+	if err != nil {
+		return ChartProcessResult{Success: true, Message: err.Error()}
+	}
+
+	if result >= 0 {
+		return ChartProcessResult{Success: true, Message: "Chart version not ok. Needs a version bump!"}
+	}
+
+	fmt.Println("Chart version ok.")
+	return ChartProcessResult{Success: true, Message: ""}
+}
+
+type ValidateSchemaChartProcess struct {
+	Linter
+	config.Configuration
+}
+
+func (proc ValidateSchemaChartProcess) Action(chart *Chart) ChartProcessResult {
+	chartYaml := filepath.Join(chart.Path(), "Chart.yaml")
+
+	err := proc.Linter.Yamale(chartYaml, proc.ChartYamlSchema)
+	if err != nil {
+		return ChartProcessResult{Success: false, Message: err.Error()}
+	}
+
+	return ChartProcessResult{Success: true, Message: ""}
+}
+
+type ValidateYamlChartProcess struct {
+	Linter
+	config.Configuration
+}
+
+func (proc ValidateYamlChartProcess) Action(chart *Chart) ChartProcessResult {
 	chartYaml := filepath.Join(chart.Path(), "Chart.yaml")
 	valuesYaml := filepath.Join(chart.Path(), "values.yaml")
 	valuesFiles := chart.ValuesFilePathsForCI()
 
-	if t.config.ValidateChartSchema {
-		if err := t.linter.Yamale(chartYaml, t.config.ChartYamlSchema); err != nil {
-			result.Error = err
-			return result
+	yamlFiles := append([]string{chartYaml, valuesYaml}, valuesFiles...)
+	for _, yamlFile := range yamlFiles {
+		err := proc.Linter.YamlLint(yamlFile, proc.LintConf)
+		if err != nil {
+			return ChartProcessResult{Success: false, Message: err.Error()}
 		}
 	}
 
-	if t.config.ValidateYaml {
-		yamlFiles := append([]string{chartYaml, valuesYaml}, valuesFiles...)
-		for _, yamlFile := range yamlFiles {
-			if err := t.linter.YamlLint(yamlFile, t.config.LintConf); err != nil {
-				result.Error = err
-				return result
-			}
+	return ChartProcessResult{Success: true, Message: ""}
+}
+
+type ValidateMaintainersChartProcess struct {
+	Git
+	AccountValidator
+	config.Configuration
+}
+
+// ValidateMaintainers validates maintainers in the Chart.yaml file. Maintainer names must be valid accounts
+// (GitHub, Bitbucket, GitLab) names. Deprecated charts must not have maintainers.
+func (proc ValidateMaintainersChartProcess) Action(chart *Chart) ChartProcessResult {
+	fmt.Println("Validating maintainers...")
+
+	chartYaml := chart.Yaml()
+
+	if chartYaml.Deprecated {
+		if len(chartYaml.Maintainers) > 0 {
+			return ChartProcessResult{false, "Deprecated chart must not have maintainers"}
+		}
+		return ChartProcessResult{true, ""}
+	}
+
+	if len(chartYaml.Maintainers) == 0 {
+		return ChartProcessResult{false, "Chart doesn't have maintainers"}
+	}
+
+	repoURL, err := proc.Git.GetUrlForRemote(proc.Remote)
+	if err != nil {
+		return ChartProcessResult{false, err.Error()}
+	}
+
+	for _, maintainer := range chartYaml.Maintainers {
+		if err := proc.AccountValidator.Validate(repoURL, maintainer.Name); err != nil {
+			return ChartProcessResult{false, err.Error()}
 		}
 	}
 
-	if t.config.ValidateMaintainers {
-		if err := t.ValidateMaintainers(chart); err != nil {
-			result.Error = err
-			return result
-		}
-	}
+	return ChartProcessResult{true, ""}
+}
 
-	// Lint with defaults if no values files are specified.
+type LintWithValuesChartProcess struct {
+	Helm
+}
+
+func (proc LintWithValuesChartProcess) Action(chart *Chart) ChartProcessResult {
+	valuesFiles := chart.ValuesFilePathsForCI()
+
 	if len(valuesFiles) == 0 {
 		valuesFiles = append(valuesFiles, "")
 	}
@@ -447,66 +573,76 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 		if valuesFile != "" {
 			fmt.Printf("\nLinting chart with values file '%s'...\n\n", valuesFile)
 		}
-		if err := t.helm.LintWithValues(chart.Path(), valuesFile); err != nil {
-			result.Error = err
-			break
+		if err := proc.Helm.LintWithValues(chart.Path(), valuesFile); err != nil {
+			return ChartProcessResult{Success: false, Message: err.Error()}
 		}
 	}
 
-	return result
+	return ChartProcessResult{Success: true, Message: ""}
+}
+
+type InstallChartProcess struct {
+	testing *Testing
+}
+
+func (proc InstallChartProcess) Action(chart *Chart) ChartProcessResult {
+	err := proc.testing.InstallChart(chart)
+	if err != nil {
+		return ChartProcessResult{Success: false, Message: err.Error()}
+	}
+
+	return ChartProcessResult{Success: true, Message: ""}
 }
 
 // InstallChart installs the specified chart into a new namespace, waits for resources to become ready, and eventually
 // uninstalls it and deletes the namespace again.
-func (t *Testing) InstallChart(chart *Chart) TestResult {
-	var result TestResult
+func (t *Testing) InstallChart(chart *Chart) error {
 
 	if t.config.Upgrade {
 		// Test upgrade from previous version
-		result = t.UpgradeChart(chart)
-		if result.Error != nil {
-			return result
+		if err := t.UpgradeChart(chart); err != nil {
+			return err
 		}
 		// Test upgrade of current version (related: https://github.com/helm/chart-testing/issues/19)
 		if err := t.doUpgrade(chart, chart, true); err != nil {
-			result.Error = err
-			return result
+			return err
 		}
 	}
 
-	result = TestResult{Chart: chart}
 	if err := t.doInstall(chart); err != nil {
-		result.Error = err
+		return err
 	}
 
-	return result
+	return nil
 }
 
 // UpgradeChart tests in-place upgrades of the specified chart relative to its previous revisions. If the
 // initial install or helm test of a previous revision of the chart fails, that release is ignored and no
 // error will be returned. If the latest revision of the chart introduces a potentially breaking change
 // according to the SemVer specification, upgrade testing will be skipped.
-func (t *Testing) UpgradeChart(chart *Chart) TestResult {
-	result := TestResult{Chart: chart}
-
-	breakingChangeAllowed, err := t.checkBreakingChangeAllowed(chart)
+func (t *Testing) UpgradeChart(chart *Chart) error {
+	breakingChangeAllowed, err := CheckBreakingChangeAllowed(chart, t.config.Remote, t.config.TargetBranch, t.git)
 
 	if breakingChangeAllowed {
 		if err != nil {
 			fmt.Println(errors.Wrap(err, fmt.Sprintf("Skipping upgrade test of '%s' because", chart)))
 		}
-		return result
+		return nil
 	} else if err != nil {
 		fmt.Printf("Error comparing chart versions for '%s'\n", chart)
-		result.Error = err
-		return result
+		return err
 	}
 
-	if oldChart, err := NewChart(t.computePreviousRevisionPath(chart.Path())); err == nil {
-		result.Error = t.doUpgrade(oldChart, chart, false)
+	oldChart, err := NewChart(t.computePreviousRevisionPath(chart.Path()))
+	if err != nil {
+		return err
 	}
 
-	return result
+	if err = t.doUpgrade(oldChart, chart, false); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (t *Testing) doInstall(chart *Chart) error {
@@ -626,15 +762,6 @@ func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, relea
 	return
 }
 
-// LintAndInstallChart first lints and then installs the specified chart.
-func (t *Testing) LintAndInstallChart(chart *Chart) TestResult {
-	result := t.LintChart(chart)
-	if result.Error != nil {
-		return result
-	}
-	return t.InstallChart(chart)
-}
-
 // FindChartDirsToBeProcessed identifies charts to be processed depending on the configuration
 // (changed charts, all charts, or specific charts).
 func (t *Testing) FindChartDirsToBeProcessed() ([]string, error) {
@@ -714,39 +841,8 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 }
 
 // CheckVersionIncrement checks that the new chart version is greater than the old one using semantic version comparison.
-func (t *Testing) CheckVersionIncrement(chart *Chart) error {
-	fmt.Printf("Checking chart '%s' for a version bump...\n", chart)
-
-	oldVersion, err := t.GetOldChartVersion(chart.Path())
-	if err != nil {
-		return err
-	}
-	if oldVersion == "" {
-		// new chart, skip version check
-		return nil
-	}
-
-	fmt.Println("Old chart version:", oldVersion)
-
-	chartYaml := chart.Yaml()
-	newVersion := chartYaml.Version
-	fmt.Println("New chart version:", newVersion)
-
-	result, err := util.CompareVersions(oldVersion, newVersion)
-	if err != nil {
-		return err
-	}
-
-	if result >= 0 {
-		return errors.New("Chart version not ok. Needs a version bump!")
-	}
-
-	fmt.Println("Chart version ok.")
-	return nil
-}
-
-func (t *Testing) checkBreakingChangeAllowed(chart *Chart) (allowed bool, err error) {
-	oldVersion, err := t.GetOldChartVersion(chart.Path())
+func CheckBreakingChangeAllowed(chart *Chart, remote, targetBranch string, git Git) (allowed bool, err error) {
+	oldVersion, err := GetOldChartVersion(chart, remote, targetBranch, git)
 	if err != nil {
 		return false, err
 	}
@@ -761,16 +857,16 @@ func (t *Testing) checkBreakingChangeAllowed(chart *Chart) (allowed bool, err er
 }
 
 // GetOldChartVersion gets the version of the old Chart.yaml file from the target branch.
-func (t *Testing) GetOldChartVersion(chartPath string) (string, error) {
-	cfg := t.config
+func GetOldChartVersion(chart *Chart, remote, targetBranch string, git Git) (string, error) {
+	chartPath := chart.Path()
 
 	chartYamlFile := filepath.Join(chartPath, "Chart.yaml")
-	if !t.git.FileExistsOnBranch(chartYamlFile, cfg.Remote, cfg.TargetBranch) {
-		fmt.Printf("Unable to find chart on %s. New chart detected.\n", cfg.TargetBranch)
+	if !git.FileExistsOnBranch(chartYamlFile, remote, targetBranch) {
+		fmt.Printf("Unable to find chart on %s. New chart detected.\n", targetBranch)
 		return "", nil
 	}
 
-	chartYamlContents, err := t.git.Show(chartYamlFile, cfg.Remote, cfg.TargetBranch)
+	chartYamlContents, err := git.Show(chartYamlFile, remote, targetBranch)
 	if err != nil {
 		return "", errors.Wrap(err, "Error reading old Chart.yaml")
 	}
@@ -781,38 +877,6 @@ func (t *Testing) GetOldChartVersion(chartPath string) (string, error) {
 	}
 
 	return chartYaml.Version, nil
-}
-
-// ValidateMaintainers validates maintainers in the Chart.yaml file. Maintainer names must be valid accounts
-// (GitHub, Bitbucket, GitLab) names. Deprecated charts must not have maintainers.
-func (t *Testing) ValidateMaintainers(chart *Chart) error {
-	fmt.Println("Validating maintainers...")
-
-	chartYaml := chart.Yaml()
-
-	if chartYaml.Deprecated {
-		if len(chartYaml.Maintainers) > 0 {
-			return errors.New("Deprecated chart must not have maintainers")
-		}
-		return nil
-	}
-
-	if len(chartYaml.Maintainers) == 0 {
-		return errors.New("Chart doesn't have maintainers")
-	}
-
-	repoUrl, err := t.git.GetUrlForRemote(t.config.Remote)
-	if err != nil {
-		return err
-	}
-
-	for _, maintainer := range chartYaml.Maintainers {
-		if err := t.accountValidator.Validate(repoUrl, maintainer.Name); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string) {
