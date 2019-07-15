@@ -128,6 +128,7 @@ type Kubectl interface {
 type Linter interface {
 	YamlLint(yamlFile string, configFile string) error
 	Yamale(yamlFile string, schemaFile string) error
+	CustomLint(exec string, args ...string) error
 }
 
 // DirectoryLister is the interface
@@ -410,6 +411,10 @@ func (t *Testing) BuildLintProcesses() []ChartProcess {
 
 	procs = append(procs, LintWithValuesChartProcess{Helm: t.helm})
 
+	for _, custom := range t.config.CustomLinters {
+		procs = append(procs, ExecChartProcess{Command: strings.Split(custom, " ")})
+	}
+
 	return procs
 }
 
@@ -444,6 +449,20 @@ func (t *Testing) PrintResults(results []TestResult) {
 		fmt.Println("No chart changes detected.")
 	}
 	util.PrintDelimiterLine("-")
+}
+
+type ExecChartProcess struct {
+	Linter
+	Command []string
+}
+
+func (proc ExecChartProcess) Action(chart *Chart) ChartProcessResult {
+	err := proc.Linter.CustomLint(proc.Command[0], proc.Command[1:]...)
+	if err != nil {
+		return ChartProcessResult{Success: false, Message: err.Error()}
+	}
+
+	return ChartProcessResult{Success: true, Message: ""}
 }
 
 type ValidateVersionIncrementChartProcess struct {

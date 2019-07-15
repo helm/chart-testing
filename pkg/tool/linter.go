@@ -33,3 +33,7 @@ func (l Linter) YamlLint(yamlFile string, configFile string) error {
 func (l Linter) Yamale(yamlFile string, schemaFile string) error {
 	return l.exec.RunProcess("yamale", "--schema", schemaFile, yamlFile)
 }
+
+func (l Linter) CustomLint(exec string, args ...string) error {
+	return l.exec.RunProcess(exec, args)
+}
