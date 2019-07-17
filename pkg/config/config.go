@@ -62,7 +62,7 @@ type Configuration struct {
 	ReleaseLabel          string   `mapstructure:"release-label"`
 }
 
-func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
+func LoadConfiguration(cfgFile string, cmd *cobra.Command) (*Configuration, error) {
 	v := viper.New()
 
 	cmd.Flags().VisitAll(func(flag *flag.Flag) {
@@ -94,7 +94,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 			return nil, errors.Wrap(err, "Error loading config file")
 		}
 	} else {
-		if printConfig {
+		if v.GetBool("debug") {
 			fmt.Println("Using config file: ", v.ConfigFileUsed())
 		}
 	}
@@ -147,7 +147,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		cfg.CheckVersionIncrement = false
 	}
 
-	if printConfig {
+	if v.GetBool("debug") {
 		printCfg(cfg)
 	}
 

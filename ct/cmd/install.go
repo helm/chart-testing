@@ -83,7 +83,7 @@ func addInstallFlags(flags *flag.FlagSet) {
 func install(cmd *cobra.Command, args []string) {
 	fmt.Println("Installing charts...")
 
-	configuration, err := config.LoadConfiguration(cfgFile, cmd, true)
+	configuration, err := config.LoadConfiguration(cfgFile, cmd)
 	if err != nil {
 		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)

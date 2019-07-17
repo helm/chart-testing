@@ -75,7 +75,7 @@ func addLintFlags(flags *flag.FlagSet) {
 func lint(cmd *cobra.Command, args []string) {
 	fmt.Println("Linting charts...")
 
-	configuration, err := config.LoadConfiguration(cfgFile, cmd, true)
+	configuration, err := config.LoadConfiguration(cfgFile, cmd)
 	if err != nil {
 		fmt.Printf("Error loading configuration: %s\n", err)
 		os.Exit(1)
