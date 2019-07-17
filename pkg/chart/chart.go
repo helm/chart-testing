@@ -87,6 +87,7 @@ type Helm interface {
 	Upgrade(chart string, release string) error
 	Test(release string, cleanup bool) error
 	DeleteRelease(release string)
+	RenderTemplate(chart string, valuesFile string) (string, error)
 }
 
 // Kubectl is the interface that wraps kubectl operations
@@ -128,7 +129,6 @@ type Kubectl interface {
 type Linter interface {
 	YamlLint(yamlFile string, configFile string) error
 	Yamale(yamlFile string, schemaFile string) error
-	CustomLint(exec string, args ...string) error
 }
 
 // DirectoryLister is the interface
@@ -220,6 +220,7 @@ func NewChart(chartPath string) (*Chart, error) {
 
 type Testing struct {
 	config                   config.Configuration
+	processExecutor          exec.ProcessExecutor
 	helm                     Helm
 	kubectl                  Kubectl
 	git                      Git
@@ -228,53 +229,78 @@ type Testing struct {
 	directoryLister          DirectoryLister
 	chartUtils               ChartUtils
 	previousRevisionWorktree string
-}
-
-// TestResults holds results and overall status
-type TestResults struct {
-	OverallSuccess bool
-	TestResults    []TestResult
+	chartProcessors          []ChartProcessor
 }
 
 // TestResult holds test results for a specific chart
 type TestResult struct {
-	Chart   *Chart
-	Results []ChartProcessResult
+	PassedAll bool
+	Error     error // Wrap all of the errors
 }
 
-func (tr TestResult) Success() (bool, string) {
-	for _, res := range tr.Results {
-		if !res.Success {
-			return false, res.Message
-		}
-	}
-
-	return true, ""
-}
-
-type ChartProcessResult struct {
-	Success bool
-	Message string
-}
-
-type ChartProcess interface {
-	Action(chart *Chart) ChartProcessResult
+type ChartProcessor interface {
+	ProcessChart(chart *Chart) error
+	FailFast() bool
 }
 
 // NewTesting creates a new Testing struct with the given config.
 func NewTesting(config config.Configuration) Testing {
 	procExec := exec.NewProcessExecutor(config.Debug)
 	extraArgs := strings.Fields(config.HelmExtraArgs)
-	return Testing{
+	t := Testing{
 		config:           config,
 		helm:             tool.NewHelm(procExec, extraArgs),
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec),
 		linter:           tool.NewLinter(procExec),
+		processExecutor:  procExec,
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
 		chartUtils:       util.ChartUtils{},
 	}
+
+	t.refreshChartProcessors()
+
+	return t
+}
+
+func (t *Testing) refreshChartProcessors() {
+	t.chartProcessors = nil
+
+	if t.config.CheckVersionIncrement {
+		t.chartProcessors = append(t.chartProcessors, ValidateVersionIncrementProcessor{Remote: t.config.Remote, TargetBranch: t.config.TargetBranch, Git: t.git})
+	}
+
+	if t.config.ValidateChartSchema {
+		t.chartProcessors = append(t.chartProcessors, ValidateSchemaProcessor{Linter: t.linter, ChartYamlSchema: t.config.ChartYamlSchema})
+	}
+
+	if t.config.ValidateYaml {
+		t.chartProcessors = append(t.chartProcessors, ValidateYamlProcessor{Linter: t.linter, LintConf: t.config.LintConf})
+	}
+
+	if t.config.ValidateMaintainers {
+		t.chartProcessors = append(t.chartProcessors, ValidateMaintainersProcessor{Git: t.git, AccountValidator: t.accountValidator, Remote: t.config.Remote})
+	}
+
+	t.chartProcessors = append(t.chartProcessors, LintWithValuesProcessor{Helm: t.helm})
+
+	for _, custom := range t.config.CustomManifestProcessors {
+		t.chartProcessors = append(t.chartProcessors, ExecManifestProcessor{exec: t.processExecutor, Command: strings.Split(custom.Command, " "), FailFastCfg: custom.FailFast})
+	}
+}
+
+func (t *Testing) Process() error {
+	charts, err := t.renderCharts()
+	if err != nil {
+		return err
+	}
+
+	results := t.processCharts(charts)
+
+	t.PrintResults(charts, results)
+
+	return nil
 }
 
 // computePreviousRevisionPath converts any file or directory path to the same path in the
@@ -283,7 +309,7 @@ func (t *Testing) computePreviousRevisionPath(fileOrDirPath string) string {
 	return filepath.Join(t.previousRevisionWorktree, fileOrDirPath)
 }
 
-func (t *Testing) processCharts(processes []ChartProcess) ([]TestResult, error) {
+func (t *Testing) renderCharts() ([]*Chart, error) {
 	chartDirs, err := t.FindChartDirsToBeProcessed()
 	if err != nil {
 		return nil, errors.Wrap(err, "Error identifying charts to process")
@@ -361,88 +387,68 @@ func (t *Testing) processCharts(processes []ChartProcess) ([]TestResult, error) 
 		}
 	}
 
-	results := make([]TestResult, 0, len(charts))
-	overallSuccess := true
 	for _, chart := range charts {
 		if err := t.helm.BuildDependencies(chart.Path()); err != nil {
 			return nil, errors.Wrapf(err, "Error building dependencies for chart '%s'", chart)
 		}
+	}
 
-		processResults := make([]ChartProcessResult, 0, len(processes))
-		for _, p := range processes {
-			result := p.Action(chart)
-			processResults = append(processResults, result)
+	return charts, nil
+}
 
-			// Failfast if one of the linting tasks fail
-			if !result.Success {
-				overallSuccess = false
-				break
+var notProcessed = errors.New("Didn't process chart because of failfast.")
+
+func (t *Testing) processCharts(charts []*Chart) []TestResult {
+	results := make([]TestResult, len(charts))
+
+	for idx_proc, processor := range t.chartProcessors {
+		for idx_chart, chart := range charts {
+			// Don't process any other step if already failed, don't want to
+			// override previous errors
+			if results[idx_chart].Error != nil {
+				continue
+			}
+
+			err := processor.ProcessChart(chart)
+			if err != nil {
+				results[idx_chart].Error = err
+				// or mark what hasn't been processed yet
+				if processor.FailFast() { // TODO: do we need a global failfast flag?
+					goto failfast
+				}
+			}
+
+			// Mark a chart as fully successful
+			if idx_proc == len(t.chartProcessors)-1 {
+				results[idx_chart].PassedAll = true // TODO may want to move
 			}
 		}
-
-		results = append(results, TestResult{Chart: chart, Results: processResults})
 	}
 
-	if !overallSuccess {
-		return results, errors.New("at least one chart did not sucessfully pass all of the processes")
+failfast:
+
+	// Set the chart as not fully processed because of the failfast flag, we
+	// don't want to give the developer the impression that the linting passed
+	// when it did not
+	for idx := range results {
+		if !results[idx].PassedAll {
+			results[idx].Error = notProcessed
+		}
 	}
 
-	return results, nil
-}
-
-func (t *Testing) BuildLintProcesses() []ChartProcess {
-	var procs []ChartProcess
-
-	if t.config.CheckVersionIncrement {
-		procs = append(procs, ValidateVersionIncrementChartProcess{Configuration: t.config, Git: t.git})
-	}
-
-	if t.config.ValidateChartSchema {
-		procs = append(procs, ValidateSchemaChartProcess{Linter: t.linter, Configuration: t.config})
-	}
-
-	if t.config.ValidateYaml {
-		procs = append(procs, ValidateYamlChartProcess{Linter: t.linter, Configuration: t.config})
-	}
-
-	if t.config.ValidateMaintainers {
-		procs = append(procs, ValidateMaintainersChartProcess{Git: t.git, AccountValidator: t.accountValidator, Configuration: t.config})
-	}
-
-	procs = append(procs, LintWithValuesChartProcess{Helm: t.helm})
-
-	for _, custom := range t.config.CustomLinters {
-		procs = append(procs, ExecChartProcess{Command: strings.Split(custom, " ")})
-	}
-
-	return procs
-}
-
-// LintCharts lints charts (changed, all, specific) depending on the configuration.
-func (t *Testing) LintCharts() ([]TestResult, error) {
-	return t.processCharts(t.BuildLintProcesses())
-}
-
-// InstallCharts install charts (changed, all, specific) depending on the configuration.
-func (t *Testing) InstallCharts() ([]TestResult, error) {
-	return t.processCharts([]ChartProcess{InstallChartProcess{t}})
-}
-
-// LintAndInstallCharts first lints and then installs charts (changed, all, specific) depending on the configuration.
-func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
-	return t.processCharts(append(t.BuildLintProcesses(), InstallChartProcess{t}))
+	return results
 }
 
 // PrintResults writes test results to stdout.
-func (t *Testing) PrintResults(results []TestResult) {
+func (t *Testing) PrintResults(charts []*Chart, results []TestResult) {
 	util.PrintDelimiterLine("-")
 	if results != nil {
-		for _, result := range results {
-			success, message := result.Success()
-			if !success {
-				fmt.Printf(" %s %s > %s\n", "✖︎", result.Chart, message)
+		for idx, result := range results {
+
+			if result.Error != nil {
+				fmt.Printf(" %s %s > %s\n", "✖︎", charts[idx], result.Error)
 			} else {
-				fmt.Printf(" %s %s\n", "✔︎", result.Chart)
+				fmt.Printf(" %s %s\n", "✔︎", charts[idx])
 			}
 		}
 	} else {
@@ -451,36 +457,54 @@ func (t *Testing) PrintResults(results []TestResult) {
 	util.PrintDelimiterLine("-")
 }
 
-type ExecChartProcess struct {
-	Linter
-	Command []string
+type ExecManifestProcessor struct {
+	exec exec.ProcessExecutor
+	Helm
+	Command     []string
+	FailFastCfg bool
 }
 
-func (proc ExecChartProcess) Action(chart *Chart) ChartProcessResult {
-	err := proc.Linter.CustomLint(proc.Command[0], proc.Command[1:]...)
-	if err != nil {
-		return ChartProcessResult{Success: false, Message: err.Error()}
+func (proc ExecManifestProcessor) ProcessChart(chart *Chart) error {
+	valuesYaml := filepath.Join(chart.Path(), "values.yaml")
+	valuesFiles := chart.ValuesFilePathsForCI() // TODO: do we test CI files
+	yamlFiles := append([]string{valuesYaml}, valuesFiles...)
+
+	for _, vals := range yamlFiles {
+		renderedChart, err := proc.Helm.RenderTemplate(chart.Path(), vals) // TODO : potentially cache
+		if err != nil {                                                    // TODO: Do we fail fast on the first failure
+			return err
+		}
+
+		err = proc.exec.RunProcessWithPipedInput(renderedChart, proc.Command[0], proc.Command[1:])
+		if err != nil {
+			return err
+		}
 	}
 
-	return ChartProcessResult{Success: true, Message: ""}
+	return nil
 }
 
-type ValidateVersionIncrementChartProcess struct {
-	config.Configuration
+func (proc ExecManifestProcessor) FailFast() bool {
+	return proc.FailFastCfg
+}
+
+type ValidateVersionIncrementProcessor struct {
+	Remote       string
+	TargetBranch string
 	Git
 }
 
-func (proc ValidateVersionIncrementChartProcess) Action(chart *Chart) ChartProcessResult {
+func (proc ValidateVersionIncrementProcessor) ProcessChart(chart *Chart) error {
 	fmt.Printf("Checking chart '%s' for a version bump...\n", chart)
 
 	oldVersion, err := GetOldChartVersion(chart, proc.Remote, proc.TargetBranch, proc.Git)
 	if err != nil {
-		return ChartProcessResult{Success: false, Message: err.Error()}
+		return err
 	}
 
 	if oldVersion == "" {
 		// new chart, skip version check
-		return ChartProcessResult{Success: true, Message: ""}
+		return nil
 	}
 
 	fmt.Println("Old chart version:", oldVersion)
@@ -491,39 +515,47 @@ func (proc ValidateVersionIncrementChartProcess) Action(chart *Chart) ChartProce
 
 	result, err := util.CompareVersions(oldVersion, newVersion)
 	if err != nil {
-		return ChartProcessResult{Success: true, Message: err.Error()}
+		return err
 	}
 
 	if result >= 0 {
-		return ChartProcessResult{Success: true, Message: "Chart version not ok. Needs a version bump!"}
+		return errors.New("Chart version not ok. Needs a version bump!")
 	}
 
 	fmt.Println("Chart version ok.")
-	return ChartProcessResult{Success: true, Message: ""}
+	return nil
 }
 
-type ValidateSchemaChartProcess struct {
+func (proc ValidateVersionIncrementProcessor) FailFast() bool {
+	return false
+}
+
+type ValidateSchemaProcessor struct {
 	Linter
-	config.Configuration
+	ChartYamlSchema string
 }
 
-func (proc ValidateSchemaChartProcess) Action(chart *Chart) ChartProcessResult {
+func (proc ValidateSchemaProcessor) ProcessChart(chart *Chart) error {
 	chartYaml := filepath.Join(chart.Path(), "Chart.yaml")
 
 	err := proc.Linter.Yamale(chartYaml, proc.ChartYamlSchema)
 	if err != nil {
-		return ChartProcessResult{Success: false, Message: err.Error()}
+		return err
 	}
 
-	return ChartProcessResult{Success: true, Message: ""}
+	return nil
 }
 
-type ValidateYamlChartProcess struct {
+func (proc ValidateSchemaProcessor) FailFast() bool {
+	return false
+}
+
+type ValidateYamlProcessor struct {
 	Linter
-	config.Configuration
+	LintConf string
 }
 
-func (proc ValidateYamlChartProcess) Action(chart *Chart) ChartProcessResult {
+func (proc ValidateYamlProcessor) ProcessChart(chart *Chart) error {
 	chartYaml := filepath.Join(chart.Path(), "Chart.yaml")
 	valuesYaml := filepath.Join(chart.Path(), "values.yaml")
 	valuesFiles := chart.ValuesFilePathsForCI()
@@ -532,58 +564,71 @@ func (proc ValidateYamlChartProcess) Action(chart *Chart) ChartProcessResult {
 	for _, yamlFile := range yamlFiles {
 		err := proc.Linter.YamlLint(yamlFile, proc.LintConf)
 		if err != nil {
-			return ChartProcessResult{Success: false, Message: err.Error()}
+			return err
 		}
 	}
 
-	return ChartProcessResult{Success: true, Message: ""}
+	return nil
 }
 
-type ValidateMaintainersChartProcess struct {
+func (proc ValidateYamlProcessor) FailFast() bool {
+	return false
+}
+
+type ValidateMaintainersProcessor struct {
 	Git
 	AccountValidator
-	config.Configuration
+	Remote string
 }
 
 // ValidateMaintainers validates maintainers in the Chart.yaml file. Maintainer names must be valid accounts
 // (GitHub, Bitbucket, GitLab) names. Deprecated charts must not have maintainers.
-func (proc ValidateMaintainersChartProcess) Action(chart *Chart) ChartProcessResult {
+func (proc ValidateMaintainersProcessor) ProcessChart(chart *Chart) error {
+	return ValidateMaintainers(chart, proc.Remote, proc.Git, proc.AccountValidator)
+}
+
+func ValidateMaintainers(chart *Chart, remote string, git Git, accountValidator AccountValidator) error {
 	fmt.Println("Validating maintainers...")
 
 	chartYaml := chart.Yaml()
 
 	if chartYaml.Deprecated {
 		if len(chartYaml.Maintainers) > 0 {
-			return ChartProcessResult{false, "Deprecated chart must not have maintainers"}
+			return errors.New("Deprecated chart must not have maintainers")
 		}
-		return ChartProcessResult{true, ""}
+		return nil
 	}
 
 	if len(chartYaml.Maintainers) == 0 {
-		return ChartProcessResult{false, "Chart doesn't have maintainers"}
+		return errors.New("Chart doesn't have maintainers")
 	}
 
-	repoURL, err := proc.Git.GetUrlForRemote(proc.Remote)
+	repoURL, err := git.GetUrlForRemote(remote)
 	if err != nil {
-		return ChartProcessResult{false, err.Error()}
+		return err
 	}
 
 	for _, maintainer := range chartYaml.Maintainers {
-		if err := proc.AccountValidator.Validate(repoURL, maintainer.Name); err != nil {
-			return ChartProcessResult{false, err.Error()}
+		if err := accountValidator.Validate(repoURL, maintainer.Name); err != nil {
+			return err
 		}
 	}
 
-	return ChartProcessResult{true, ""}
+	return nil
 }
 
-type LintWithValuesChartProcess struct {
+func (proc ValidateMaintainersProcessor) FailFast() bool {
+	return false
+}
+
+type LintWithValuesProcessor struct {
 	Helm
 }
 
-func (proc LintWithValuesChartProcess) Action(chart *Chart) ChartProcessResult {
-	valuesFiles := chart.ValuesFilePathsForCI()
+func (proc LintWithValuesProcessor) ProcessChart(chart *Chart) error {
+	valuesFiles := chart.ValuesFilePathsForCI() //TODO: do we need to lint defaults values.yaml
 
+	// Lint with defaults if no values files are specified.
 	if len(valuesFiles) == 0 {
 		valuesFiles = append(valuesFiles, "")
 	}
@@ -593,24 +638,32 @@ func (proc LintWithValuesChartProcess) Action(chart *Chart) ChartProcessResult {
 			fmt.Printf("\nLinting chart with values file '%s'...\n\n", valuesFile)
 		}
 		if err := proc.Helm.LintWithValues(chart.Path(), valuesFile); err != nil {
-			return ChartProcessResult{Success: false, Message: err.Error()}
+			return err
 		}
 	}
 
-	return ChartProcessResult{Success: true, Message: ""}
+	return nil
 }
 
-type InstallChartProcess struct {
+func (proc LintWithValuesProcessor) FailFast() bool {
+	return false
+}
+
+type InstallProcessor struct {
 	testing *Testing
 }
 
-func (proc InstallChartProcess) Action(chart *Chart) ChartProcessResult {
+func (proc InstallProcessor) ProcessChart(chart *Chart) error {
 	err := proc.testing.InstallChart(chart)
 	if err != nil {
-		return ChartProcessResult{Success: false, Message: err.Error()}
+		return err
 	}
 
-	return ChartProcessResult{Success: true, Message: ""}
+	return nil
+}
+
+func (proc InstallProcessor) FailFast() bool {
+	return true
 }
 
 // InstallChart installs the specified chart into a new namespace, waits for resources to become ready, and eventually

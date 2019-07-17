@@ -86,3 +86,12 @@ func (h Helm) DeleteRelease(release string) {
 		fmt.Println("Error deleting Helm release:", err)
 	}
 }
+
+func (h Helm) RenderTemplate(chart string, valuesFile string) (string, error) {
+	var values []string
+	if valuesFile != "" {
+		values = []string{"--values", valuesFile}
+	}
+
+	return h.exec.RunProcessAndCaptureOutput("helm", "template", chart, values)
+}

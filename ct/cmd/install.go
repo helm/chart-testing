@@ -90,14 +90,12 @@ func install(cmd *cobra.Command, args []string) {
 	}
 
 	testing := chart.NewTesting(*configuration)
-	results, err := testing.InstallCharts()
+	err = testing.Process()
 	if err != nil {
 		fmt.Printf("Error installing charts: %s\n", err)
 	} else {
 		fmt.Println("All charts installed successfully")
 	}
-
-	testing.PrintResults(results)
 
 	if err != nil {
 		os.Exit(1)

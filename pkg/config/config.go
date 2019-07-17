@@ -39,28 +39,33 @@ var (
 )
 
 type Configuration struct {
-	Remote                string   `mapstructure:"remote"`
-	TargetBranch          string   `mapstructure:"target-branch"`
-	BuildId               string   `mapstructure:"build-id"`
-	LintConf              string   `mapstructure:"lint-conf"`
-	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`
-	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
-	ValidateChartSchema   bool     `mapstructure:"validate-chart-schema"`
-	ValidateYaml          bool     `mapstructure:"validate-yaml"`
-	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
-	ProcessAllCharts      bool     `mapstructure:"all"`
-	Charts                []string `mapstructure:"charts"`
-	ChartRepos            []string `mapstructure:"chart-repos"`
-	ChartDirs             []string `mapstructure:"chart-dirs"`
-	ExcludedCharts        []string `mapstructure:"excluded-charts"`
-	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
-	HelmRepoExtraArgs     []string `mapstructure:"helm-repo-extra-args"`
-	Debug                 bool     `mapstructure:"debug"`
-	Upgrade               bool     `mapstructure:"upgrade"`
-	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
-	Namespace             string   `mapstructure:"namespace"`
-	ReleaseLabel          string   `mapstructure:"release-label"`
-	CustomLinters         []string `mapstructure:"custom-linter"`
+	Remote                   string                    `mapstructure:"remote"`
+	TargetBranch             string                    `mapstructure:"target-branch"`
+	BuildId                  string                    `mapstructure:"build-id"`
+	LintConf                 string                    `mapstructure:"lint-conf"`
+	ChartYamlSchema          string                    `mapstructure:"chart-yaml-schema"`
+	ValidateMaintainers      bool                      `mapstructure:"validate-maintainers"`
+	ValidateChartSchema      bool                      `mapstructure:"validate-chart-schema"`
+	ValidateYaml             bool                      `mapstructure:"validate-yaml"`
+	CheckVersionIncrement    bool                      `mapstructure:"check-version-increment"`
+	ProcessAllCharts         bool                      `mapstructure:"all"`
+	Charts                   []string                  `mapstructure:"charts"`
+	ChartRepos               []string                  `mapstructure:"chart-repos"`
+	ChartDirs                []string                  `mapstructure:"chart-dirs"`
+	ExcludedCharts           []string                  `mapstructure:"excluded-charts"`
+	HelmExtraArgs            string                    `mapstructure:"helm-extra-args"`
+	HelmRepoExtraArgs        []string                  `mapstructure:"helm-repo-extra-args"`
+	Debug                    bool                      `mapstructure:"debug"`
+	Upgrade                  bool                      `mapstructure:"upgrade"`
+	SkipMissingValues        bool                      `mapstructure:"skip-missing-values"`
+	Namespace                string                    `mapstructure:"namespace"`
+	ReleaseLabel             string                    `mapstructure:"release-label"`
+	CustomManifestProcessors []CustomManifestProcessor `mapstructure:"custom-manifest-processors"`
+}
+
+type CustomManifestProcessor struct {
+	Command  string `mapstructure:"command"`
+	FailFast bool   `mapstrucutre:"fail-fast"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
@@ -68,7 +73,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 
 	cmd.Flags().VisitAll(func(flag *flag.Flag) {
 		flagName := flag.Name
-		if flagName != "config" && flagName != "help" {
+		if flagName != "config" && flagName != "help" && flagName != "custom-manifest-processor" {
 			if err := v.BindPFlag(flagName, flag); err != nil {
 				// can't really happen
 				panic(fmt.Sprintln(errors.Wrapf(err, "Error binding flag '%s'", flagName)))
@@ -142,6 +147,8 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		}
 		cfg.LintConf = cfgFile
 	}
+
+	//TODO: add cli flags
 
 	if len(cfg.Charts) > 0 || cfg.ProcessAllCharts {
 		fmt.Println("Version increment checking disabled.")

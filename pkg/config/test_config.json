@@ -23,6 +23,12 @@
     "excluded-charts": [
         "common"
     ],
+    "custom-manifest-processors": [
+        {
+            "command": "test",
+            "fail-fast": false
+        }
+    ],
     "helm-extra-args": "--timeout 300",
     "upgrade": true,
     "skip-missing-values": true,

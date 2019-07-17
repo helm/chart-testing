@@ -70,8 +70,8 @@ func addLintFlags(flags *flag.FlagSet) {
 			Enable schema validation of 'Chart.yaml' using Yamale (default: true)`))
 	flags.Bool("validate-yaml", true, heredoc.Doc(`
 			Enable linting of 'Chart.yaml' and values files (default: true)`))
-	flags.StringArray("custom-linter", nil, heredoc.Doc(`
-			Add a custom linter to the processing line. (default: [])`))
+	flags.StringArray("custom-manifest-processor", nil, heredoc.Doc(`
+			Accepts rendered manifest via stdin. (default: [])`))
 }
 
 func lint(cmd *cobra.Command, args []string) {
@@ -84,14 +84,12 @@ func lint(cmd *cobra.Command, args []string) {
 	}
 
 	testing := chart.NewTesting(*configuration)
-	results, err := testing.LintCharts()
+	err = testing.Process()
 	if err != nil {
 		fmt.Printf("Error linting charts: %s\n", err)
 	} else {
 		fmt.Println("All charts linted successfully")
 	}
-
-	testing.PrintResults(results)
 
 	if err != nil {
 		os.Exit(1)

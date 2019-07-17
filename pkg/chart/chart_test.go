@@ -106,6 +106,10 @@ func (h fakeHelm) Test(release string, cleanup bool) error {
 }
 func (h fakeHelm) DeleteRelease(release string) {}
 
+func (h fakeHelm) RenderTemplate(chart string, valuesFile string) (string, error) {
+	return "", nil
+}
+
 var ct Testing
 
 func init() {
@@ -175,7 +179,7 @@ func TestValidateMaintainers(t *testing.T) {
 		t.Run(testData.name, func(t *testing.T) {
 			chart, err := NewChart(testData.chartDir)
 			assert.Nil(t, err)
-			validationErr := ct.ValidateMaintainers(chart)
+			validationErr := ValidateMaintainers(chart, ct.config.Remote, ct.git, ct.accountValidator)
 			assert.Equal(t, testData.expected, validationErr == nil)
 		})
 	}
@@ -203,12 +207,13 @@ func TestLintChartMaintainerValidation(t *testing.T) {
 			{fmt.Sprintf("no-maintainers-%s", suffix), "testdata/no_maintainers", !validate},
 		}
 
+		ct.refreshChartProcessors()
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
 				chart, err := NewChart(testData.chartDir)
 				assert.Nil(t, err)
-				result := ct.LintChart(chart)
-				assert.Equal(t, testData.expected, result.Error == nil)
+				result := ct.processCharts([]*Chart{chart})
+				assert.Equal(t, testData.expected, result[0].Error == nil)
 			})
 		}
 	}
@@ -246,12 +251,13 @@ func TestLintChartSchemaValidation(t *testing.T) {
 			{fmt.Sprintf("schema-%s", suffix), "testdata/test_lints", true},
 		}
 
+		ct.refreshChartProcessors()
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
 				chart, err := NewChart(testData.chartDir)
 				assert.Nil(t, err)
-				result := ct.LintChart(chart)
-				assert.Equal(t, testData.expected, result.Error == nil)
+				result := ct.processCharts([]*Chart{chart})
+				assert.Equal(t, testData.expected, result[0].Error == nil)
 				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
 				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
 			})
@@ -292,12 +298,13 @@ func TestLintYamlValidation(t *testing.T) {
 			{fmt.Sprintf("lint-%s", suffix), "testdata/test_lints", true},
 		}
 
+		ct.refreshChartProcessors()
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
 				chart, err := NewChart(testData.chartDir)
 				assert.Nil(t, err)
-				result := ct.LintChart(chart)
-				assert.Equal(t, testData.expected, result.Error == nil)
+				result := ct.processCharts([]*Chart{chart})
+				assert.Equal(t, testData.expected, result[0].Error == nil)
 				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
 				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
 			})

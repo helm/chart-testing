@@ -91,6 +91,43 @@ func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) 
 	return nil
 }
 
+func (p ProcessExecutor) RunProcessWithPipedInput(inputString string, executable string, execArgs ...interface{}) error {
+	cmd, err := p.CreateProcess(executable, execArgs...)
+	if err != nil {
+		return err
+	}
+
+	outReader, err := cmd.StdoutPipe()
+	if err != nil {
+		return errors.Wrap(err, "Error getting StdoutPipe for command")
+	}
+
+	errReader, err := cmd.StderrPipe()
+	if err != nil {
+		return errors.Wrap(err, "Error getting StderrPipe for command")
+	}
+
+	scanner := bufio.NewScanner(io.MultiReader(outReader, errReader))
+	go func() {
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+
+	cmd.Stdin = strings.NewReader(inputString)
+	err = cmd.Start()
+	if err != nil {
+		return errors.Wrap(err, "Error running process")
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return errors.Wrap(err, "Error waiting for process")
+	}
+
+	return nil
+}
+
 func (p ProcessExecutor) CreateProcess(executable string, execArgs ...interface{}) (*exec.Cmd, error) {
 	args, err := util.Flatten(execArgs)
 	if p.debug {
