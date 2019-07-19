@@ -18,7 +18,7 @@ chart-dirs:
   - incubator
 excluded-charts:
   - common
-custom-manifest-processors:
+custom-manifest-processor:
   - "test"
 helm-extra-args: --timeout 300
 upgrade: true
