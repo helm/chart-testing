@@ -235,8 +235,7 @@ type Testing struct {
 
 // TestResult holds test results for a specific chart
 type TestResult struct {
-	PassedAll bool
-	Error     error // Wrap all of the errors
+	Error error // Wrap all of the errors
 }
 
 type ChartProcessor interface {
@@ -410,7 +409,6 @@ func (t *Testing) processCharts(charts []*Chart) []TestResult {
 			err := processor.ProcessChart(chart)
 			if err != nil {
 				results[idxChart].Error = err
-				// or mark what hasn't been processed yet
 			}
 
 		}
