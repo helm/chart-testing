@@ -53,6 +53,5 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, true, cfg.SkipMissingValues)
 	require.Equal(t, "default", cfg.Namespace)
 	require.Equal(t, "release", cfg.ReleaseLabel)
-	require.Equal(t, "test", cfg.CustomManifestProcessors[0].Command)
-	require.Equal(t, false, cfg.CustomManifestProcessors[0].FailFast)
+	require.Equal(t, []string{"test"}, cfg.CustomManifestProcessors)
 }

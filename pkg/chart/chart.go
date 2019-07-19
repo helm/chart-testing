@@ -154,9 +154,10 @@ type AccountValidator interface {
 
 // Chart represents a Helm chart, and can be initalized with the NewChart method.
 type Chart struct {
-	path          string
-	yaml          *util.ChartYaml
-	ciValuesPaths []string
+	path               string
+	yaml               *util.ChartYaml
+	ciValuesPaths      []string
+	renderedChartCache map[string]string
 }
 
 // Yaml returns the Chart metadata
@@ -215,7 +216,7 @@ func NewChart(chartPath string) (*Chart, error) {
 		return nil, err
 	}
 	matches, _ := filepath.Glob(filepath.Join(chartPath, "ci", "*-values.yaml"))
-	return &Chart{chartPath, yaml, matches}, nil
+	return &Chart{chartPath, yaml, matches, make(map[string]string)}, nil
 }
 
 type Testing struct {
@@ -240,7 +241,6 @@ type TestResult struct {
 
 type ChartProcessor interface {
 	ProcessChart(chart *Chart) error
-	FailFast() bool
 }
 
 // NewTesting creates a new Testing struct with the given config.
@@ -286,7 +286,7 @@ func (t *Testing) refreshChartProcessors() {
 	t.chartProcessors = append(t.chartProcessors, LintWithValuesProcessor{Helm: t.helm})
 
 	for _, custom := range t.config.CustomManifestProcessors {
-		t.chartProcessors = append(t.chartProcessors, ExecManifestProcessor{exec: t.processExecutor, Command: strings.Split(custom.Command, " "), FailFastCfg: custom.FailFast})
+		t.chartProcessors = append(t.chartProcessors, ExecManifestProcessor{exec: t.processExecutor, Command: strings.Split(custom, " ")})
 	}
 }
 
@@ -396,43 +396,23 @@ func (t *Testing) renderCharts() ([]*Chart, error) {
 	return charts, nil
 }
 
-var notProcessed = errors.New("Didn't process chart because of failfast.")
-
 func (t *Testing) processCharts(charts []*Chart) []TestResult {
 	results := make([]TestResult, len(charts))
 
-	for idx_proc, processor := range t.chartProcessors {
-		for idx_chart, chart := range charts {
+	for _, processor := range t.chartProcessors {
+		for idxChart, chart := range charts {
 			// Don't process any other step if already failed, don't want to
 			// override previous errors
-			if results[idx_chart].Error != nil {
+			if results[idxChart].Error != nil {
 				continue
 			}
 
 			err := processor.ProcessChart(chart)
 			if err != nil {
-				results[idx_chart].Error = err
+				results[idxChart].Error = err
 				// or mark what hasn't been processed yet
-				if processor.FailFast() { // TODO: do we need a global failfast flag?
-					goto failfast
-				}
 			}
 
-			// Mark a chart as fully successful
-			if idx_proc == len(t.chartProcessors)-1 {
-				results[idx_chart].PassedAll = true // TODO may want to move
-			}
-		}
-	}
-
-failfast:
-
-	// Set the chart as not fully processed because of the failfast flag, we
-	// don't want to give the developer the impression that the linting passed
-	// when it did not
-	for idx := range results {
-		if !results[idx].PassedAll {
-			results[idx].Error = notProcessed
 		}
 	}
 
@@ -460,32 +440,31 @@ func (t *Testing) PrintResults(charts []*Chart, results []TestResult) {
 type ExecManifestProcessor struct {
 	exec exec.ProcessExecutor
 	Helm
-	Command     []string
-	FailFastCfg bool
+	Command []string
 }
 
 func (proc ExecManifestProcessor) ProcessChart(chart *Chart) error {
 	valuesYaml := filepath.Join(chart.Path(), "values.yaml")
-	valuesFiles := chart.ValuesFilePathsForCI() // TODO: do we test CI files
+	valuesFiles := chart.ValuesFilePathsForCI()
 	yamlFiles := append([]string{valuesYaml}, valuesFiles...)
 
-	for _, vals := range yamlFiles {
-		renderedChart, err := proc.Helm.RenderTemplate(chart.Path(), vals) // TODO : potentially cache
-		if err != nil {                                                    // TODO: Do we fail fast on the first failure
-			return err
+	for _, val := range yamlFiles {
+		renderedChart, ok := chart.renderedChartCache[val]
+		if !ok {
+			renderedChart, err := proc.Helm.RenderTemplate(chart.Path(), val)
+			if err != nil {
+				return err
+			}
+			chart.renderedChartCache[val] = renderedChart
 		}
 
-		err = proc.exec.RunProcessWithPipedInput(renderedChart, proc.Command[0], proc.Command[1:])
+		err := proc.exec.RunProcessWithPipedInput(renderedChart, proc.Command[0], proc.Command[1:])
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-func (proc ExecManifestProcessor) FailFast() bool {
-	return proc.FailFastCfg
 }
 
 type ValidateVersionIncrementProcessor struct {
@@ -526,10 +505,6 @@ func (proc ValidateVersionIncrementProcessor) ProcessChart(chart *Chart) error {
 	return nil
 }
 
-func (proc ValidateVersionIncrementProcessor) FailFast() bool {
-	return false
-}
-
 type ValidateSchemaProcessor struct {
 	Linter
 	ChartYamlSchema string
@@ -544,10 +519,6 @@ func (proc ValidateSchemaProcessor) ProcessChart(chart *Chart) error {
 	}
 
 	return nil
-}
-
-func (proc ValidateSchemaProcessor) FailFast() bool {
-	return false
 }
 
 type ValidateYamlProcessor struct {
@@ -569,10 +540,6 @@ func (proc ValidateYamlProcessor) ProcessChart(chart *Chart) error {
 	}
 
 	return nil
-}
-
-func (proc ValidateYamlProcessor) FailFast() bool {
-	return false
 }
 
 type ValidateMaintainersProcessor struct {
@@ -617,16 +584,12 @@ func ValidateMaintainers(chart *Chart, remote string, git Git, accountValidator 
 	return nil
 }
 
-func (proc ValidateMaintainersProcessor) FailFast() bool {
-	return false
-}
-
 type LintWithValuesProcessor struct {
 	Helm
 }
 
 func (proc LintWithValuesProcessor) ProcessChart(chart *Chart) error {
-	valuesFiles := chart.ValuesFilePathsForCI() //TODO: do we need to lint defaults values.yaml
+	valuesFiles := chart.ValuesFilePathsForCI()
 
 	// Lint with defaults if no values files are specified.
 	if len(valuesFiles) == 0 {
@@ -645,10 +608,6 @@ func (proc LintWithValuesProcessor) ProcessChart(chart *Chart) error {
 	return nil
 }
 
-func (proc LintWithValuesProcessor) FailFast() bool {
-	return false
-}
-
 type InstallProcessor struct {
 	testing *Testing
 }
@@ -660,10 +619,6 @@ func (proc InstallProcessor) ProcessChart(chart *Chart) error {
 	}
 
 	return nil
-}
-
-func (proc InstallProcessor) FailFast() bool {
-	return true
 }
 
 // InstallChart installs the specified chart into a new namespace, waits for resources to become ready, and eventually

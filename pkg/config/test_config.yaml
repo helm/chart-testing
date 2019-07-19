@@ -19,8 +19,7 @@ chart-dirs:
 excluded-charts:
   - common
 custom-manifest-processors:
-  - command: "test"
-    fail-fast: false
+  - "test"
 helm-extra-args: --timeout 300
 upgrade: true
 skip-missing-values: true
