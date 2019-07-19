@@ -285,7 +285,7 @@ func (t *Testing) refreshChartProcessors() {
 	t.chartProcessors = append(t.chartProcessors, LintWithValuesProcessor{Helm: t.helm})
 
 	for _, custom := range t.config.CustomManifestProcessors {
-		t.chartProcessors = append(t.chartProcessors, ExecManifestProcessor{exec: t.processExecutor, Command: strings.Split(custom, " ")})
+		t.chartProcessors = append(t.chartProcessors, ExecManifestProcessor{exec: t.processExecutor, Command: strings.Split(custom, " "), Helm: t.helm})
 	}
 }
 
@@ -298,6 +298,12 @@ func (t *Testing) Process() error {
 	results := t.processCharts(charts)
 
 	t.PrintResults(charts, results)
+
+	for _, r := range results {
+		if r.Error != nil {
+			return errors.New("At least one chart is a failed")
+		}
+	}
 
 	return nil
 }
@@ -448,15 +454,16 @@ func (proc ExecManifestProcessor) ProcessChart(chart *Chart) error {
 
 	for _, val := range yamlFiles {
 		renderedChart, ok := chart.renderedChartCache[val]
+		var err error //prevent shadow var
 		if !ok {
-			renderedChart, err := proc.Helm.RenderTemplate(chart.Path(), val)
+			renderedChart, err = proc.Helm.RenderTemplate(chart.Path(), val)
 			if err != nil {
 				return err
 			}
 			chart.renderedChartCache[val] = renderedChart
 		}
 
-		err := proc.exec.RunProcessWithPipedInput(renderedChart, proc.Command[0], proc.Command[1:])
+		err = proc.exec.RunProcessWithPipedInput(renderedChart, proc.Command[0], proc.Command[1:])
 		if err != nil {
 			return err
 		}

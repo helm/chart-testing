@@ -70,7 +70,7 @@ func addLintFlags(flags *flag.FlagSet) {
 			Enable schema validation of 'Chart.yaml' using Yamale (default: true)`))
 	flags.Bool("validate-yaml", true, heredoc.Doc(`
 			Enable linting of 'Chart.yaml' and values files (default: true)`))
-	flags.StringArray("custom-manifest-processor", nil, heredoc.Doc(`
+	flags.StringSlice("custom-manifest-processor", nil, heredoc.Doc(`
 			Accepts rendered manifest via stdin. (default: [])`))
 }
 
