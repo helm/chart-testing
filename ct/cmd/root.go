@@ -71,7 +71,7 @@ func addCommonFlags(flags *pflag.FlagSet) {
 		The git reference used to identify changed charts`))
 	// Deprecated: Please use `--since` instead.
 	flags.String("remote", "origin", heredoc.Doc(`
-		Deprecated: Use --since=$git-ref instead. The name of the Git remote used to identify changed charts`))
+		The name of the Git remote used to identify changed charts`))
 	// Deprecated: Please use `--since` instead.
 	flags.String("target-branch", "master", heredoc.Doc(`
 		Deprecated: Use --since=$git-ref instead. The name of the target branch used to identify changed charts`))

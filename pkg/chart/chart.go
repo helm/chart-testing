@@ -801,7 +801,7 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 		return errors.New("Chart doesn't have maintainers")
 	}
 
-	repoUrl, err := t.git.GetUrlForRemote(t.config.Since)
+	repoUrl, err := t.git.GetUrlForRemote(t.config.Remote)
 	if err != nil {
 		return err
 	}

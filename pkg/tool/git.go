@@ -67,8 +67,8 @@ func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, er
 	return strings.Split(changedChartFilesString, "\n"), nil
 }
 
-func (g Git) GetUrlForRemote(ref string) (string, error) {
-	return g.exec.RunProcessAndCaptureOutput("git", "ls-remote", "--get-url", ref)
+func (g Git) GetUrlForRemote(remote string) (string, error) {
+	return g.exec.RunProcessAndCaptureOutput("git", "ls-remote", "--get-url", remote)
 }
 
 func (g Git) ValidateRepository() error {

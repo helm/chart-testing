@@ -39,6 +39,7 @@ var (
 )
 
 type Configuration struct {
+	Remote                string   `mapstructure:"remote"`
 	Since                 string   `mapstructure:"since"`
 	BuildId               string   `mapstructure:"build-id"`
 	LintConf              string   `mapstructure:"lint-conf"`
@@ -59,8 +60,6 @@ type Configuration struct {
 	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
-	// Deprecated: Use Since instead.
-	Remote string `mapstructure:"remote"`
 	// Deprecated: Use Since instead.
 	TargetBranch string `mapstructure:"target-branch"`
 }
