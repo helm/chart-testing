@@ -213,7 +213,7 @@ func TestLintChartMaintainerValidation(t *testing.T) {
 				chart, err := NewChart(testData.chartDir)
 				assert.Nil(t, err)
 				result := ct.processCharts([]*Chart{chart})
-				assert.Equal(t, testData.expected, result[0].Error == nil)
+				assert.Equal(t, testData.expected, result[0] == nil)
 			})
 		}
 	}
@@ -257,7 +257,7 @@ func TestLintChartSchemaValidation(t *testing.T) {
 				chart, err := NewChart(testData.chartDir)
 				assert.Nil(t, err)
 				result := ct.processCharts([]*Chart{chart})
-				assert.Equal(t, testData.expected, result[0].Error == nil)
+				assert.Equal(t, testData.expected, result[0] == nil)
 				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
 				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
 			})
@@ -304,7 +304,7 @@ func TestLintYamlValidation(t *testing.T) {
 				chart, err := NewChart(testData.chartDir)
 				assert.Nil(t, err)
 				result := ct.processCharts([]*Chart{chart})
-				assert.Equal(t, testData.expected, result[0].Error == nil)
+				assert.Equal(t, testData.expected, result[0] == nil)
 				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
 				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
 			})

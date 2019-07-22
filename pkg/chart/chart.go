@@ -233,11 +233,6 @@ type Testing struct {
 	chartProcessors          []ChartProcessor
 }
 
-// TestResult holds test results for a specific chart
-type TestResult struct {
-	Error error // Wrap all of the errors
-}
-
 type ChartProcessor interface {
 	ProcessChart(chart *Chart) error
 }
@@ -300,7 +295,7 @@ func (t *Testing) Process() error {
 	t.PrintResults(charts, results)
 
 	for _, r := range results {
-		if r.Error != nil {
+		if r != nil {
 			return errors.New("At least one chart is a failed")
 		}
 	}
@@ -401,20 +396,20 @@ func (t *Testing) renderCharts() ([]*Chart, error) {
 	return charts, nil
 }
 
-func (t *Testing) processCharts(charts []*Chart) []TestResult {
-	results := make([]TestResult, len(charts))
+func (t *Testing) processCharts(charts []*Chart) []error {
+	results := make([]error, len(charts))
 
 	for _, processor := range t.chartProcessors {
 		for idxChart, chart := range charts {
 			// Don't process any other step if already failed, don't want to
 			// override previous errors
-			if results[idxChart].Error != nil {
+			if results[idxChart] != nil {
 				continue
 			}
 
 			err := processor.ProcessChart(chart)
 			if err != nil {
-				results[idxChart].Error = err
+				results[idxChart] = err
 			}
 
 		}
@@ -424,13 +419,13 @@ func (t *Testing) processCharts(charts []*Chart) []TestResult {
 }
 
 // PrintResults writes test results to stdout.
-func (t *Testing) PrintResults(charts []*Chart, results []TestResult) {
+func (t *Testing) PrintResults(charts []*Chart, results []error) {
 	util.PrintDelimiterLine("-")
 	if results != nil {
 		for idx, result := range results {
 
-			if result.Error != nil {
-				fmt.Printf(" %s %s > %s\n", "✖︎", charts[idx], result.Error)
+			if result != nil {
+				fmt.Printf(" %s %s > %s\n", "✖︎", charts[idx], result)
 			} else {
 				fmt.Printf(" %s %s\n", "✔︎", charts[idx])
 			}

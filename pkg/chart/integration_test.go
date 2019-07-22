@@ -49,7 +49,7 @@ func TestInstallChart(t *testing.T) {
 		name     string
 		cfg      config.Configuration
 		chartDir string
-		output   TestResult
+		output   error
 	}
 
 	cases := []testCase{
@@ -61,7 +61,7 @@ func TestInstallChart(t *testing.T) {
 				ReleaseLabel: "app.kubernetes.io/instance",
 			},
 			"test_charts/must-pass-upgrade-install",
-			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
+			nil,
 		},
 		{
 			"install only in random namespace",
@@ -69,7 +69,7 @@ func TestInstallChart(t *testing.T) {
 				Debug: true,
 			},
 			"test_charts/must-pass-upgrade-install",
-			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
+			nil,
 		},
 	}
 
@@ -78,11 +78,11 @@ func TestInstallChart(t *testing.T) {
 			ct := newTestingHelmIntegration(tc.cfg)
 			result := ct.InstallChart(mustNewChart(tc.chartDir))
 
-			if result.Error != tc.output.Error {
-				if result.Error != nil && tc.output.Error != nil {
-					assert.Equal(t, tc.output.Error.Error(), result.Error.Error())
+			if result != tc.output {
+				if result != nil && tc.output != nil {
+					assert.Equal(t, tc.output, result)
 				} else {
-					assert.Equal(t, tc.output.Error, result.Error)
+					assert.Equal(t, tc.output, result)
 				}
 			}
 		})
