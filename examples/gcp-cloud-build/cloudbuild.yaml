@@ -1,0 +1,15 @@
+steps:
+
+- name: 'gcr.io/cloud-builders/git'
+  args: ['init']
+
+- name: 'gcr.io/cloud-builders/git'
+  args: ['remote', 'add', 'origin', 'git@github.com:github-account/charts-repo.git']
+
+- name: gcr.io/cloud-builders/git
+  args: ['remote', '-v']
+
+- name: quay.io/helmpack/chart-testing
+  id: lint-charts
+  entrypoint: ct
+  args: ['lint', '--all']
