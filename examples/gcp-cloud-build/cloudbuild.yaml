@@ -1,0 +1,30 @@
+steps:
+
+- name: 'gcr.io/cloud-builders/git'
+  id: 'git-init'
+  args: ['init']
+  waitFor: ['-']
+
+- name: 'gcr.io/cloud-builders/git'
+  id: 'git-add-remote'
+  args: ['remote', 'add', 'origin', 'git@github.com:github-account/charts-repo.git']
+  waitFor: ['git-init']
+
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: 'cluster-info'
+  args: ['cluster-info']
+  waitFor: ['git-add-remote']
+
+- name: quay.io/helmpack/chart-testing
+  id: 'lint-and-install-charts'
+  entrypoint: 'ct'
+  args: ['lint-and-install']
+  waitFor: ['cluster-info']
+
+options:
+  env:
+  - CLOUDSDK_COMPUTE_ZONE=cluster-location
+  - CLOUDSDK_CONTAINER_CLUSTER=cluster-name
+
+timeout:
+  3600s
