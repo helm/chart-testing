@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 readonly CLUSTER_NAME=chart-testing
-readonly K8S_VERSION=v1.13.4
+readonly K8S_VERSION=v1.15.3
 
 create_kind_cluster() {
     kind create cluster --name "$CLUSTER_NAME" --image "kindest/node:$K8S_VERSION" --wait 60s
