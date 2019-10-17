@@ -228,6 +228,16 @@ func SanitizeName(s string, maxLength int) string {
 	return reg.ReplaceAllString(result, "")
 }
 
+func SanitizeReleaseName(s string, maxLength int) string {
+	reg := regexp.MustCompile("^[^a-zA-Z0-9]+")
+
+	result := s
+	if len(s) > maxLength {
+		result = s[:maxLength]
+	}
+	return reg.ReplaceAllString(result, "")
+}
+
 func GetRandomPort() (int, error) {
 	listener, err := net.Listen("tcp", ":0")
 	defer listener.Close()

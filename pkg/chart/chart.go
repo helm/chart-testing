@@ -28,6 +28,7 @@ import (
 )
 
 const maxNameLength = 63
+const maxReleaseNameLength = 12
 
 // Git is the Interface that wraps Git operations.
 //
@@ -196,6 +197,8 @@ func (c *Chart) CreateInstallParams(buildID string) (release string, namespace s
 		yaml := c.Yaml()
 		release = yaml.Name
 	}
+
+	release = util.SanitizeReleaseName(release, maxReleaseNameLength)
 	namespace = release
 	if buildID != "" {
 		namespace = fmt.Sprintf("%s-%s", namespace, buildID)

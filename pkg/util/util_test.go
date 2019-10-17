@@ -91,6 +91,28 @@ func TestSanitizeName(t *testing.T) {
 	}
 }
 
+func TestSanitizeReleaseName(t *testing.T) {
+	var testDataSlice = []struct {
+		input     string
+		maxLength int
+		expected  string
+	}{
+		{"short", 8, "short"},
+		{"length-8", len("length-8"), "length-8"},
+		{"way-longer-than-max-length", 8, "way-long"},
+		{"12345678", len("12345678") + 1, "12345678"},
+		{"123456789", len("123456789") - 1, "12345678"},
+	}
+
+	for index, testData := range testDataSlice {
+		t.Run(string(index), func(t *testing.T) {
+			actual := SanitizeReleaseName(testData.input, testData.maxLength)
+			fmt.Printf("actual: %s,%d, input: %s,%d\n", actual, len(actual), testData.input, testData.maxLength)
+			assert.Equal(t, testData.expected, actual)
+		})
+	}
+}
+
 func TestBreakingChangeAllowed(t *testing.T) {
 	var testDataSlice = []struct {
 		left     string
