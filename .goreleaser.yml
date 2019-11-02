@@ -1,7 +1,7 @@
 project_name: chart-testing
 before:
   hooks:
-    - go mod tidy
+    - go mod download
 builds:
   - main: ct/main.go
     binary: ct

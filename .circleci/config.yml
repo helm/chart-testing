@@ -32,6 +32,7 @@ jobs:
       - run:
           name: Test
           command: |
+            go mod download
             ./e2e-kind.sh
   build:
     docker:
