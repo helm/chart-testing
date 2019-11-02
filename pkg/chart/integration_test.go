@@ -57,7 +57,7 @@ func TestInstallChart(t *testing.T) {
 			"install only in custom namespace",
 			config.Configuration{
 				Debug:        true,
-				Namespace:    "default",
+				Namespace:    "foobar",
 				ReleaseLabel: "app.kubernetes.io/instance",
 			},
 			"test_charts/must-pass-upgrade-install",

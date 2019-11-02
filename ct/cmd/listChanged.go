@@ -16,8 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/MakeNowJust/heredoc"
 
 	"github.com/helm/chart-testing/v3/pkg/chart"
@@ -33,7 +31,7 @@ func newListChangedCmd() *cobra.Command {
 		Long: heredoc.Doc(`
 			"List changed charts based on configured charts directories,
 			"remote, and target branch`),
-		Run: listChanged,
+		RunE: listChanged,
 	}
 
 	flags := cmd.Flags()
@@ -41,20 +39,23 @@ func newListChangedCmd() *cobra.Command {
 	return cmd
 }
 
-func listChanged(cmd *cobra.Command, args []string) {
+func listChanged(cmd *cobra.Command, args []string) error {
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, false)
 	if err != nil {
-		fmt.Printf("Error loading configuration: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Error loading configuration: %s", err)
 	}
 
-	testing := chart.NewTesting(*configuration)
+	testing, err := chart.NewTesting(*configuration)
+	if err != nil {
+		return err
+	}
 	chartDirs, err := testing.ComputeChangedChartDirectories()
 	if err != nil {
-		os.Exit(1)
+		return err
 	}
 
 	for _, dir := range chartDirs {
 		fmt.Println(dir)
 	}
+	return nil
 }

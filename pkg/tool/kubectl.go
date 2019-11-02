@@ -23,6 +23,12 @@ func NewKubectl(exec exec.ProcessExecutor) Kubectl {
 	}
 }
 
+// CreateNamespace creates a new namespace with the given name.
+func (k Kubectl) CreateNamespace(namespace string) error {
+	fmt.Printf("Creating namespace '%s'...\n", namespace)
+	return k.exec.RunProcess("kubectl", "create", "namespace", namespace)
+}
+
 // DeleteNamespace deletes the specified namespace. If the namespace does not terminate within 120s, pods running in the
 // namespace and, eventually, the namespace itself are force-deleted.
 func (k Kubectl) DeleteNamespace(namespace string) {

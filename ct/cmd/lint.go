@@ -16,8 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/v3/pkg/chart"
 	"github.com/helm/chart-testing/v3/pkg/config"
@@ -44,7 +42,7 @@ func newLintCmd() *cobra.Command {
 			'*-values.yaml' in a directory named 'ci' in the root of the chart's
 			directory. The chart is linted for each of these files. If no custom
 			values file is present, the chart is linted with defaults.`),
-		Run: lint,
+		RunE: lint,
 	}
 
 	flags := cmd.Flags()
@@ -72,26 +70,24 @@ func addLintFlags(flags *flag.FlagSet) {
 			Enable linting of 'Chart.yaml' and values files (default: true)`))
 }
 
-func lint(cmd *cobra.Command, args []string) {
+func lint(cmd *cobra.Command, args []string) error {
 	fmt.Println("Linting charts...")
 
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, true)
 	if err != nil {
-		fmt.Printf("Error loading configuration: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Error loading configuration: %s", err)
 	}
 
-	testing := chart.NewTesting(*configuration)
+	testing, err := chart.NewTesting(*configuration)
+	if err != nil {
+		return err
+	}
 	results, err := testing.LintCharts()
 	if err != nil {
-		fmt.Printf("Error linting charts: %s\n", err)
-	} else {
-		fmt.Println("All charts linted successfully")
+		return fmt.Errorf("Error linting charts: %s", err)
 	}
 
+	fmt.Println("All charts linted successfully")
 	testing.PrintResults(results)
-
-	if err != nil {
-		os.Exit(1)
-	}
+	return nil
 }

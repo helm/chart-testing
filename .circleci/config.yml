@@ -30,14 +30,18 @@ jobs:
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
 
-            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash
+            helm_version=v3.0.0
+            curl -sSLO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz"
+            sudo mkdir -p "/usr/local/helm-$helm_version"
+            sudo tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version"
+            sudo ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm
+
             curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-linux-amd64"
             chmod +x kind
             sudo mv kind /usr/local/bin/kind
       - run:
           name: Test
           command: |
-            go mod download
             ./e2e-kind.sh
   build:
     docker:
