@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/helm/chart-testing/pkg/exec"
+	"github.com/helm/chart-testing/v3/pkg/exec"
 	"github.com/pkg/errors"
 )
 

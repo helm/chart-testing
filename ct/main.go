@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/helm/chart-testing/ct/cmd"
+	"github.com/helm/chart-testing/v3/ct/cmd"
 )
 
 func main() {

@@ -36,10 +36,10 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 
 ### From Source
 
-To install from head with [Go](https://golang.org) 1.12.4 or higher:
+To install from head with [Go](https://golang.org) 1.13 or higher:
 
 ```cli
-go get github.com/helm/chart-testing/ct
+go get github.com/helm/chart-testing/v3/ct
 ```
 
 This will put `ct` in `$(go env GOPATH)/bin`. You may need to add that directory to your `$PATH` as shown [here](https://golang.org/doc/code.html#GOPATH) if you encounter the error `ct: command not found` after installation.
@@ -132,9 +132,10 @@ helm-repo-extra-args:
 
 ## Building from Source
 
-`ct` is built using Go 1.12.4. Older versions may work but have not been tested.
+`ct` is built using Go 1.13 or higher.
 
-`build.sh` is used to build and release the tool. It uses [Goreleaser](https://goreleaser.com/) under the covers.
+`build.sh` is used to build and release the tool.
+It uses [Goreleaser](https://goreleaser.com/) under the covers.
 
 Note: on MacOS you will need `GNU Coreutils readlink`.
 You can install it with:

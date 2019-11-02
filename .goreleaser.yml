@@ -1,4 +1,7 @@
 project_name: chart-testing
+before:
+  hooks:
+    - go mod download
 builds:
   - main: ct/main.go
     binary: ct
@@ -16,15 +19,15 @@ builds:
         -X github.com/helm/chart-testing/ct/cmd.Version={{ .Tag }}
         -X github.com/helm/chart-testing/ct/cmd.GitCommit={{ .Commit }}
         -X github.com/helm/chart-testing/ct/cmd.BuildDate={{ .Date }}
-archive:
-  format_overrides:
-    - goos: windows
-      format: zip
-  files:
-    - LICENSE
-    - README.md
-    - etc/chart_schema.yaml
-    - etc/lintconf.yaml
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+      - etc/chart_schema.yaml
+      - etc/lintconf.yaml
 checksum:
   name_template: 'checksums.txt'
 snapshot:

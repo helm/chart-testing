@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/helm/chart-testing/pkg/chart"
-	"github.com/helm/chart-testing/pkg/config"
+	"github.com/helm/chart-testing/v3/pkg/chart"
+	"github.com/helm/chart-testing/v3/pkg/config"
 
 	"github.com/spf13/cobra"
 )

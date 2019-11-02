@@ -17,12 +17,13 @@ package exec
 import (
 	"bufio"
 	"fmt"
-	"github.com/helm/chart-testing/pkg/util"
-	"github.com/pkg/errors"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/helm/chart-testing/v3/pkg/util"
+	"github.com/pkg/errors"
 )
 
 type ProcessExecutor struct {
