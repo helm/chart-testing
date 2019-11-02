@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Install tools
           command: |
-            curl -SsL https://golang.org/doc/install?download=go1.13.4.linux-amd64.tar.gz
+            curl -SsL https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz -o go1.13.4.linux-amd64.tar.gz
             tar -C /usr/local -xzf go1.13.4.linux-amd64.tar.gz
             ln -s /usr/local/go/bin/go /usr/local/bin/go
 
