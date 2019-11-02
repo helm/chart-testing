@@ -14,6 +14,7 @@ jobs:
   test:
     machine:
       enabled: true
+      image: circleci/classic:201808-01
     working_directory: /home/circleci/.go_workspace/src/github.com/helm/chart-testing
     steps:
       - run:
