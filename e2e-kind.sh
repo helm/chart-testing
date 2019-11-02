@@ -22,6 +22,14 @@ create_kind_cluster() {
     echo
 }
 
+install_tiller() {
+    echo 'Installing Tiller...'
+    kubectl --namespace kube-system --output yaml create serviceaccount tiller --dry-run | kubectl apply -f -
+    kubectl create --output yaml clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller --dry-run | kubectl apply -f -
+    helm init --service-account tiller --upgrade --wait
+    echo
+}
+
 install_local-path-provisioner() {
     # kind doesn't support Dynamic PVC provisioning yet, this is one way to get it working
     # https://github.com/rancher/local-path-provisioner
@@ -49,6 +57,7 @@ main() {
 
     create_kind_cluster
     install_local-path-provisioner
+    install_tiller
     test_e2e
 }
 
