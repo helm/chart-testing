@@ -20,11 +20,11 @@ jobs:
       - run:
           name: Install tools
           command: |
-            mkdir /home/circleci/.go_workspace/bin
-
+            # We need to install Golang 1.13 because the CircleCI machine image has an outdated version.
+            # We need to use a CircleCI machine in order to be able to run kind.
             curl -SsL https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz -o go1.13.4.linux-amd64.tar.gz
             tar -xzf go1.13.4.linux-amd64.tar.gz
-            ln -s "$HOME/go/bin/go" "$HOME/.go_workspace/bin/go"
+            sudo ln -f -s "$HOME/go/bin/go" /usr/local/bin/go
 
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod +x ./kubectl
