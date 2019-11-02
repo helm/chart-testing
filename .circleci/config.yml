@@ -32,11 +32,10 @@ jobs:
       - run:
           name: Test
           command: |
-            dep ensure -v
             ./e2e-kind.sh
   build:
     docker:
-      - image: golang:1.12.4-alpine3.9
+      - image: golang:1.13-alpine3.10
     working_directory: /go/src/github.com/helm/chart-testing
     steps:
       - setup_remote_docker
@@ -44,7 +43,7 @@ jobs:
           name: Install tools
           command: |
             apk add bash build-base ca-certificates curl docker git openssh
-            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.102.0/goreleaser_Linux_x86_64.tar.gz
+            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.120.5/goreleaser_Linux_x86_64.tar.gz
             mkdir -p /usr/local/goreleaser
             tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
             ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser

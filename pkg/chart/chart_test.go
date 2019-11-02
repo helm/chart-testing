@@ -19,8 +19,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/helm/chart-testing/pkg/config"
-	"github.com/helm/chart-testing/pkg/util"
+	"github.com/helm/chart-testing/v3/pkg/config"
+	"github.com/helm/chart-testing/v3/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

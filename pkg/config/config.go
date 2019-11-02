@@ -22,7 +22,7 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 
-	"github.com/helm/chart-testing/pkg/util"
+	"github.com/helm/chart-testing/v3/pkg/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
