@@ -16,6 +16,7 @@ package chart
 
 import (
 	"fmt"
+	"github.com/Masterminds/semver"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -79,14 +80,14 @@ type Git interface {
 //
 // DeleteRelease purges the specified Helm release.
 type Helm interface {
-	Init() error
 	AddRepo(name string, url string, extraArgs []string) error
 	BuildDependencies(chart string) error
 	LintWithValues(chart string, valuesFile string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
-	Upgrade(chart string, release string) error
-	Test(release string, cleanup bool) error
-	DeleteRelease(release string)
+	Upgrade(chart string, namespace string, release string) error
+	Test(namespace string, release string) error
+	DeleteRelease(namespace string, release string)
+	Version() (string, error)
 }
 
 // Kubectl is the interface that wraps kubectl operations
@@ -109,6 +110,7 @@ type Helm interface {
 //
 // GetContainers gets all containers of pod
 type Kubectl interface {
+	CreateNamespace(namespace string) error
 	DeleteNamespace(namespace string)
 	WaitForDeployments(namespace string, selector string) error
 	GetPodsforDeployment(namespace string, deployment string) ([]string, error)
@@ -242,10 +244,11 @@ type TestResult struct {
 }
 
 // NewTesting creates a new Testing struct with the given config.
-func NewTesting(config config.Configuration) Testing {
+func NewTesting(config config.Configuration) (Testing, error) {
 	procExec := exec.NewProcessExecutor(config.Debug)
 	extraArgs := strings.Fields(config.HelmExtraArgs)
-	return Testing{
+
+	testing := Testing{
 		config:           config,
 		helm:             tool.NewHelm(procExec, extraArgs),
 		git:              tool.NewGit(procExec),
@@ -255,6 +258,21 @@ func NewTesting(config config.Configuration) Testing {
 		directoryLister:  util.DirectoryLister{},
 		chartUtils:       util.ChartUtils{},
 	}
+
+	versionString, err := testing.helm.Version()
+	if err != nil {
+		return testing, err
+	}
+
+	version, err := semver.NewVersion(versionString)
+	if err != nil {
+		return testing, err
+	}
+
+	if version.Major() < 3 {
+		return testing, fmt.Errorf("minimum required Helm version is v3.0.0; found: %s", version)
+	}
+	return testing, nil
 }
 
 // computePreviousRevisionPath converts any file or directory path to the same path in the
@@ -290,10 +308,6 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 	}
 	util.PrintDelimiterLine("-")
 	fmt.Println()
-
-	if err := t.helm.Init(); err != nil {
-		return nil, errors.Wrap(err, "Error initializing Helm")
-	}
 
 	repoArgs := map[string][]string{}
 
@@ -529,10 +543,13 @@ func (t *Testing) doInstall(chart *Chart) error {
 			namespace, release, releaseSelector, cleanup := t.generateInstallConfig(chart)
 			defer cleanup()
 
+			if err := t.kubectl.CreateNamespace(namespace); err != nil {
+				return err
+			}
 			if err := t.helm.InstallWithValues(chart.Path(), valuesFile, namespace, release); err != nil {
 				return err
 			}
-			return t.testRelease(release, namespace, releaseSelector, false)
+			return t.testRelease(namespace, release, releaseSelector)
 		}
 
 		if err := fun(); err != nil {
@@ -564,6 +581,9 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 			namespace, release, releaseSelector, cleanup := t.generateInstallConfig(oldChart)
 			defer cleanup()
 
+			if err := t.kubectl.CreateNamespace(namespace); err != nil {
+				return err
+			}
 			// Install previous version of chart. If installation fails, ignore this release.
 			if err := t.helm.InstallWithValues(oldChart.Path(), valuesFile, namespace, release); err != nil {
 				if oldChartMustPass {
@@ -572,7 +592,7 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 				fmt.Println(errors.Wrap(err, fmt.Sprintf("Upgrade testing for release '%s' skipped because of previous revision installation error", release)))
 				return nil
 			}
-			if err := t.testRelease(release, namespace, releaseSelector, true); err != nil {
+			if err := t.testRelease(namespace, release, releaseSelector); err != nil {
 				if oldChartMustPass {
 					return err
 				}
@@ -580,11 +600,11 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 				return nil
 			}
 
-			if err := t.helm.Upgrade(oldChart.Path(), release); err != nil {
+			if err := t.helm.Upgrade(oldChart.Path(), namespace, release); err != nil {
 				return err
 			}
 
-			return t.testRelease(release, namespace, releaseSelector, false)
+			return t.testRelease(namespace, release, releaseSelector)
 		}
 
 		if err := fun(); err != nil {
@@ -595,11 +615,11 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 	return nil
 }
 
-func (t *Testing) testRelease(release, namespace, releaseSelector string, cleanupHelmTests bool) error {
+func (t *Testing) testRelease(namespace, release, releaseSelector string) error {
 	if err := t.kubectl.WaitForDeployments(namespace, releaseSelector); err != nil {
 		return err
 	}
-	if err := t.helm.Test(release, cleanupHelmTests); err != nil {
+	if err := t.helm.Test(namespace, release); err != nil {
 		return err
 	}
 	return nil
@@ -612,13 +632,13 @@ func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, relea
 		releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
 		cleanup = func() {
 			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
-			t.helm.DeleteRelease(release)
+			t.helm.DeleteRelease(namespace, release)
 		}
 	} else {
 		release, namespace = chart.CreateInstallParams(t.config.BuildId)
 		cleanup = func() {
 			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
-			t.helm.DeleteRelease(release)
+			t.helm.DeleteRelease(namespace, release)
 			t.kubectl.DeleteNamespace(namespace)
 		}
 	}

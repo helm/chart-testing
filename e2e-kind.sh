@@ -4,8 +4,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly CLUSTER_NAME=chart-testing
-readonly K8S_VERSION=v1.15.3
+CLUSTER_NAME=chart-testing
+readonly CLUSTER_NAME
+
+K8S_VERSION=v1.15.3
+readonly K8S_VERSION
 
 create_kind_cluster() {
     kind create cluster --name "$CLUSTER_NAME" --image "kindest/node:$K8S_VERSION" --wait 60s
@@ -19,14 +22,6 @@ create_kind_cluster() {
     echo
 
     echo 'Cluster ready!'
-    echo
-}
-
-install_tiller() {
-    echo 'Installing Tiller...'
-    kubectl --namespace kube-system --output yaml create serviceaccount tiller --dry-run | kubectl apply -f -
-    kubectl create --output yaml clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller --dry-run | kubectl apply -f -
-    helm init --service-account tiller --upgrade --wait
     echo
 }
 
@@ -57,7 +52,6 @@ main() {
 
     create_kind_cluster
     install_local-path-provisioner
-    install_tiller
     test_e2e
 }
 

@@ -16,8 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/v3/pkg/chart"
 	"github.com/helm/chart-testing/v3/pkg/config"
@@ -48,7 +46,7 @@ func newInstallCmd() *cobra.Command {
 			directory. The chart is installed and tested for each of these files.
 			If no custom values file is present, the chart is installed and
 			tested with defaults.`),
-		Run: install,
+		RunE: install,
 	}
 
 	flags := cmd.Flags()
@@ -80,26 +78,24 @@ func addInstallFlags(flags *flag.FlagSet) {
 		This is only used if namespace is specified`))
 }
 
-func install(cmd *cobra.Command, args []string) {
+func install(cmd *cobra.Command, args []string) error {
 	fmt.Println("Installing charts...")
 
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, true)
 	if err != nil {
-		fmt.Printf("Error loading configuration: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Error loading configuration: %s", err)
 	}
 
-	testing := chart.NewTesting(*configuration)
+	testing, err := chart.NewTesting(*configuration)
+	if err != nil {
+		fmt.Println(err)
+	}
 	results, err := testing.InstallCharts()
 	if err != nil {
-		fmt.Printf("Error installing charts: %s\n", err)
-	} else {
-		fmt.Println("All charts installed successfully")
+		return fmt.Errorf("Error installing charts: %s", err)
 	}
 
+	fmt.Println("All charts installed successfully")
 	testing.PrintResults(results)
-
-	if err != nil {
-		os.Exit(1)
-	}
+	return nil
 }

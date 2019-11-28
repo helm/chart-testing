@@ -16,8 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/helm/chart-testing/v3/pkg/chart"
 	"github.com/helm/chart-testing/v3/pkg/config"
 
@@ -30,7 +28,7 @@ func newLintAndInstallCmd() *cobra.Command {
 		Aliases: []string{"li"},
 		Short:   "Lint, install, and test a chart",
 		Long:    "Combines 'lint' and 'install' commands.",
-		Run:     lintAndInstall,
+		RunE:    lintAndInstall,
 	}
 
 	flags := cmd.Flags()
@@ -40,26 +38,24 @@ func newLintAndInstallCmd() *cobra.Command {
 	return cmd
 }
 
-func lintAndInstall(cmd *cobra.Command, args []string) {
+func lintAndInstall(cmd *cobra.Command, args []string) error {
 	fmt.Println("Linting and installing charts...")
 
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, true)
 	if err != nil {
-		fmt.Printf("Error loading configuration: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Error loading configuration: %s", err)
 	}
 
-	testing := chart.NewTesting(*configuration)
+	testing, err := chart.NewTesting(*configuration)
+	if err != nil {
+		return err
+	}
 	results, err := testing.LintAndInstallCharts()
 	if err != nil {
-		fmt.Printf("Error linting and installing charts: %s\n", err)
-	} else {
-		fmt.Println("All charts linted and installed successfully")
+		return fmt.Errorf("Error linting and installing charts: %s", err)
 	}
 
+	fmt.Println("All charts linted and installed successfully")
 	testing.PrintResults(results)
-
-	if err != nil {
-		os.Exit(1)
-	}
+	return nil
 }

@@ -32,10 +32,6 @@ func NewHelm(exec exec.ProcessExecutor, extraArgs []string) Helm {
 	}
 }
 
-func (h Helm) Init() error {
-	return h.exec.RunProcess("helm", "init", "--client-only")
-}
-
 func (h Helm) AddRepo(name string, url string, extraArgs []string) error {
 	return h.exec.RunProcess("helm", "repo", "add", name, url, extraArgs)
 }
@@ -59,7 +55,7 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 		values = []string{"--values", valuesFile}
 	}
 
-	if err := h.exec.RunProcess("helm", "install", chart, "--name", release, "--namespace", namespace,
+	if err := h.exec.RunProcess("helm", "install", release, chart, "--namespace", namespace,
 		"--wait", values, h.extraArgs); err != nil {
 		return err
 	}
@@ -67,22 +63,26 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 	return nil
 }
 
-func (h Helm) Upgrade(chart string, release string) error {
-	if err := h.exec.RunProcess("helm", "upgrade", release, chart, "--reuse-values",
-		"--wait", h.extraArgs); err != nil {
+func (h Helm) Upgrade(chart string, namespace string, release string) error {
+	if err := h.exec.RunProcess("helm", "upgrade", release, chart, "--namespace", namespace,
+		"--reuse-values", "--wait", h.extraArgs); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (h Helm) Test(release string, cleanup bool) error {
-	return h.exec.RunProcess("helm", "test", release, h.extraArgs, fmt.Sprintf("--cleanup=%t", cleanup))
+func (h Helm) Test(namespace string, release string) error {
+	return h.exec.RunProcess("helm", "test", release, "--namespace", namespace, h.extraArgs)
 }
 
-func (h Helm) DeleteRelease(release string) {
+func (h Helm) DeleteRelease(namespace string, release string) {
 	fmt.Printf("Deleting release '%s'...\n", release)
-	if err := h.exec.RunProcess("helm", "delete", "--purge", release, h.extraArgs); err != nil {
+	if err := h.exec.RunProcess("helm", "uninstall", release, "--namespace", namespace, h.extraArgs); err != nil {
 		fmt.Println("Error deleting Helm release:", err)
 	}
+}
+
+func (h Helm) Version() (string, error) {
+	return h.exec.RunProcessAndCaptureOutput("helm", "version", "--short")
 }

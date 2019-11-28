@@ -18,7 +18,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+SCRIPT_DIR=$(dirname -- "$(readlink -e "${BASH_SOURCE[0]}" || realpath "${BASH_SOURCE[0]}")")
+readonly SCRIPT_DIR
 
 show_help() {
     cat << EOF
@@ -71,7 +72,6 @@ main() {
 
     pushd "$SCRIPT_DIR" > /dev/null
 
-    go mod download
     go test ./...
     goreleaser "${goreleaser_args[@]}"
 

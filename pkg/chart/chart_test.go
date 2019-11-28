@@ -91,20 +91,23 @@ func (l *fakeLinter) Yamale(yamlFile, schemaFile string) error {
 
 type fakeHelm struct{}
 
-func (h fakeHelm) Init() error                                          { return nil }
 func (h fakeHelm) AddRepo(name, url string, extraArgs []string) error   { return nil }
 func (h fakeHelm) BuildDependencies(chart string) error                 { return nil }
 func (h fakeHelm) LintWithValues(chart string, valuesFile string) error { return nil }
 func (h fakeHelm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {
 	return nil
 }
-func (h fakeHelm) Upgrade(chart string, release string) error {
+func (h fakeHelm) Upgrade(chart string, namespace string, release string) error {
 	return nil
 }
-func (h fakeHelm) Test(release string, cleanup bool) error {
+func (h fakeHelm) Test(namespace string, release string) error {
 	return nil
 }
-func (h fakeHelm) DeleteRelease(release string) {}
+func (h fakeHelm) DeleteRelease(namespace string, release string) {}
+
+func (h fakeHelm) Version() (string, error) {
+	return "v3.0.0", nil
+}
 
 var ct Testing
 

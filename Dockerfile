@@ -19,14 +19,14 @@ ARG YAMALE_VERSION=1.8.0
 RUN pip install "yamale==$YAMALE_VERSION"
 
 # Install kubectl
-ARG KUBECTL_VERSION=v1.16.0
+ARG KUBECTL_VERSION=v1.16.2
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG HELM_VERSION=v2.15.2
-RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-linux-amd64.tar.gz" && \
+ARG HELM_VERSION=v3.0.0
+RUN curl -LO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$HELM_VERSION" && \
     tar -xzf "helm-$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
     ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm && \
