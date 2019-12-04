@@ -705,7 +705,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 				changedChartDirs = append(changedChartDirs, chartDir)
 			}
 		} else {
-			fmt.Printf("Directory '%s' is no chart directory. Skipping...", chartDir)
+			fmt.Printf("Directory '%s' is not a valid chart directory. Skipping...\n", dir)
 		}
 	}
 
