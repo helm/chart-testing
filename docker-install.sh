@@ -16,11 +16,12 @@ pip install "yamllint==$YAML_LINT_VERSION"
 pip install "yamale==$YAMALE_VERSION"
 
 # Install kubectl
-curl --silent --show-error --fail --location --output /usr/local/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
+curl -sSfLo /usr/local/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
 chmod +x /usr/local/bin/kubectl
 
+
 # Install Helm
-curl -LO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz"
+curl -sSfLO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz"
 mkdir -p "/usr/local/helm-$HELM_VERSION"
 tar -xzf "helm-$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION"
 ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm
