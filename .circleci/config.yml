@@ -9,6 +9,7 @@ jobs:
           name: lint
           command: |
             shellcheck -x build.sh
+            shellcheck -x docker-install.sh
             shellcheck -x tag.sh
             shellcheck -x e2e-kind.sh
   test:
