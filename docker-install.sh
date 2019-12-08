@@ -26,5 +26,5 @@ tar -xzf "helm-$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSI
 ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm
 rm -f "helm-$HELM_VERSION-linux-amd64.tar.gz"
 
-# # Ensure that the binary is available on path and is executable
+# Ensure that the binary is available on path and is executable
 ct --help
