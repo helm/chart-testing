@@ -7,8 +7,8 @@ ARG YAML_LINT_VERSION=1.19.0
 
 COPY ./etc/chart_schema.yaml /etc/ct/chart_schema.yaml
 COPY ./etc/lintconf.yaml /etc/ct/lintconf.yaml
+COPY ./docker-install.sh /tmp/docker-install.sh
 COPY ct /usr/local/bin/ct
-COPY docker-install.sh /tmp/docker-install.sh
 
 RUN chmod +x /tmp/docker-install.sh && \
     /bin/sh -c /tmp/docker-install.sh && \
