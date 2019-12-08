@@ -2,7 +2,6 @@
 
 set -o errexit
 set -o nounset
-set -o pipefail
 
 # Install apk packages
 apk --no-cache add curl git libc6-compat openssh-client python py-crcmod py-pip 
