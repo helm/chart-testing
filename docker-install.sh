@@ -19,7 +19,6 @@ pip install "yamale==$YAMALE_VERSION"
 curl -sSfLo /usr/local/bin/kubectl "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
 chmod +x /usr/local/bin/kubectl
 
-
 # Install Helm
 curl -sSfLO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz"
 mkdir -p "/usr/local/helm-$HELM_VERSION"
