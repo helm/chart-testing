@@ -18,7 +18,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_DIR=$(dirname -- "$(readlink -e "${BASH_SOURCE[0]}" || realpath "${BASH_SOURCE[0]}")")
+SCRIPT_DIR=$(dirname -- "$(readlink -e "${BASH_SOURCE[0]}" 2> /dev/null || realpath "${BASH_SOURCE[0]}")")
 readonly SCRIPT_DIR
 
 show_help() {

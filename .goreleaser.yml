@@ -52,3 +52,4 @@ dockers:
     extra_files:
       - etc/chart_schema.yaml
       - etc/lintconf.yaml
+      - docker-install.sh
