@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly CT_VERSION=v2.4.0
+readonly CT_VERSION=v3.0.0-beta.1
 readonly KIND_VERSION=v0.5.1
 readonly CLUSTER_NAME=chart-testing
 readonly K8S_VERSION=v1.15.3
@@ -57,14 +57,6 @@ create_kind_cluster() {
     echo
 }
 
-install_tiller() {
-    echo 'Installing Tiller...'
-    docker_exec kubectl --namespace kube-system create sa tiller
-    docker_exec kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-    docker_exec helm init --service-account tiller --upgrade --wait
-    echo
-}
-
 install_local-path-provisioner() {
     # kind doesn't support Dynamic PVC provisioning yet, this is one ways to get it working
     # https://github.com/rancher/local-path-provisioner
@@ -88,7 +80,6 @@ main() {
 
     create_kind_cluster
     install_local-path-provisioner
-    install_tiller
     install_charts
 }
 

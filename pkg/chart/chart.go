@@ -61,8 +61,6 @@ type Git interface {
 
 // Helm is the interface that wraps Helm operations
 //
-// Init runs client-side Helm initialization
-//
 // AddRepo adds a chart repository to the local Helm configuration
 //
 // BuildDependencies builds the chart's dependencies
@@ -705,7 +703,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 				changedChartDirs = append(changedChartDirs, chartDir)
 			}
 		} else {
-			fmt.Printf("Directory '%s' is no chart directory. Skipping...", chartDir)
+			fmt.Printf("Directory '%s' is not a valid chart directory. Skipping...\n", dir)
 		}
 	}
 
