@@ -61,8 +61,6 @@ type Git interface {
 
 // Helm is the interface that wraps Helm operations
 //
-// Init runs client-side Helm initialization
-//
 // AddRepo adds a chart repository to the local Helm configuration
 //
 // BuildDependencies builds the chart's dependencies
