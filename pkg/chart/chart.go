@@ -541,8 +541,10 @@ func (t *Testing) doInstall(chart *Chart) error {
 			namespace, release, releaseSelector, cleanup := t.generateInstallConfig(chart)
 			defer cleanup()
 
-			if err := t.kubectl.CreateNamespace(namespace); err != nil {
-				return err
+			if t.config.SkipNamespaceCreation == false {
+				if err := t.kubectl.CreateNamespace(namespace); err != nil {
+					return err
+				}
 			}
 			if err := t.helm.InstallWithValues(chart.Path(), valuesFile, namespace, release); err != nil {
 				return err
@@ -637,7 +639,9 @@ func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, relea
 		cleanup = func() {
 			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(namespace, release)
-			t.kubectl.DeleteNamespace(namespace)
+			if t.config.SkipNamespaceCreation == false {
+				t.kubectl.DeleteNamespace(namespace)
+			}
 		}
 	}
 

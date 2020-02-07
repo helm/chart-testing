@@ -58,6 +58,7 @@ type Configuration struct {
 	Debug                 bool     `mapstructure:"debug"`
 	Upgrade               bool     `mapstructure:"upgrade"`
 	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
+	SkipNamespaceCreation bool     `mapstructure:"skip-namespace-creation"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
 }
@@ -113,6 +114,10 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 
 	if cfg.Namespace != "" && cfg.ReleaseLabel == "" {
 		return nil, errors.New("specifying '--namespace' without '--release-label' is not allowed")
+	}
+
+	if cfg.SkipNamespaceCreation == true && cfg.Namespace == "" {
+		return nil, errors.New("specifying '--skip-namespace-creation' without '--namespace' is not allowed")
 	}
 
 	// Disable upgrade (this does some expensive dependency building on previous revisions)

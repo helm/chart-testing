@@ -70,6 +70,9 @@ func addInstallFlags(flags *flag.FlagSet) {
 		When --upgrade has been passed, this flag will skip testing CI values files from the
 		previous chart revision if they have been deleted or renamed at the current chart
 		revision`))
+	flags.Bool("skip-namespace-creation", false, heredoc.Doc(`
+		Skips namespace creation and deletion. Can only be used in conjuction with --namespace
+		The specified namespace must already exist.`))
 	flags.String("namespace", "", heredoc.Doc(`
 		Namespace to install the release(s) into. If not specified, each release will be
 		installed in its own randomly generated namespace`))
