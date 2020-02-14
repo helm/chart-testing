@@ -22,21 +22,21 @@ jobs:
           command: |
             # We need to install Golang 1.13 because the CircleCI machine image has an outdated version.
             # We need to use a CircleCI machine in order to be able to run kind.
-            curl -sSLO https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz
+            curl -sSLO https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz
             sudo rm -r /usr/local/go
-            sudo tar -C /usr/local -xzf go1.13.4.linux-amd64.tar.gz
+            sudo tar -C /usr/local -xzf go1.13.8.linux-amd64.tar.gz
 
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
 
-            helm_version=v3.0.1
+            helm_version=v3.0.3
             curl -sSLO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz"
             sudo mkdir -p "/usr/local/helm-$helm_version"
             sudo tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version"
             sudo ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm
 
-            curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-linux-amd64"
+            curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64"
             chmod +x kind
             sudo mv kind /usr/local/bin/kind
       - run:
