@@ -16,10 +16,11 @@ package chart
 
 import (
 	"fmt"
-	"github.com/Masterminds/semver"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
+
+	"github.com/Masterminds/semver"
 
 	"github.com/helm/chart-testing/v3/pkg/config"
 	"github.com/helm/chart-testing/v3/pkg/exec"
@@ -541,8 +542,10 @@ func (t *Testing) doInstall(chart *Chart) error {
 			namespace, release, releaseSelector, cleanup := t.generateInstallConfig(chart)
 			defer cleanup()
 
-			if err := t.kubectl.CreateNamespace(namespace); err != nil {
-				return err
+			if t.config.Namespace == "" {
+				if err := t.kubectl.CreateNamespace(namespace); err != nil {
+					return err
+				}
 			}
 			if err := t.helm.InstallWithValues(chart.Path(), valuesFile, namespace, release); err != nil {
 				return err
@@ -579,8 +582,10 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 			namespace, release, releaseSelector, cleanup := t.generateInstallConfig(oldChart)
 			defer cleanup()
 
-			if err := t.kubectl.CreateNamespace(namespace); err != nil {
-				return err
+			if t.config.Namespace == "" {
+				if err := t.kubectl.CreateNamespace(namespace); err != nil {
+					return err
+				}
 			}
 			// Install previous version of chart. If installation fails, ignore this release.
 			if err := t.helm.InstallWithValues(oldChart.Path(), valuesFile, namespace, release); err != nil {
