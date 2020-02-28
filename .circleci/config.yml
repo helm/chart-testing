@@ -30,7 +30,7 @@ jobs:
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
 
-            helm_version=v3.0.3
+            helm_version=v3.1.1
             curl -sSLO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz"
             sudo mkdir -p "/usr/local/helm-$helm_version"
             sudo tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version"
