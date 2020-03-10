@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/v3/pkg/chart"
 	"github.com/helm/chart-testing/v3/pkg/config"
@@ -71,6 +72,8 @@ func addLintFlags(flags *flag.FlagSet) {
 }
 
 func lint(cmd *cobra.Command, args []string) error {
+	cmd.SilenceUsage = true
+
 	fmt.Println("Linting charts...")
 
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, true)
@@ -84,6 +87,7 @@ func lint(cmd *cobra.Command, args []string) error {
 	}
 	results, err := testing.LintCharts()
 	if err != nil {
+		testing.PrintResults(results)
 		return fmt.Errorf("Error linting charts: %s", err)
 	}
 
