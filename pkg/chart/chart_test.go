@@ -88,6 +88,9 @@ func (l *fakeLinter) Yamale(yamlFile, schemaFile string) error {
 	l.Called(yamlFile, schemaFile)
 	return nil
 }
+func (l *fakeLinter) ExecutablesExist() error {
+	return nil
+}
 
 type fakeHelm struct{}
 

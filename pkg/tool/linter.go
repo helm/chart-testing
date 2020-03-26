@@ -26,6 +26,18 @@ func NewLinter(exec exec.ProcessExecutor) Linter {
 	}
 }
 
+func (l Linter) ExecutablesExist() error {
+	if err := l.exec.ExecutableExists("yamllint"); err != nil {
+		return err
+	}
+
+	if err := l.exec.ExecutableExists("yamale"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (l Linter) YamlLint(yamlFile string, configFile string) error {
 	return l.exec.RunProcess("yamllint", "--config-file", configFile, yamlFile)
 }

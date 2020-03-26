@@ -132,3 +132,12 @@ func (p ProcessExecutor) RunWithProxy(withProxy fn) error {
 
 	return nil
 }
+
+func (p ProcessExecutor) ExecutableExists(executable string) error {
+	_, err := exec.LookPath(executable)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -127,6 +127,7 @@ type Kubectl interface {
 //
 // Yamale runs `yamale` on the specified file with the specified schema file
 type Linter interface {
+	ExecutablesExist() error
 	YamlLint(yamlFile string, configFile string) error
 	Yamale(yamlFile string, schemaFile string) error
 }
@@ -270,6 +271,11 @@ func NewTesting(config config.Configuration) (Testing, error) {
 
 	if version.Major() < 3 {
 		return testing, fmt.Errorf("minimum required Helm version is v3.0.0; found: %s", version)
+	}
+
+	err = testing.linter.ExecutablesExist()
+	if err != nil {
+		return testing, err
 	}
 	return testing, nil
 }
