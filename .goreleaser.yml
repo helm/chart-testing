@@ -16,9 +16,9 @@ builds:
       - windows
     ldflags:
       - >-
-        -X github.com/helm/chart-testing/ct/cmd.Version={{ .Tag }}
-        -X github.com/helm/chart-testing/ct/cmd.GitCommit={{ .Commit }}
-        -X github.com/helm/chart-testing/ct/cmd.BuildDate={{ .Date }}
+        -X github.com/helm/chart-testing/v3/ct/cmd.Version={{ .Tag }}
+        -X github.com/helm/chart-testing/v3/ct/cmd.GitCommit={{ .Commit }}
+        -X github.com/helm/chart-testing/v3/ct/cmd.BuildDate={{ .Date }}
 archives:
   - format_overrides:
       - goos: windows
