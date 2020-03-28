@@ -39,6 +39,7 @@ func NewRootCmd() *cobra.Command {
 			* all charts
 
 			in given chart directories.`),
+		SilenceUsage: true,
 	}
 
 	cmd.AddCommand(newLintCmd())

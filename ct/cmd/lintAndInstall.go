@@ -51,11 +51,12 @@ func lintAndInstall(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	results, err := testing.LintAndInstallCharts()
+	testing.PrintResults(results)
+
 	if err != nil {
 		return fmt.Errorf("Error linting and installing charts: %s", err)
 	}
 
 	fmt.Println("All charts linted and installed successfully")
-	testing.PrintResults(results)
 	return nil
 }
