@@ -11,26 +11,30 @@ RUN apk --no-cache add \
     pip install --upgrade pip==18.1
 
 # Install a YAML Linter
-ARG YAML_LINT_VERSION=1.13.0
-RUN pip install "yamllint==$YAML_LINT_VERSION"
+ARG yamllint_version=1.21.0
+LABEL yamllint_version=$yamllint_version
+RUN pip install "yamllint==$yamllint_version"
 
 # Install Yamale YAML schema validator
-ARG YAMALE_VERSION=1.8.0
-RUN pip install "yamale==$YAMALE_VERSION"
+ARG yamale_version=2.0.1
+LABEL yamale_version=$yamale_version
+RUN pip install "yamale==$yamale_version"
 
 # Install kubectl
-ARG KUBECTL_VERSION=v1.16.2
-RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
+ARG kubectl_version=v1.18.0
+LABEL kubectl_version=$kubectl_version
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl_version/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG HELM_VERSION=v3.1.1
-RUN curl -LO "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" && \
-    mkdir -p "/usr/local/helm-$HELM_VERSION" && \
-    tar -xzf "helm-$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
-    ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm && \
-    rm -f "helm-$HELM_VERSION-linux-amd64.tar.gz"
+ARG helm_version=v3.1.2
+LABEL helm_version=$helm_version
+RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
+    mkdir -p "/usr/local/helm-$helm_version" && \
+    tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version" && \
+    ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm && \
+    rm -f "helm-$helm_version-linux-amd64.tar.gz"
 
 COPY ./etc/chart_schema.yaml /etc/ct/chart_schema.yaml
 COPY ./etc/lintconf.yaml /etc/ct/lintconf.yaml

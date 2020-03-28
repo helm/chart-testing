@@ -6,11 +6,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: lint
+          name: Lint
           command: |
             shellcheck -x build.sh
-            shellcheck -x tag.sh
             shellcheck -x e2e-kind.sh
+            shellcheck -x tag.sh
+            shellcheck -x setup.sh
   test:
     machine:
       enabled: true
@@ -20,23 +21,23 @@ jobs:
       - run:
           name: Install tools
           command: |
-            # We need to install Golang 1.13 because the CircleCI machine image has an outdated version.
+            # We need to install Golang 1.14 because the CircleCI machine image has an outdated version.
             # We need to use a CircleCI machine in order to be able to run kind.
-            curl -sSLO https://dl.google.com/go/go1.13.8.linux-amd64.tar.gz
+            curl -fsSLo go.tar.gz https://dl.google.com/go/go1.14.1.linux-amd64.tar.gz
             sudo rm -r /usr/local/go
-            sudo tar -C /usr/local -xzf go1.13.8.linux-amd64.tar.gz
+            sudo tar -C /usr/local -xzf go.tar.gz
 
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
 
-            helm_version=v3.1.1
-            curl -sSLO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz"
+            helm_version=v3.1.2
+            curl -fsSLO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz"
             sudo mkdir -p "/usr/local/helm-$helm_version"
             sudo tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version"
             sudo ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm
 
-            curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64"
+            curl -fsSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64"
             chmod +x kind
             sudo mv kind /usr/local/bin/kind
       - run:
@@ -45,29 +46,25 @@ jobs:
             ./e2e-kind.sh
   build:
     docker:
-      - image: golang:1.13-alpine3.10
+      - image: cimg/go:1.14
     steps:
       - setup_remote_docker
-      - run:
-          name: Install tools
-          command: |
-            apk add bash build-base ca-certificates curl docker git openssh
-            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.120.5/goreleaser_Linux_x86_64.tar.gz
-            mkdir -p /usr/local/goreleaser
-            tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
-            ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser
-            rm -rf goreleaser_Linux_x86_64.tar.gz
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       - checkout
       - run:
-          name: gofmt
+          name: Install tools
+          command: ./setup.sh
+      - run:
+          name: Lint
           command: |
-            gofmt -w -s . && git diff --exit-code
+            go vet -v ./...
+            goimports -w -l .
+            go mod tidy
+            git diff --exit-code
       - run:
           name: Build
           command: |
-            set -e
-            set -u
+            set -o nounset
+            set -o pipefail
 
             if [[ -z "${CIRCLE_TAG:-}" ]]; then
               echo "Building snapshot..."
