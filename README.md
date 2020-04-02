@@ -36,7 +36,7 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 
 ### From Source
 
-To install from head with [Go](https://golang.org) 1.12.4 or higher:
+To install from head with [Go](https://golang.org) 1.13 or higher:
 
 ```cli
 go get github.com/helm/chart-testing/ct
