@@ -41,6 +41,7 @@ var (
 type Configuration struct {
 	Remote                string   `mapstructure:"remote"`
 	TargetBranch          string   `mapstructure:"target-branch"`
+	Since                 string   `mapstructure:"since"`
 	BuildId               string   `mapstructure:"build-id"`
 	LintConf              string   `mapstructure:"lint-conf"`
 	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`
