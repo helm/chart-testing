@@ -5,10 +5,10 @@ RUN apk --no-cache add \
     git \
     libc6-compat \
     openssh-client \
-    python \
+    python3 \
     py-crcmod \
     py-pip && \
-    pip install --upgrade pip==18.1
+    pip install --upgrade pip==20.1
 
 # Install a YAML Linter
 ARG yamllint_version=1.21.0
