@@ -5,21 +5,21 @@ RUN apk --no-cache add \
     git \
     libc6-compat \
     openssh-client \
-    python \
-    py-crcmod \
-    py-pip && \
-    pip install --upgrade pip==18.1
+    py3-pip \
+    py3-wheel \
+    python3 && \
+    pip install --upgrade pip==20.2.1
 
 # Install a YAML Linter
-ARG YAML_LINT_VERSION=1.13.0
+ARG YAML_LINT_VERSION=1.24.2
 RUN pip install "yamllint==$YAML_LINT_VERSION"
 
 # Install Yamale YAML schema validator
-ARG YAMALE_VERSION=1.8.0
+ARG YAMALE_VERSION=3.0.2
 RUN pip install "yamale==$YAMALE_VERSION"
 
 # Install kubectl
-ARG KUBECTL_VERSION=v1.16.10
+ARG KUBECTL_VERSION=v1.18.6
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
