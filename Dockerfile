@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:3.12
 
 RUN apk --no-cache add \
     curl \
@@ -19,13 +19,13 @@ ARG YAMALE_VERSION=1.8.0
 RUN pip install "yamale==$YAMALE_VERSION"
 
 # Install kubectl
-ARG KUBECTL_VERSION=v1.16.0
+ARG KUBECTL_VERSION=v1.16.10
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG HELM_VERSION=v2.16.5
+ARG HELM_VERSION=v2.16.9
 RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$HELM_VERSION" && \
     tar -xzf "helm-$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
