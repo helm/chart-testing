@@ -6,6 +6,7 @@ RUN apk --no-cache add \
     libc6-compat \
     openssh-client \
     python \
+    bash \
     py-crcmod \
     py-pip && \
     pip install --upgrade pip==18.1
@@ -35,6 +36,10 @@ RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
     tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version" && \
     ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm && \
     rm -f "helm-$helm_version-linux-amd64.tar.gz"
+
+# Install ytt
+# RUN curl -L "https://github.com/k14s/ytt/releases/download/v0.28.0/ytt-linux-amd64" > /usr/local/bin/ytt && \
+#     chmod +x /usr/local/bin/ytt
 
 COPY ./etc/chart_schema.yaml /etc/ct/chart_schema.yaml
 COPY ./etc/lintconf.yaml /etc/ct/lintconf.yaml
