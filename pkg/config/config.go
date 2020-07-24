@@ -34,6 +34,7 @@ var (
 	configSearchLocations = []string{
 		".",
 		path.Join(homeDir, ".ct"),
+		"/usr/local/etc/ct",
 		"/etc/ct",
 	}
 )
