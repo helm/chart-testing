@@ -37,7 +37,6 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 ### Homebrew
 
 ```console
-$ brew tap helm/tap
 $ brew install chart-testing
 ```
 
