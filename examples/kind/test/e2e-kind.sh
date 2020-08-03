@@ -4,10 +4,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly CT_VERSION=v3.0.0-beta.1
-readonly KIND_VERSION=v0.5.1
+readonly CT_VERSION=v3.0.0
+readonly KIND_VERSION=v0.7.0
 readonly CLUSTER_NAME=chart-testing
-readonly K8S_VERSION=v1.15.3
+readonly K8S_VERSION=v1.17.0
 
 run_ct_container() {
     echo 'Running ct container...'
@@ -40,12 +40,8 @@ create_kind_cluster() {
 
     kind create cluster --name "$CLUSTER_NAME" --config test/kind-config.yaml --image "kindest/node:$K8S_VERSION" --wait 60s
 
-    docker_exec mkdir -p /root/.kube
-
     echo 'Copying kubeconfig to container...'
-    local kubeconfig
-    kubeconfig="$(kind get kubeconfig-path --name "$CLUSTER_NAME")"
-    docker cp "$kubeconfig" ct:/root/.kube/config
+    docker cp /root/.kube/config ct:/root/.kube/config
 
     docker_exec kubectl cluster-info
     echo
@@ -54,18 +50,6 @@ create_kind_cluster() {
     echo
 
     echo 'Cluster ready!'
-    echo
-}
-
-install_local-path-provisioner() {
-    # kind doesn't support Dynamic PVC provisioning yet, this is one ways to get it working
-    # https://github.com/rancher/local-path-provisioner
-
-    # Remove default storage class. It will be recreated by local-path-provisioner
-    docker_exec kubectl delete storageclass standard
-
-    echo 'Installing local-path-provisioner...'
-    docker_exec kubectl apply -f test/local-path-provisioner.yaml
     echo
 }
 
@@ -79,7 +63,6 @@ main() {
     trap cleanup EXIT
 
     create_kind_cluster
-    install_local-path-provisioner
     install_charts
 }
 

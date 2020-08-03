@@ -34,6 +34,7 @@ var (
 	configSearchLocations = []string{
 		".",
 		path.Join(homeDir, ".ct"),
+		"/usr/local/etc/ct",
 		"/etc/ct",
 	}
 )
@@ -41,6 +42,7 @@ var (
 type Configuration struct {
 	Remote                string   `mapstructure:"remote"`
 	TargetBranch          string   `mapstructure:"target-branch"`
+	Since                 string   `mapstructure:"since"`
 	BuildId               string   `mapstructure:"build-id"`
 	LintConf              string   `mapstructure:"lint-conf"`
 	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`

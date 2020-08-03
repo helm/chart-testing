@@ -76,6 +76,11 @@ func TestInstallChart(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			ct := newTestingHelmIntegration(tc.cfg)
+			namespace := tc.cfg.Namespace
+			if namespace != "" {
+				ct.kubectl.CreateNamespace(namespace)
+				defer ct.kubectl.DeleteNamespace(namespace)
+			}
 			result := ct.InstallChart(mustNewChart(tc.chartDir))
 
 			if result.Error != tc.output.Error {

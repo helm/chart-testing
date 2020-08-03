@@ -9,6 +9,7 @@ builds:
       - CGO_ENABLED=0
     goarch:
       - amd64
+      - arm64
       - arm
     goos:
       - linux
@@ -16,9 +17,9 @@ builds:
       - windows
     ldflags:
       - >-
-        -X github.com/helm/chart-testing/ct/cmd.Version={{ .Tag }}
-        -X github.com/helm/chart-testing/ct/cmd.GitCommit={{ .Commit }}
-        -X github.com/helm/chart-testing/ct/cmd.BuildDate={{ .Date }}
+        -X github.com/helm/chart-testing/v3/ct/cmd.Version={{ .Tag }}
+        -X github.com/helm/chart-testing/v3/ct/cmd.GitCommit={{ .Commit }}
+        -X github.com/helm/chart-testing/v3/ct/cmd.BuildDate={{ .Date }}
 archives:
   - format_overrides:
       - goos: windows
@@ -43,13 +44,31 @@ dockers:
       - quay.io/helmpack/chart-testing:{{ .Tag }}
       - quay.io/helmpack/chart-testing:latest
     build_flag_templates:
-      - --label=org.label-schema.schema-version=1.0
-      - --label=org.label-schema.version={{ .Version }}
-      - --label=org.label-schema.name={{ .ProjectName }}
-      - --label=org.label-schema.build-date={{ .Date }}
-      - --label=org.label-schema.description='ct - The chart testing tool'
-      - --label=org.label-schema.vendor=Helm
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.description=ct - The chart testing tool
+      - --label=org.opencontainers.image.vendor=Helm
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --label=org.opencontainers.image.source=https://github.com/helm/chart-testing
+      - --label=org.opencontainers.image.authors=The Helm Authors
     extra_files:
       - etc/chart_schema.yaml
       - etc/lintconf.yaml
       - docker-install.sh
+brews:
+  - github:
+      owner: helm
+      name: homebrew-tap
+    commit_author:
+      name: helm-bot
+      email: helm-bot@users.noreply.github.com
+    folder: Formula
+    homepage: https://github.com/helm/chart-testing/
+    description: Testing and linting Helm charts
+    install: |
+      bin.install "ct"
+      etc.install "etc" => "ct"
+    test: |
+      system "#{bin}/ct version"

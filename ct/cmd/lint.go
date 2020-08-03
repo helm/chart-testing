@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/v3/pkg/chart"
 	"github.com/helm/chart-testing/v3/pkg/config"
@@ -83,11 +84,12 @@ func lint(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	results, err := testing.LintCharts()
+	testing.PrintResults(results)
+
 	if err != nil {
 		return fmt.Errorf("Error linting charts: %s", err)
 	}
 
 	fmt.Println("All charts linted successfully")
-	testing.PrintResults(results)
 	return nil
 }

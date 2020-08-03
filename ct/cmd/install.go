@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/helm/chart-testing/v3/pkg/chart"
 	"github.com/helm/chart-testing/v3/pkg/config"
@@ -91,11 +92,12 @@ func install(cmd *cobra.Command, args []string) error {
 		fmt.Println(err)
 	}
 	results, err := testing.InstallCharts()
+	testing.PrintResults(results)
+
 	if err != nil {
 		return fmt.Errorf("Error installing charts: %s", err)
 	}
 
 	fmt.Println("All charts installed successfully")
-	testing.PrintResults(results)
 	return nil
 }
