@@ -1,22 +1,22 @@
-FROM alpine:3.11
+FROM alpine:3.12
 
 RUN apk --no-cache add \
     curl \
     git \
     libc6-compat \
     openssh-client \
-    python \
-    py-crcmod \
-    py-pip && \
-    pip install --upgrade pip==18.1
+    py3-pip \
+    py3-wheel \
+    python3 \
+    && pip install --upgrade pip==20.2.1
 
 # Install a YAML Linter
-ARG yamllint_version=1.21.0
+ARG yamllint_version=1.24.2
 LABEL yamllint_version=$yamllint_version
 RUN pip install "yamllint==$yamllint_version"
 
 # Install Yamale YAML schema validator
-ARG yamale_version=2.0.1
+ARG yamale_version=3.0.2
 LABEL yamale_version=$yamale_version
 RUN pip install "yamale==$yamale_version"
 
