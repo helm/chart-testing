@@ -30,7 +30,7 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl
 # Install Helm
 ARG helm_version=v3.1.2
 LABEL helm_version=$helm_version
-RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
+RUN curl -LO --retry 2 "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$helm_version" && \
     tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version" && \
     ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm && \
