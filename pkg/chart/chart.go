@@ -652,7 +652,7 @@ func (t *Testing) computeMergeBase() (string, error) {
 	if err != nil {
 		return "", errors.New("Must be in a git repository")
 	}
-	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), "HEAD")
+	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Since)
 }
 
 // ComputeChangedChartDirectories takes the merge base of HEAD and the configured remote and target branch and computes a

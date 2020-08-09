@@ -1,6 +1,7 @@
 {
     "remote": "origin",
     "target-branch": "master",
+    "since": "HEAD~1",
     "build-id": "pr-42",
     "lint-conf": "my-lint-conf.yaml",
     "chart-yaml-schema": "my-chart-yaml-schema.yaml",
