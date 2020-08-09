@@ -7,8 +7,8 @@ RUN apk --no-cache add \
     openssh-client \
     py3-pip \
     py3-wheel \
-    python3 \
-    && pip install --upgrade pip==20.2.1
+    python3 && \
+    pip install --upgrade pip==20.2.1
 
 # Install a YAML Linter
 ARG yamllint_version=1.24.2
