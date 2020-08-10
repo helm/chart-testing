@@ -1,4 +1,7 @@
 project_name: chart-testing
+before:
+  hooks:
+    - go mod download
 builds:
   - main: ct/main.go
     binary: ct
@@ -6,6 +9,7 @@ builds:
       - CGO_ENABLED=0
     goarch:
       - amd64
+      - arm64
       - arm
     goos:
       - linux
@@ -38,14 +42,17 @@ dockers:
     dockerfile: Dockerfile
     image_templates:
       - quay.io/helmpack/chart-testing:{{ .Tag }}
-      - quay.io/helmpack/chart-testing:latest
+      - quay.io/helmpack/chart-testing:dev-v2-latest
     build_flag_templates:
-      - --label=org.label-schema.schema-version=1.0
-      - --label=org.label-schema.version={{ .Version }}
-      - --label=org.label-schema.name={{ .ProjectName }}
-      - --label=org.label-schema.build-date={{ .Date }}
-      - --label=org.label-schema.description='ct - The chart testing tool'
-      - --label=org.label-schema.vendor=Helm
+      - --label=org.opencontainers.image.version={{ .Version }}
+      - --label=org.opencontainers.image.revision={{ .Commit }}
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.description=ct - The chart testing tool
+      - --label=org.opencontainers.image.vendor=Helm
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --label=org.opencontainers.image.source=https://github.com/helm/chart-testing
+      - --label=org.opencontainers.image.authors=The Helm Authors
     extra_files:
       - etc/chart_schema.yaml
       - etc/lintconf.yaml

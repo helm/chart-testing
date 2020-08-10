@@ -15,3 +15,4 @@
 # limitations under the License.
 
 go install github.com/goreleaser/goreleaser
+go install golang.org/x/tools/cmd/goimports
