@@ -11,6 +11,7 @@ jobs:
             shellcheck -x build.sh
             shellcheck -x tag.sh
             shellcheck -x e2e-kind.sh
+            shellcheck -x setup.sh
   test:
     machine:
       enabled: true
@@ -40,17 +41,13 @@ jobs:
     working_directory: /go/src/github.com/helm/chart-testing
     steps:
       - setup_remote_docker
+      - checkout
       - run:
           name: Install tools
           command: |
             apk add bash build-base ca-certificates curl docker git openssh
-            curl -SLO https://github.com/goreleaser/goreleaser/releases/download/v0.102.0/goreleaser_Linux_x86_64.tar.gz
-            mkdir -p /usr/local/goreleaser
-            tar -xzf goreleaser_Linux_x86_64.tar.gz -C /usr/local/goreleaser
-            ln -s /usr/local/goreleaser/goreleaser /usr/local/bin/goreleaser
-            rm -rf goreleaser_Linux_x86_64.tar.gz
+            ./setup.sh
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - checkout
       - run:
           name: gofmt
           command: |
