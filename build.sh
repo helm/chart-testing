@@ -18,14 +18,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+SCRIPT_DIR=$(dirname -- "$(readlink -e "${BASH_SOURCE[0]}" || realpath "${BASH_SOURCE[0]}")")
+readonly SCRIPT_DIR
 
 show_help() {
-cat << EOF
+    cat << EOF
 Usage: $(basename "$0") <options>
-
 Build ct using Goreleaser.
-
     -h, --help      Display help
     -d, --debug     Display verbose output and run Goreleaser with --debug
     -r, --release   Create a release using Goreleaser. This includes the creation
@@ -40,14 +39,14 @@ main() {
 
     while :; do
         case "${1:-}" in
-            -h|--help)
+            -h | --help)
                 show_help
                 exit
                 ;;
-            -d|--debug)
+            -d | --debug)
                 debug=true
                 ;;
-            -r|--release)
+            -r | --release)
                 release=true
                 ;;
             *)
@@ -61,17 +60,16 @@ main() {
     local goreleaser_args=(--rm-dist)
 
     if [[ -n "$debug" ]]; then
-        goreleaser_args+=( --debug)
+        goreleaser_args+=(--debug)
         set -x
     fi
 
     if [[ -z "$release" ]]; then
-        goreleaser_args+=( --snapshot)
+        goreleaser_args+=(--snapshot)
     fi
 
     pushd "$SCRIPT_DIR" > /dev/null
 
-    dep ensure -v
     go test ./...
     goreleaser "${goreleaser_args[@]}"
 
