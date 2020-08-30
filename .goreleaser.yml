@@ -56,18 +56,3 @@ dockers:
     extra_files:
       - etc/chart_schema.yaml
       - etc/lintconf.yaml
-brews:
-  - github:
-      owner: helm
-      name: homebrew-tap
-    commit_author:
-      name: helm-bot
-      email: helm-bot@users.noreply.github.com
-    folder: Formula
-    homepage: https://github.com/helm/chart-testing/
-    description: Testing and linting Helm charts
-    install: |
-      bin.install "ct"
-      etc.install "etc" => "ct"
-    test: |
-      system "#{bin}/ct version"
