@@ -16,12 +16,12 @@ LABEL yamllint_version=$yamllint_version
 RUN pip install "yamllint==$yamllint_version"
 
 # Install Yamale YAML schema validator
-ARG yamale_version=3.0.2
+ARG yamale_version=3.0.4
 LABEL yamale_version=$yamale_version
 RUN pip install "yamale==$yamale_version"
 
 # Install kubectl
-ARG kubectl_version=v1.18.6
+ARG kubectl_version=v1.19.0
 LABEL kubectl_version=$kubectl_version
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl_version/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
