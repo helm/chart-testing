@@ -1,34 +1,34 @@
-FROM alpine:3.11
+FROM alpine:3.12
 
 RUN apk --no-cache add \
     curl \
     git \
     libc6-compat \
     openssh-client \
-    python \
-    py-crcmod \
-    py-pip && \
-    pip install --upgrade pip==18.1
+    py3-pip \
+    py3-wheel \
+    python3 && \
+    pip install --upgrade pip==20.2.2
 
 # Install a YAML Linter
-ARG yamllint_version=1.21.0
+ARG yamllint_version=1.24.2
 LABEL yamllint_version=$yamllint_version
 RUN pip install "yamllint==$yamllint_version"
 
 # Install Yamale YAML schema validator
-ARG yamale_version=2.0.1
+ARG yamale_version=3.0.2
 LABEL yamale_version=$yamale_version
 RUN pip install "yamale==$yamale_version"
 
 # Install kubectl
-ARG kubectl_version=v1.18.0
+ARG kubectl_version=v1.18.6
 LABEL kubectl_version=$kubectl_version
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl_version/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG helm_version=v3.1.2
+ARG helm_version=v3.3.1
 LABEL helm_version=$helm_version
 RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$helm_version" && \
