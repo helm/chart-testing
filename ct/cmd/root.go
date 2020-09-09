@@ -92,7 +92,9 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		(e.g. 'myrepo=--username test --password secret'). May be specified
 		multiple times or separate values with commas`))
 	flags.Bool("debug", false, heredoc.Doc(`
-		Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
-		passed, this may reveal sensitive data)`))
-	flags.Bool("print-config", true, "Prints the configuration to stdout")
+		Print CLI calls of external tools to stdout (caution: setting this may
+		expose sensitive data when helm-repo-extra-args contains passwords)`))
+	flags.Bool("print-config", false, heredoc.Doc(`
+		Prints the configuration to stdout (caution: setting this may
+		expose sensitive data when helm-repo-extra-args contains passwords)`))
 }
