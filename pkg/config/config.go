@@ -16,6 +16,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"reflect"
 	"strings"
@@ -97,7 +98,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		}
 	} else {
 		if printConfig {
-			fmt.Println("Using config file: ", v.ConfigFileUsed())
+			fmt.Fprintln(os.Stderr, "Using config file: ", v.ConfigFileUsed())
 		}
 	}
 

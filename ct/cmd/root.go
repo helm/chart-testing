@@ -94,4 +94,5 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 	flags.Bool("debug", false, heredoc.Doc(`
 		Print CLI calls of external tools to stdout (Note: depending on helm-extra-args
 		passed, this may reveal sensitive data)`))
+	flags.Bool("print-config", true, "Prints the configuration to stderr")
 }
