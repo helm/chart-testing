@@ -8,7 +8,7 @@ RUN apk --no-cache add \
     py3-pip \
     py3-wheel \
     python3 && \
-    pip install --upgrade pip==20.2.2
+    pip install --upgrade pip==20.2.3
 
 # Install a YAML Linter
 ARG yamllint_version=1.24.2
