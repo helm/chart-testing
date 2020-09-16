@@ -96,9 +96,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 			return nil, errors.Wrap(err, "Error loading config file")
 		}
 	} else {
-		if printConfig {
-			fmt.Println("Using config file: ", v.ConfigFileUsed())
-		}
+		fmt.Println("Using config file:", v.ConfigFileUsed())
 	}
 
 	isLint := strings.Contains(cmd.Use, "lint")
