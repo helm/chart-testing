@@ -16,6 +16,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"reflect"
 	"strings"
@@ -96,7 +97,9 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 			return nil, errors.Wrap(err, "Error loading config file")
 		}
 	} else {
-		fmt.Println("Using config file:", v.ConfigFileUsed())
+		if printConfig {
+			fmt.Fprintln(os.Stderr, "Using config file:", v.ConfigFileUsed())
+		}
 	}
 
 	isLint := strings.Contains(cmd.Use, "lint")
@@ -143,7 +146,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	}
 
 	if len(cfg.Charts) > 0 || cfg.ProcessAllCharts {
-		fmt.Println("Version increment checking disabled.")
+		fmt.Fprintln(os.Stderr, "Version increment checking disabled.")
 		cfg.CheckVersionIncrement = false
 	}
 
@@ -155,9 +158,9 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 }
 
 func printCfg(cfg *Configuration) {
-	util.PrintDelimiterLine("-")
-	fmt.Println(" Configuration")
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLine(os.Stderr, "-")
+	fmt.Fprintln(os.Stderr, " Configuration")
+	util.PrintDelimiterLine(os.Stderr, "-")
 
 	e := reflect.ValueOf(cfg).Elem()
 	typeOfCfg := e.Type()
@@ -170,10 +173,10 @@ func printCfg(cfg *Configuration) {
 		default:
 			pattern = "%s: %s\n"
 		}
-		fmt.Printf(pattern, typeOfCfg.Field(i).Name, e.Field(i).Interface())
+		fmt.Fprintf(os.Stderr, pattern, typeOfCfg.Field(i).Name, e.Field(i).Interface())
 	}
 
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLine(os.Stderr, "-")
 }
 
 func findConfigFile(fileName string) (string, error) {

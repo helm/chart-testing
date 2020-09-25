@@ -17,6 +17,7 @@ package chart
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -299,13 +300,13 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 	}
 
 	fmt.Println()
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLine(os.Stdout, "-")
 	fmt.Println(" Charts to be processed:")
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLine(os.Stdout, "-")
 	for _, chart := range charts {
 		fmt.Printf(" %s\n", chart)
 	}
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLine(os.Stdout, "-")
 	fmt.Println()
 
 	repoArgs := map[string][]string{}
@@ -394,7 +395,7 @@ func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
 
 // PrintResults writes test results to stdout.
 func (t *Testing) PrintResults(results []TestResult) {
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLine(os.Stdout, "-")
 	if results != nil {
 		for _, result := range results {
 			err := result.Error
@@ -407,7 +408,7 @@ func (t *Testing) PrintResults(results []TestResult) {
 	} else {
 		fmt.Println("No chart changes detected.")
 	}
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLine(os.Stdout, "-")
 }
 
 // LintChart lints the specified chart.
@@ -839,7 +840,7 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 }
 
 func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string) {
-	util.PrintDelimiterLine("=")
+	util.PrintDelimiterLine(os.Stdout, "=")
 
 	printDetails(namespace, "Events of namespace", ".", func(item string) error {
 		return t.kubectl.GetEvents(namespace)
@@ -888,24 +889,24 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 			containers...)
 	}
 
-	util.PrintDelimiterLine("=")
+	util.PrintDelimiterLine(os.Stdout, "=")
 }
 
 func printDetails(resource string, text string, delimiterChar string, printFunc func(item string) error, items ...string) {
 	for _, item := range items {
 		item = strings.Trim(item, "'")
 
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(os.Stdout, delimiterChar)
 		fmt.Printf("==> %s %s\n", text, resource)
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(os.Stdout, delimiterChar)
 
 		if err := printFunc(item); err != nil {
 			fmt.Println("Error printing details:", err)
 			return
 		}
 
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(os.Stdout, delimiterChar)
 		fmt.Printf("<== %s %s\n", text, resource)
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLine(os.Stdout, delimiterChar)
 	}
 }

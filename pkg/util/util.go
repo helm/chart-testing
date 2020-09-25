@@ -16,6 +16,7 @@ package util
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net"
@@ -210,12 +211,12 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 	return !minor, err
 }
 
-func PrintDelimiterLine(delimiterChar string) {
+func PrintDelimiterLine(w io.Writer, delimiterChar string) {
 	delim := make([]string, 120)
 	for i := 0; i < 120; i++ {
 		delim[i] = delimiterChar
 	}
-	fmt.Println(strings.Join(delim, ""))
+	fmt.Fprintln(w, strings.Join(delim, ""))
 }
 
 func SanitizeName(s string, maxLength int) string {
