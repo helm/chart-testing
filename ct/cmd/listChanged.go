@@ -41,7 +41,11 @@ func newListChangedCmd() *cobra.Command {
 }
 
 func listChanged(cmd *cobra.Command, args []string) error {
-	configuration, err := config.LoadConfiguration(cfgFile, cmd, false)
+	printConfig, err := cmd.Flags().GetBool("print-config")
+	if err != nil {
+		return err
+	}
+	configuration, err := config.LoadConfiguration(cfgFile, cmd, printConfig)
 	if err != nil {
 		return fmt.Errorf("Error loading configuration: %s", err)
 	}
