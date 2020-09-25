@@ -196,7 +196,7 @@ Run the script specifying the version for the new release.
 ./tag.sh --tag <release_version>
 ```
 
-Versions must start with a lower-case `v`, e. g. `v3.1.0`.
+Versions must start with a lower-case `v`, e. g. `v3.1.1`.
 
 
 ## Supported versions
