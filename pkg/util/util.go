@@ -211,6 +211,7 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 	return !minor, err
 }
 
+// Deprecated: To be removed in v4. Use PrintDelimiterLineToWriter instead.
 func PrintDelimiterLine(delimiterChar string) {
 	PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
 }
