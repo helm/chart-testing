@@ -158,9 +158,9 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 }
 
 func printCfg(cfg *Configuration) {
-	util.PrintDelimiterLine(os.Stderr, "-")
+	util.PrintDelimiterLineToWriter(os.Stderr, "-")
 	fmt.Fprintln(os.Stderr, " Configuration")
-	util.PrintDelimiterLine(os.Stderr, "-")
+	util.PrintDelimiterLineToWriter(os.Stderr, "-")
 
 	e := reflect.ValueOf(cfg).Elem()
 	typeOfCfg := e.Type()
@@ -176,7 +176,7 @@ func printCfg(cfg *Configuration) {
 		fmt.Fprintf(os.Stderr, pattern, typeOfCfg.Field(i).Name, e.Field(i).Interface())
 	}
 
-	util.PrintDelimiterLine(os.Stderr, "-")
+	util.PrintDelimiterLineToWriter(os.Stderr, "-")
 }
 
 func findConfigFile(fileName string) (string, error) {

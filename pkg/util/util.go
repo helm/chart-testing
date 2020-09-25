@@ -211,7 +211,11 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 	return !minor, err
 }
 
-func PrintDelimiterLine(w io.Writer, delimiterChar string) {
+func PrintDelimiterLine(delimiterChar string) {
+	PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
+}
+
+func PrintDelimiterLineToWriter(w io.Writer, delimiterChar string) {
 	delim := make([]string, 120)
 	for i := 0; i < 120; i++ {
 		delim[i] = delimiterChar
