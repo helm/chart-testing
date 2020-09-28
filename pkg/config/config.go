@@ -50,6 +50,7 @@ type Configuration struct {
 	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
 	ValidateChartSchema   bool     `mapstructure:"validate-chart-schema"`
 	ValidateYaml          bool     `mapstructure:"validate-yaml"`
+	UnitTests             bool     `mapstructure:"run-unittests"`
 	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
 	ProcessAllCharts      bool     `mapstructure:"all"`
 	Charts                []string `mapstructure:"charts"`

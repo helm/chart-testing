@@ -36,6 +36,13 @@ RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
     ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm && \
     rm -f "helm-$helm_version-linux-amd64.tar.gz"
 
+# Install Helm unittest
+ARG helm_unittest_version=0.2.4
+LABEL helm_unittest_version=${helm_unittest_version}
+RUN curl -LO https://github.com/quintush/helm-unittest/releases/download/v${helm_unittest_version}/helm-unittest-linux-amd64-${helm_unittest_version}.tgz && \
+    mkdir -p ${HOME}/.local/share/helm/plugins/unittest && \
+    tar xzf helm-unittest-linux-amd64-${helm_unittest_version}.tgz -C ${HOME}/.local/share/helm/plugins/unittest
+
 COPY ./etc/chart_schema.yaml /etc/ct/chart_schema.yaml
 COPY ./etc/lintconf.yaml /etc/ct/lintconf.yaml
 COPY ct /usr/local/bin/ct

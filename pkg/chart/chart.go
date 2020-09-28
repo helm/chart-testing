@@ -131,6 +131,14 @@ type Linter interface {
 	Yamale(yamlFile string, schemaFile string) error
 }
 
+// Tester is the interface
+//
+// RunUnitTests runs `helm unittest` for the given chart directory
+// (tested with https://github.com/quintush/helm-unittest)
+type Tester interface {
+	RunUnitTests(chartDirectory string) error
+}
+
 // DirectoryLister is the interface
 //
 // ListChildDirs lists direct child directories of parentDir given they pass the test function
@@ -224,6 +232,7 @@ type Testing struct {
 	kubectl                  Kubectl
 	git                      Git
 	linter                   Linter
+	tester                   Tester
 	accountValidator         AccountValidator
 	directoryLister          DirectoryLister
 	chartUtils               ChartUtils
@@ -253,6 +262,7 @@ func NewTesting(config config.Configuration) (Testing, error) {
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec),
 		linter:           tool.NewLinter(procExec),
+		tester:           tool.NewTester(procExec),
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
 		chartUtils:       util.ChartUtils{},
@@ -446,6 +456,13 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 
 	if t.config.ValidateMaintainers {
 		if err := t.ValidateMaintainers(chart); err != nil {
+			result.Error = err
+			return result
+		}
+	}
+
+	if t.config.UnitTests {
+		if err := t.tester.RunUnitTests(chart.Path()); err != nil {
 			result.Error = err
 			return result
 		}
