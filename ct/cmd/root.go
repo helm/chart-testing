@@ -74,6 +74,7 @@ func addCommonFlags(flags *pflag.FlagSet) {
 	flags.Bool("print-config", false, heredoc.Doc(`
 		Prints the configuration to stderr (caution: setting this may
 		expose sensitive data when helm-repo-extra-args contains passwords)`))
+	flags.Bool("exclude-deprecated", false, "Skip charts that are marked as deprecated")
 }
 
 func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {

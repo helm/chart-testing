@@ -63,6 +63,7 @@ type Configuration struct {
 	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
+	ExcludeDeprecated     bool     `mapstructure:"exclude-deprecated"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
