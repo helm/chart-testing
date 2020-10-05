@@ -11,7 +11,7 @@ type CmdTemplateExecutor struct {
 	exec exec.ProcessExecutor
 }
 
-func NewTester(exec exec.ProcessExecutor) CmdTemplateExecutor {
+func NewCmdTemplateExecutor(exec exec.ProcessExecutor) CmdTemplateExecutor {
 	return CmdTemplateExecutor{
 		exec: exec,
 	}

@@ -261,7 +261,7 @@ func NewTesting(config config.Configuration) (Testing, error) {
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec),
 		linter:           tool.NewLinter(procExec),
-		cmdExecutor:      tool.NewTester(procExec),
+		cmdExecutor:      tool.NewCmdTemplateExecutor(procExec),
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
 		chartUtils:       util.ChartUtils{},
