@@ -22,9 +22,5 @@ func (t CmdTemplateExecutor) RunCommand(cmdTemplate string, data interface{}) er
 	var b strings.Builder
 	err := template.Execute(&b, data)
 	renderedCommand := b.String()
-	split := strings.Split(renderedCommand, " ")
-	if err != nil {
-		return err
-	}
-	return t.exec.RunProcess(split[0], split[1:])
+	return t.exec.RunProcess("sh", "-c", renderedCommand)
 }
