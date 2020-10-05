@@ -20,7 +20,9 @@ func NewCmdTemplateExecutor(exec exec.ProcessExecutor) CmdTemplateExecutor {
 func (t CmdTemplateExecutor) RunCommand(cmdTemplate string, data interface{}) error {
 	var template = template.Must(template.New("command").Parse(cmdTemplate))
 	var b strings.Builder
-	err := template.Execute(&b, data)
+	if err := template.Execute(&b, data); err != nil {
+		return err
+	}
 	renderedCommand := b.String()
 	return t.exec.RunProcess("sh", "-c", renderedCommand)
 }
