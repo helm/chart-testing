@@ -152,7 +152,7 @@ type AccountValidator interface {
 	Validate(repoDomain string, account string) error
 }
 
-// Chart represents a Helm chart, and can be initalized with the NewChart method.
+// Chart represents a Helm chart, and can be initialized with the NewChart method.
 type Chart struct {
 	path          string
 	yaml          *util.ChartYaml
