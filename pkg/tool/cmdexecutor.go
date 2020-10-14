@@ -5,6 +5,7 @@ import (
 	"text/template"
 
 	"github.com/helm/chart-testing/v3/pkg/exec"
+	"github.com/mattn/go-shellwords"
 )
 
 type CmdTemplateExecutor struct {
@@ -23,6 +24,12 @@ func (t CmdTemplateExecutor) RunCommand(cmdTemplate string, data interface{}) er
 	if err := template.Execute(&b, data); err != nil {
 		return err
 	}
-	renderedCommand := b.String()
-	return t.exec.RunProcess("sh", "-c", renderedCommand)
+	rendered := b.String()
+
+	words, err := shellwords.Parse(rendered)
+	name, args := words[0], words[1:]
+	if err != nil {
+		return err
+	}
+	return t.exec.RunProcess(name, args)
 }
