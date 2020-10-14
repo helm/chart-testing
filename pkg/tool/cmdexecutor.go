@@ -27,9 +27,9 @@ func (t CmdTemplateExecutor) RunCommand(cmdTemplate string, data interface{}) er
 	rendered := b.String()
 
 	words, err := shellwords.Parse(rendered)
-	name, args := words[0], words[1:]
 	if err != nil {
 		return err
 	}
+	name, args := words[0], words[1:]
 	return t.exec.RunProcess(name, args)
 }
