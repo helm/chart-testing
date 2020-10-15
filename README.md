@@ -51,6 +51,9 @@ See documentation for individual commands:
 * [ct list-changed](doc/ct_list-changed.md)
 * [ct version](doc/ct_version.md)
 
+For a more extensive how-to guide, please see:
+
+* [charts-repo-actions-demo](https://github.com/helm/charts-repo-actions-demo)
 
 ## Configuration
 
@@ -197,7 +200,6 @@ Run the script specifying the version for the new release.
 ```
 
 Versions must start with a lower-case `v`, e. g. `v3.1.1`.
-
 
 ## Supported versions
 
