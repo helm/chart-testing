@@ -29,7 +29,7 @@ ct lint-and-install [flags]
       --charts strings                 Specific charts to test. Disables changed charts detection and
                                        version increment checking. May be specified multiple times
                                        or separate values with commas
-      --check-version-increment        Activates a check for chart version increments (default: true) (default true)
+      --check-version-increment        Activates a check for chart version increments (default true)
       --config string                  Config file
       --debug                          Print CLI calls of external tools to stdout (caution: setting this may
                                        expose sensitive data when helm-repo-extra-args contains passwords)
@@ -59,10 +59,10 @@ ct lint-and-install [flags]
       --target-branch string           The name of the target branch used to identify changed charts (default "master")
       --upgrade                        Whether to test an in-place upgrade of each chart from its previous revision if the
                                        current version should not introduce a breaking change according to the SemVer spec
-      --validate-chart-schema          Enable schema validation of 'Chart.yaml' using Yamale (default: true) (default true)
+      --validate-chart-schema          Enable schema validation of 'Chart.yaml' using Yamale (default true)
       --validate-maintainers           Enable validation of maintainer account names in chart.yml (default: true).
                                        Works for GitHub, GitLab, and Bitbucket (default true)
-      --validate-yaml                  Enable linting of 'Chart.yaml' and values files (default: true) (default true)
+      --validate-yaml                  Enable linting of 'Chart.yaml' and values files (default true)
 ```
 
 ### SEE ALSO

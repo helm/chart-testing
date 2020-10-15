@@ -62,13 +62,13 @@ func addLintFlags(flags *flag.FlagSet) {
 			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
 			that order.`))
 	flags.Bool("validate-maintainers", true, heredoc.Doc(`
-			Enable validation of maintainer account names in chart.yml (default: true).
+			Enable validation of maintainer account names in chart.yml.
 			Works for GitHub, GitLab, and Bitbucket`))
-	flags.Bool("check-version-increment", true, "Activates a check for chart version increments (default: true)")
+	flags.Bool("check-version-increment", true, "Activates a check for chart version increments")
 	flags.Bool("validate-chart-schema", true, heredoc.Doc(`
-			Enable schema validation of 'Chart.yaml' using Yamale (default: true)`))
+			Enable schema validation of 'Chart.yaml' using Yamale`))
 	flags.Bool("validate-yaml", true, heredoc.Doc(`
-			Enable linting of 'Chart.yaml' and values files (default: true)`))
+			Enable linting of 'Chart.yaml' and values files`))
 }
 
 func lint(cmd *cobra.Command, args []string) error {
