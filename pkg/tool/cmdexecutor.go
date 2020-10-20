@@ -4,15 +4,18 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/helm/chart-testing/v3/pkg/exec"
 	"github.com/mattn/go-shellwords"
 )
 
-type CmdTemplateExecutor struct {
-	exec exec.ProcessExecutor
+type ProcessExecutor interface {
+	RunProcess(executable string, execArgs ...interface{}) error
 }
 
-func NewCmdTemplateExecutor(exec exec.ProcessExecutor) CmdTemplateExecutor {
+type CmdTemplateExecutor struct {
+	exec ProcessExecutor
+}
+
+func NewCmdTemplateExecutor(exec ProcessExecutor) CmdTemplateExecutor {
 	return CmdTemplateExecutor{
 		exec: exec,
 	}

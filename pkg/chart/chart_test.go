@@ -109,6 +109,15 @@ func (h fakeHelm) Version() (string, error) {
 	return "v3.0.0", nil
 }
 
+type fakeCmdExecutor struct {
+	mock.Mock
+}
+
+func (c *fakeCmdExecutor) RunCommand(cmdTemplate string, data interface{}) error {
+	c.Called(cmdTemplate, data)
+	return nil
+}
+
 var ct Testing
 
 func init() {
@@ -414,6 +423,50 @@ func TestChart_HasCIValuesFile(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := tc.chart.HasCIValuesFile(tc.file)
 			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
+
+func TestChart_AdditionalCommandsAreRun(t *testing.T) {
+	type testData struct {
+		name            string
+		cfg             config.Configuration
+		callsRunCommand int
+	}
+
+	testCases := []testData{
+		{
+			name:            "no additional commands",
+			cfg:             config.Configuration{},
+			callsRunCommand: 0,
+		},
+		{
+			name: "one command",
+			cfg: config.Configuration{
+				AdditionalCommands: []string{"helm unittest --helm3 -f tests/*.yaml {{ .Path }}"},
+			},
+			callsRunCommand: 1,
+		},
+		{
+			name: "multiple commands",
+			cfg: config.Configuration{
+				AdditionalCommands: []string{"echo", "helm unittest --helm3 -f tests/*.yaml {{ .Path }}"},
+			},
+			callsRunCommand: 2,
+		},
+	}
+
+	for _, testData := range testCases {
+		t.Run(testData.name, func(t *testing.T) {
+			fakeCmdExecutor := new(fakeCmdExecutor)
+			fakeCmdExecutor.On("RunCommand", mock.Anything, mock.Anything).Return(nil)
+
+			ct := newTestingMock(testData.cfg)
+			ct.cmdExecutor = fakeCmdExecutor
+
+			ct.LintChart(&Chart{})
+
+			fakeCmdExecutor.AssertNumberOfCalls(t, "RunCommand", testData.callsRunCommand)
 		})
 	}
 }
