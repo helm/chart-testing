@@ -9,6 +9,7 @@ require (
 	github.com/goreleaser/goreleaser v0.129.0
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/go-retryablehttp v0.6.4
+	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect

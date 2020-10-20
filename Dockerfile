@@ -1,6 +1,7 @@
 FROM alpine:3.12
 
 RUN apk --no-cache add \
+    bash \
     curl \
     git \
     libc6-compat \

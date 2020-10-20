@@ -69,6 +69,11 @@ func addLintFlags(flags *flag.FlagSet) {
 			Enable schema validation of 'Chart.yaml' using Yamale (default: true)`))
 	flags.Bool("validate-yaml", true, heredoc.Doc(`
 			Enable linting of 'Chart.yaml' and values files (default: true)`))
+	flags.StringSlice("additional-commands", []string{}, heredoc.Doc(`
+            Additional commands to run per chart (default: [])
+            Commands will be executed in the same order as provided in the list and will
+            be rendered with go template before being executed.
+            Example: "helm unittest --helm3 -f tests/*.yaml {{ .Path }}"`))
 }
 
 func lint(cmd *cobra.Command, args []string) error {
