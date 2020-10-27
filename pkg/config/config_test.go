@@ -53,4 +53,5 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, true, cfg.SkipMissingValues)
 	require.Equal(t, "default", cfg.Namespace)
 	require.Equal(t, "release", cfg.ReleaseLabel)
+	require.Equal(t, true, cfg.ExcludeDeprecated)
 }
