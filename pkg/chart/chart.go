@@ -297,7 +297,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 
 		if t.config.ExcludeDeprecated && chart.yaml.Deprecated {
-			fmt.Printf("Chart %s is deprecated, and will be ignored due to the ExcludeDeprecated configuration option\n", chart.String())
+			fmt.Printf("Chart '%s' is deprecated and will be ignored because '--exclude-deprecated' is set\n", chart.String())
 		} else {
 			charts = append(charts, chart)
 		}
