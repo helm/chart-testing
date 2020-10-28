@@ -131,6 +131,13 @@ type Linter interface {
 	Yamale(yamlFile string, schemaFile string) error
 }
 
+// CmdExecutor is the interface
+//
+// RunCommand renders cmdTemplate as go template using data and executes the resulting command
+type CmdExecutor interface {
+	RunCommand(cmdTemplate string, data interface{}) error
+}
+
 // DirectoryLister is the interface
 //
 // ListChildDirs lists direct child directories of parentDir given they pass the test function
@@ -152,7 +159,7 @@ type AccountValidator interface {
 	Validate(repoDomain string, account string) error
 }
 
-// Chart represents a Helm chart, and can be initalized with the NewChart method.
+// Chart represents a Helm chart, and can be initialized with the NewChart method.
 type Chart struct {
 	path          string
 	yaml          *util.ChartYaml
@@ -224,6 +231,7 @@ type Testing struct {
 	kubectl                  Kubectl
 	git                      Git
 	linter                   Linter
+	cmdExecutor              CmdExecutor
 	accountValidator         AccountValidator
 	directoryLister          DirectoryLister
 	chartUtils               ChartUtils
@@ -253,6 +261,7 @@ func NewTesting(config config.Configuration) (Testing, error) {
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec),
 		linter:           tool.NewLinter(procExec),
+		cmdExecutor:      tool.NewCmdTemplateExecutor(procExec),
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
 		chartUtils:       util.ChartUtils{},
@@ -295,7 +304,12 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		if err != nil {
 			return nil, err
 		}
-		charts = append(charts, chart)
+
+		if t.config.ExcludeDeprecated && chart.yaml.Deprecated {
+			fmt.Printf("Chart '%s' is deprecated and will be ignored because '--exclude-deprecated' is set\n", chart.String())
+		} else {
+			charts = append(charts, chart)
+		}
 	}
 
 	fmt.Println()
@@ -446,6 +460,13 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 
 	if t.config.ValidateMaintainers {
 		if err := t.ValidateMaintainers(chart); err != nil {
+			result.Error = err
+			return result
+		}
+	}
+
+	for _, cmd := range t.config.AdditionalCommands {
+		if err := t.cmdExecutor.RunCommand(cmd, chart); err != nil {
 			result.Error = err
 			return result
 		}

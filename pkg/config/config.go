@@ -50,6 +50,7 @@ type Configuration struct {
 	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
 	ValidateChartSchema   bool     `mapstructure:"validate-chart-schema"`
 	ValidateYaml          bool     `mapstructure:"validate-yaml"`
+	AdditionalCommands    []string `mapstructure:"additional-commands"`
 	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
 	ProcessAllCharts      bool     `mapstructure:"all"`
 	Charts                []string `mapstructure:"charts"`
@@ -63,6 +64,7 @@ type Configuration struct {
 	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
+	ExcludeDeprecated     bool     `mapstructure:"exclude-deprecated"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
