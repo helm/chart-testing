@@ -17,6 +17,7 @@ package chart
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -729,7 +730,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 				changedChartDirs = append(changedChartDirs, chartDir)
 			}
 		} else {
-			fmt.Printf("Directory '%s' is not a valid chart directory. Skipping...\n", dir)
+			fmt.Fprintf(os.Stderr, "Directory '%s' is not a valid chart directory. Skipping...\n", dir)
 		}
 	}
 
