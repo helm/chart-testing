@@ -17,7 +17,7 @@ package config
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -34,7 +34,7 @@ var (
 	homeDir, _            = homedir.Dir()
 	configSearchLocations = []string{
 		".",
-		path.Join(homeDir, ".ct"),
+		filepath.Join(homeDir, ".ct"),
 		"/usr/local/etc/ct",
 		"/etc/ct",
 	}
@@ -183,7 +183,7 @@ func printCfg(cfg *Configuration) {
 
 func findConfigFile(fileName string) (string, error) {
 	for _, location := range configSearchLocations {
-		filePath := path.Join(location, fileName)
+		filePath := filepath.Join(location, fileName)
 		if util.FileExists(filePath) {
 			return filePath, nil
 		}
