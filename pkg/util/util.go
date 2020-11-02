@@ -21,7 +21,6 @@ import (
 	"math/rand"
 	"net"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -115,7 +114,7 @@ func (l DirectoryLister) ListChildDirs(parentDir string, test func(dir string) b
 	var dirs []string
 	for _, dir := range fileInfos {
 		dirName := dir.Name()
-		parentSlashChildDir := path.Join(parentDir, dirName)
+		parentSlashChildDir := filepath.Join(parentDir, dirName)
 		if test(parentSlashChildDir) {
 			dirs = append(dirs, parentSlashChildDir)
 		}
@@ -130,8 +129,8 @@ func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, erro
 	for _, chartDir := range chartDirs {
 		currentDir := dir
 		for {
-			chartYaml := path.Join(currentDir, "Chart.yaml")
-			parent := path.Dir(path.Dir(chartYaml))
+			chartYaml := filepath.Join(currentDir, "Chart.yaml")
+			parent := filepath.Dir(filepath.Dir(chartYaml))
 			chartDir = strings.TrimRight(chartDir, "/") // remove any trailing slash from the dir
 
 			// check directory has a Chart.yaml and that it is in a
@@ -140,9 +139,9 @@ func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, erro
 				return currentDir, nil
 			}
 
-			currentDir = path.Dir(currentDir)
+			currentDir = filepath.Dir(currentDir)
 			relativeDir, _ := filepath.Rel(chartDir, currentDir)
-			joined := path.Join(chartDir, relativeDir)
+			joined := filepath.Join(chartDir, relativeDir)
 			if (joined == chartDir) || strings.HasPrefix(relativeDir, "..") {
 				break
 			}
@@ -155,7 +154,7 @@ func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, erro
 // and return a newly allocated ChartYaml object. If no Chart.yaml is present
 // or there is an error unmarshaling the file contents, an error will be returned.
 func ReadChartYaml(dir string) (*ChartYaml, error) {
-	yamlBytes, err := ioutil.ReadFile(path.Join(dir, "Chart.yaml"))
+	yamlBytes, err := ioutil.ReadFile(filepath.Join(dir, "Chart.yaml"))
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not read 'Chart.yaml'")
 	}
