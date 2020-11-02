@@ -186,7 +186,6 @@ func printCfg(cfg *Configuration) {
 }
 
 func findConfigFile(fileName string) (string, error) {
-	var cfgFile string
 	if dir, ok := os.LookupEnv("CT_CONFIG_DIR"); ok {
 		return filepath.Join(dir, fileName), nil
 	}
@@ -194,7 +193,7 @@ func findConfigFile(fileName string) (string, error) {
 	for _, location := range configSearchLocations {
 		filePath := filepath.Join(location, fileName)
 		if util.FileExists(filePath) {
-			return cfgFile, nil
+			return filePath, nil
 		}
 	}
 
