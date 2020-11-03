@@ -15,9 +15,12 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -54,4 +57,57 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, "default", cfg.Namespace)
 	require.Equal(t, "release", cfg.ReleaseLabel)
 	require.Equal(t, true, cfg.ExcludeDeprecated)
+}
+
+func Test_findConfigFile(t *testing.T) {
+	tests := []struct {
+		name       string
+		envVar     string
+		defaultDir string
+		want       string
+		wantErr    bool
+	}{
+		{
+			name:       "without env var",
+			defaultDir: filepath.Join("testdata", "default"),
+			want:       filepath.Join("testdata", "default", "test.yaml"),
+		},
+		{
+			name:   "with env var",
+			envVar: filepath.Join("testdata", "env"),
+			want:   filepath.Join("testdata", "env", "test.yaml"),
+		},
+		{
+			name:       "with env var and default location",
+			envVar:     filepath.Join("testdata", "env"),
+			defaultDir: filepath.Join("testdata", "default"),
+			want:       filepath.Join("testdata", "env", "test.yaml"),
+		},
+		{
+			name:    "not found",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.envVar != "" {
+				err := os.Setenv("CT_CONFIG_DIR", tt.envVar)
+				require.NoError(t, err)
+
+				t.Cleanup(func() {
+					err := os.Unsetenv("CT_CONFIG_DIR")
+					require.NoError(t, err)
+				})
+			}
+			configSearchLocations = []string{tt.defaultDir}
+
+			got, err := findConfigFile("test.yaml")
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+			}
+		})
+	}
 }

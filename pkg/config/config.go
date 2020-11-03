@@ -88,8 +88,12 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		v.SetConfigFile(cfgFile)
 	} else {
 		v.SetConfigName("ct")
-		for _, searchLocation := range configSearchLocations {
-			v.AddConfigPath(searchLocation)
+		if cfgFile, ok := os.LookupEnv("CT_CONFIG_DIR"); ok {
+			v.AddConfigPath(cfgFile)
+		} else {
+			for _, searchLocation := range configSearchLocations {
+				v.AddConfigPath(searchLocation)
+			}
 		}
 	}
 
@@ -182,11 +186,16 @@ func printCfg(cfg *Configuration) {
 }
 
 func findConfigFile(fileName string) (string, error) {
+	if dir, ok := os.LookupEnv("CT_CONFIG_DIR"); ok {
+		return filepath.Join(dir, fileName), nil
+	}
+
 	for _, location := range configSearchLocations {
 		filePath := filepath.Join(location, fileName)
 		if util.FileExists(filePath) {
 			return filePath, nil
 		}
 	}
+
 	return "", errors.New(fmt.Sprintf("Config file not found: %s", fileName))
 }
