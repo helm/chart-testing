@@ -3,6 +3,9 @@ jobs:
   lint:
     docker:
       - image: koalaman/shellcheck-alpine
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASS
     steps:
       - checkout
       - run:
@@ -16,6 +19,9 @@ jobs:
     machine:
       enabled: true
       image: circleci/classic:201808-01
+      auth:
+        username: $DOCKER_USER
+        password: $DOCKER_PASS
     steps:
       - checkout
       - run:
@@ -47,6 +53,9 @@ jobs:
   build:
     docker:
       - image: cimg/go:1.14
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASS
     steps:
       - setup_remote_docker
       - checkout
