@@ -1,0 +1,60 @@
+name: ci
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: shellcheck
+        uses: ludeeus/action-shellcheck@1.0.0
+
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+
+      - uses: azure/setup-helm@v1
+        with:
+          version: v3.4.0
+
+      - name: Install tools
+        run: |
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+          curl -fsSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-linux-amd64"
+          chmod +x kind
+          sudo mv kind /usr/local/bin/kind
+
+          ./setup.sh
+
+      - name: Test
+        run: |
+          ./e2e-kind.sh
+
+      - name: Lint
+        run: |
+          go vet -v ./...
+          goimports -w -l .
+          go mod tidy
+          git diff --exit-code
+
+      - name: Build
+        run: |
+          set -o nounset
+          set -o pipefail
+
+          echo "Building snapshot..."
+          ./build.sh

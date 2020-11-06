@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go Report Card](https://goreportcard.com/badge/github.com/helm/chart-testing)](https://goreportcard.com/report/github.com/helm/chart-testing)
-[![CircleCI](https://circleci.com/gh/helm/chart-testing/tree/master.svg?style=svg)](https://circleci.com/gh/helm/chart-testing/tree/master)
+![ci](https://github.com/davidkarlsen/chart-testing/workflows/ci/badge.svg)
 
 `ct` is the the tool for testing Helm charts.
 It is meant to be used for linting and testing pull requests.
@@ -175,30 +175,7 @@ Here's a previous one for reference: https://github.com/helm/chart-testing/pull/
 
 ### Create Release
 
-CircleCI creates releases automatically when a new tag is pushed.
-Tags are created using `tag.sh`.
-
-```console
-$ ./tag.sh -h
-Usage: tag.sh <options>
-
-Create and push a tag.
-
-    -h, --help        Display help
-    -d, --debug       Display verbose output
-    -r, --remote      The name of the remote to push the tag to (default: upstream)
-    -f, --force       Force an existing tag to be overwritten
-    -t, --tag         The name of the tag to create
-    -s, --skip-push   Skip pushing the tag
-```
-
-By default, the script assumes that `origin` points to your own fork and that you have a remote `upstream` that points to the upstream `chart-testing` repo.
-Run the script specifying the version for the new release.
-
-```console
-./tag.sh --tag <release_version>
-```
-
+The release workflow is [dispatched from github actions](https://github.com/helm/chart-testing/actions)
 Versions must start with a lower-case `v`, e. g. `v3.1.1`.
 
 ## Supported versions
