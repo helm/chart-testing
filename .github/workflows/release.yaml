@@ -47,6 +47,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ github.event.inputs.version }}
+          tag_prefix: ''
+          create_annotated_tag: true
 
       - name: Build
         env:
