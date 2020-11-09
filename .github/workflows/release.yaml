@@ -49,6 +49,8 @@ jobs:
           custom_tag: ${{ github.event.inputs.version }}
 
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -o nounset
           set -o pipefail
