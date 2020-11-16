@@ -71,6 +71,10 @@ func addCommonFlags(flags *pflag.FlagSet) {
 	flags.StringSlice("excluded-charts", []string{}, heredoc.Doc(`
 		Charts that should be skipped. May be specified multiple times
 		or separate values with commas`))
+	flags.Bool("print-config", false, heredoc.Doc(`
+		Prints the configuration to stderr (caution: setting this may
+		expose sensitive data when helm-repo-extra-args contains passwords)`))
+	flags.Bool("exclude-deprecated", false, "Skip charts that are marked as deprecated")
 }
 
 func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
@@ -93,8 +97,5 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		multiple times or separate values with commas`))
 	flags.Bool("debug", false, heredoc.Doc(`
 		Print CLI calls of external tools to stdout (caution: setting this may
-		expose sensitive data when helm-repo-extra-args contains passwords)`))
-	flags.Bool("print-config", false, heredoc.Doc(`
-		Prints the configuration to stdout (caution: setting this may
 		expose sensitive data when helm-repo-extra-args contains passwords)`))
 }

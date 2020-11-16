@@ -16,7 +16,8 @@ package config
 
 import (
 	"fmt"
-	"path"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -33,7 +34,7 @@ var (
 	homeDir, _            = homedir.Dir()
 	configSearchLocations = []string{
 		".",
-		path.Join(homeDir, ".ct"),
+		filepath.Join(homeDir, ".ct"),
 		"/usr/local/etc/ct",
 		"/etc/ct",
 	}
@@ -49,6 +50,7 @@ type Configuration struct {
 	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
 	ValidateChartSchema   bool     `mapstructure:"validate-chart-schema"`
 	ValidateYaml          bool     `mapstructure:"validate-yaml"`
+	AdditionalCommands    []string `mapstructure:"additional-commands"`
 	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
 	ProcessAllCharts      bool     `mapstructure:"all"`
 	Charts                []string `mapstructure:"charts"`
@@ -62,6 +64,7 @@ type Configuration struct {
 	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
 	Namespace             string   `mapstructure:"namespace"`
 	ReleaseLabel          string   `mapstructure:"release-label"`
+	ExcludeDeprecated     bool     `mapstructure:"exclude-deprecated"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
@@ -85,8 +88,12 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		v.SetConfigFile(cfgFile)
 	} else {
 		v.SetConfigName("ct")
-		for _, searchLocation := range configSearchLocations {
-			v.AddConfigPath(searchLocation)
+		if cfgFile, ok := os.LookupEnv("CT_CONFIG_DIR"); ok {
+			v.AddConfigPath(cfgFile)
+		} else {
+			for _, searchLocation := range configSearchLocations {
+				v.AddConfigPath(searchLocation)
+			}
 		}
 	}
 
@@ -96,7 +103,9 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 			return nil, errors.Wrap(err, "Error loading config file")
 		}
 	} else {
-		fmt.Println("Using config file:", v.ConfigFileUsed())
+		if printConfig {
+			fmt.Fprintln(os.Stderr, "Using config file:", v.ConfigFileUsed())
+		}
 	}
 
 	isLint := strings.Contains(cmd.Use, "lint")
@@ -143,7 +152,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	}
 
 	if len(cfg.Charts) > 0 || cfg.ProcessAllCharts {
-		fmt.Println("Version increment checking disabled.")
+		fmt.Fprintln(os.Stderr, "Version increment checking disabled.")
 		cfg.CheckVersionIncrement = false
 	}
 
@@ -155,9 +164,9 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 }
 
 func printCfg(cfg *Configuration) {
-	util.PrintDelimiterLine("-")
-	fmt.Println(" Configuration")
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLineToWriter(os.Stderr, "-")
+	fmt.Fprintln(os.Stderr, " Configuration")
+	util.PrintDelimiterLineToWriter(os.Stderr, "-")
 
 	e := reflect.ValueOf(cfg).Elem()
 	typeOfCfg := e.Type()
@@ -170,18 +179,23 @@ func printCfg(cfg *Configuration) {
 		default:
 			pattern = "%s: %s\n"
 		}
-		fmt.Printf(pattern, typeOfCfg.Field(i).Name, e.Field(i).Interface())
+		fmt.Fprintf(os.Stderr, pattern, typeOfCfg.Field(i).Name, e.Field(i).Interface())
 	}
 
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLineToWriter(os.Stderr, "-")
 }
 
 func findConfigFile(fileName string) (string, error) {
+	if dir, ok := os.LookupEnv("CT_CONFIG_DIR"); ok {
+		return filepath.Join(dir, fileName), nil
+	}
+
 	for _, location := range configSearchLocations {
-		filePath := path.Join(location, fileName)
+		filePath := filepath.Join(location, fileName)
 		if util.FileExists(filePath) {
 			return filePath, nil
 		}
 	}
+
 	return "", errors.New(fmt.Sprintf("Config file not found: %s", fileName))
 }
