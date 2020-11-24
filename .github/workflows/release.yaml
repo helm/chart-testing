@@ -1,0 +1,62 @@
+name: release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: shellcheck
+        uses: ludeeus/action-shellcheck@1.0.0
+
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+
+      - name: Install tools
+        run: |
+          ./setup.sh
+
+      - name: Lint
+        run: |
+          go vet -v ./...
+          goimports -w -l .
+          go mod tidy
+          git diff --exit-code
+
+      - name: Login to registry
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Tag
+        uses: mathieudutour/github-tag-action@v4.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ github.event.inputs.version }}
+          tag_prefix: ''
+          create_annotated_tag: true
+
+      - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -o nounset
+          set -o pipefail
+
+          echo "Building release ${{ github.event.inputs.version }}"
+          ./build.sh --release
+
