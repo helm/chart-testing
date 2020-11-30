@@ -40,6 +40,10 @@ func (p ProcessExecutor) RunProcessAndCaptureOutput(executable string, execArgs 
 	return p.RunProcessInDirAndCaptureOutput("", executable, execArgs)
 }
 
+func (p ProcessExecutor) RunProcessAndCaptureStdout(executable string, execArgs ...interface{}) (string, error) {
+	return p.RunProcessInDirAndCaptureStdout("", executable, execArgs)
+}
+
 func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string, executable string, execArgs ...interface{}) (string, error) {
 	cmd, err := p.CreateProcess(executable, execArgs...)
 	if err != nil {
@@ -48,6 +52,21 @@ func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string
 
 	cmd.Dir = workingDirectory
 	bytes, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return "", errors.Wrap(err, "Error running process")
+	}
+	return strings.TrimSpace(string(bytes)), nil
+}
+
+func (p ProcessExecutor) RunProcessInDirAndCaptureStdout(workingDirectory string, executable string, execArgs ...interface{}) (string, error) {
+	cmd, err := p.CreateProcess(executable, execArgs...)
+	if err != nil {
+		return "", err
+	}
+
+	cmd.Dir = workingDirectory
+	bytes, err := cmd.Output()
 
 	if err != nil {
 		return "", errors.Wrap(err, "Error running process")
