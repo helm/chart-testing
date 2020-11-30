@@ -43,12 +43,13 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Tag
-        uses: mathieudutour/github-tag-action@v4.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ github.event.inputs.version }}
-          tag_prefix: ''
-          create_annotated_tag: true
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+          tag='${{ github.event.inputs.version }}'
+          git tag --annotate --message "Tag for release $tag" "$tag"
+          git push origin "refs/tags/$tag"
 
       - name: Build
         env:
