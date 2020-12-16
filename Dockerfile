@@ -9,7 +9,7 @@ RUN apk --no-cache add \
     py3-pip \
     py3-wheel \
     python3 && \
-    pip install --upgrade pip==20.2.4
+    pip install --upgrade pip==20.3.3
 
 # Install a YAML Linter
 ARG yamllint_version=1.25.0
@@ -22,14 +22,14 @@ LABEL yamale_version=$yamale_version
 RUN pip install "yamale==$yamale_version"
 
 # Install kubectl
-ARG kubectl_version=v1.19.4
+ARG kubectl_version=v1.20.0
 LABEL kubectl_version=$kubectl_version
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl_version/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG helm_version=v3.4.1
+ARG helm_version=v3.4.2
 LABEL helm_version=$helm_version
 RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
     mkdir -p "/usr/local/helm-$helm_version" && \
