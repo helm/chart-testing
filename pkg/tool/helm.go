@@ -84,5 +84,5 @@ func (h Helm) DeleteRelease(namespace string, release string) {
 }
 
 func (h Helm) Version() (string, error) {
-	return h.exec.RunProcessAndCaptureOutput("helm", "version", "--short")
+	return h.exec.RunProcessAndCaptureStdout("helm", "version", "--short")
 }
