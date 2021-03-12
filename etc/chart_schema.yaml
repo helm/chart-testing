@@ -25,7 +25,7 @@ maintainer:
 dependency:
   name: str()
   version: str()
-  repository: str()
+  repository: str(required=False)
   condition: str(required=False)
   tags: list(str(), required=False)
   enabled: bool(required=False)
