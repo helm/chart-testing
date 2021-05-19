@@ -72,7 +72,7 @@ main() {
 
     pushd "$SCRIPT_DIR" > /dev/null
 
-    go test ./...
+    go test -race ./...
     goreleaser "${goreleaser_args[@]}"
 
     popd > /dev/null
