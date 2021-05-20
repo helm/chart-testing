@@ -1,6 +1,6 @@
 {
     "remote": "origin",
-    "target-branch": "master",
+    "target-branch": "main",
     "since": "HEAD~1",
     "build-id": "pr-42",
     "lint-conf": "my-lint-conf.yaml",
