@@ -176,7 +176,7 @@ Here's a previous one for reference: https://github.com/helm/chart-testing/pull/
 ### Create Release
 
 The release workflow is [dispatched from github actions](https://github.com/helm/chart-testing/actions)
-Versions must start with a lower-case `v`, e. g. `v3.2.0`.
+Versions must start with a lower-case `v`, e. g. `v3.1.1`.
 
 ## Supported versions
 
