@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
 
       - name: shellcheck
-        uses: ludeeus/action-shellcheck@1.0.0
+        uses: ludeeus/action-shellcheck@1.1.0
 
       - name: Setup go
         uses: actions/setup-go@v2
