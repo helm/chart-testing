@@ -24,7 +24,7 @@ maintainer:
 ---
 dependency:
   name: str()
-  version: str()
+  version: str(required=False)
   repository: str(required=False)
   condition: str(required=False)
   tags: list(str(), required=False)
