@@ -26,7 +26,7 @@ jobs:
 
       - uses: azure/setup-helm@v1
         with:
-          version: v3.5.4
+          version: v3.6.3
 
       - name: Install tools
         run: |
