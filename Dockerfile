@@ -1,8 +1,8 @@
-FROM alpine:3.13
+FROM alpine:3.14
 
 RUN apk --no-cache add \
     bash \
-    curl \
+    curl>7.77.0-r0 \
     git \
     libc6-compat \
     openssh-client \
