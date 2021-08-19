@@ -25,12 +25,13 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$KUBECTL
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG HELM_VERSION=v2.17.0
-RUN curl -LO "https://kubernetes-helm.storage.googleapis.com/helm-$HELM_VERSION-linux-amd64.tar.gz" && \
-    mkdir -p "/usr/local/helm-$HELM_VERSION" && \
-    tar -xzf "helm-$HELM_VERSION-linux-amd64.tar.gz" -C "/usr/local/helm-$HELM_VERSION" && \
-    ln -s "/usr/local/helm-$HELM_VERSION/linux-amd64/helm" /usr/local/bin/helm && \
-    rm -f "helm-$HELM_VERSION-linux-amd64.tar.gz"
+ARG helm_version=v2.17.0
+LABEL helm_version=$helm_version
+RUN curl -LO "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz" && \
+    mkdir -p "/usr/local/helm-$helm_version" && \
+    tar -xzf "helm-$helm_version-linux-amd64.tar.gz" -C "/usr/local/helm-$helm_version" && \
+    ln -s "/usr/local/helm-$helm_version/linux-amd64/helm" /usr/local/bin/helm && \
+    rm -f "helm-$helm_version-linux-amd64.tar.gz"
 
 COPY ./etc/chart_schema.yaml /etc/ct/chart_schema.yaml
 COPY ./etc/lintconf.yaml /etc/ct/lintconf.yaml
