@@ -263,7 +263,7 @@ func NewTesting(config config.Configuration, extraSetArgs string) (Testing, erro
 		config:           config,
 		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs)),
 		git:              tool.NewGit(procExec),
-		kubectl:          tool.NewKubectl(procExec),
+		kubectl:          tool.NewKubectl(procExec, config.KubectlTimeout),
 		linter:           tool.NewLinter(procExec),
 		cmdExecutor:      tool.NewCmdTemplateExecutor(procExec),
 		accountValidator: tool.AccountValidator{},

@@ -14,19 +14,23 @@ import (
 )
 
 type Kubectl struct {
-	exec exec.ProcessExecutor
+	exec    exec.ProcessExecutor
+	timeout time.Duration
 }
 
-func NewKubectl(exec exec.ProcessExecutor) Kubectl {
+func NewKubectl(exec exec.ProcessExecutor, timeout time.Duration) Kubectl {
 	return Kubectl{
-		exec: exec,
+		exec:    exec,
+		timeout: timeout,
 	}
 }
 
 // CreateNamespace creates a new namespace with the given name.
 func (k Kubectl) CreateNamespace(namespace string) error {
 	fmt.Printf("Creating namespace '%s'...\n", namespace)
-	return k.exec.RunProcess("kubectl", "create", "namespace", namespace)
+	return k.exec.RunProcess("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"create", "namespace", namespace)
 }
 
 // DeleteNamespace deletes the specified namespace. If the namespace does not terminate within 120s, pods running in the
@@ -34,7 +38,10 @@ func (k Kubectl) CreateNamespace(namespace string) error {
 func (k Kubectl) DeleteNamespace(namespace string) {
 	fmt.Printf("Deleting namespace '%s'...\n", namespace)
 	timeoutSec := "180s"
-	if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--timeout", timeoutSec); err != nil {
+	err := k.exec.RunProcess("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"delete", "namespace", namespace, "--timeout", timeoutSec)
+	if err != nil {
 		fmt.Printf("Namespace '%s' did not terminate after %s.\n", namespace, timeoutSec)
 	}
 
@@ -42,7 +49,11 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 		fmt.Printf("Namespace '%s' did not terminate after %s.\n", namespace, timeoutSec)
 
 		fmt.Println("Force-deleting everything...")
-		if err := k.exec.RunProcess("kubectl", "delete", "all", "--namespace", namespace, "--all", "--force", "--grace-period=0"); err != nil {
+		err = k.exec.RunProcess("kubectl",
+			fmt.Sprintf("--request-timeout=%s", k.timeout),
+			"delete", "all", "--namespace", namespace, "--all", "--force",
+			"--grace-period=0")
+		if err != nil {
 			fmt.Printf("Error deleting everything in the namespace %v: %v", namespace, err)
 		}
 
@@ -59,7 +70,9 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 
 func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 	// Getting the namespace json to remove the finalizer
-	cmdOutput, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace, "--output=json")
+	cmdOutput, err := k.exec.RunProcessAndCaptureOutput("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"get", "namespace", namespace, "--output=json")
 	if err != nil {
 		fmt.Println("Error getting namespace json:", err)
 		return err
@@ -111,13 +124,20 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 	time.Sleep(5 * time.Second)
 
 	// Check again
-	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
+	_, err = k.exec.RunProcessAndCaptureOutput("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"get", "namespace", namespace)
+	if err != nil {
 		fmt.Printf("Namespace '%s' terminated.\n", namespace)
 		return nil
 	}
 
 	fmt.Printf("Force-deleting namespace '%s'...\n", namespace)
-	if err := k.exec.RunProcess("kubectl", "delete", "namespace", namespace, "--force", "--grace-period=0", "--ignore-not-found=true"); err != nil {
+	err = k.exec.RunProcess("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"delete", "namespace", namespace, "--force", "--grace-period=0",
+		"--ignore-not-found=true")
+	if err != nil {
 		fmt.Println("Error deleting namespace:", err)
 		return err
 	}
@@ -126,8 +146,10 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 }
 
 func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
-	output, err := k.exec.RunProcessAndCaptureOutput(
-		"kubectl", "get", "deployments", "--namespace", namespace, "--selector", selector, "--output", "jsonpath={.items[*].metadata.name}")
+	output, err := k.exec.RunProcessAndCaptureOutput("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"get", "deployments", "--namespace", namespace, "--selector", selector,
+		"--output", "jsonpath={.items[*].metadata.name}")
 	if err != nil {
 		return err
 	}
@@ -135,7 +157,9 @@ func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 	deployments := strings.Fields(output)
 	for _, deployment := range deployments {
 		deployment = strings.Trim(deployment, "'")
-		err := k.exec.RunProcess("kubectl", "rollout", "status", "deployment", deployment, "--namespace", namespace)
+		err = k.exec.RunProcess("kubectl",
+			fmt.Sprintf("--request-timeout=%s", k.timeout),
+			"rollout", "status", "deployment", deployment, "--namespace", namespace)
 		if err != nil {
 			return err
 		}
@@ -145,7 +169,9 @@ func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 		//
 		// Just after rollout, pods from the previous deployment revision may still be in a
 		// terminating state.
-		unavailable, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "deployment", deployment, "--namespace", namespace, "--output",
+		unavailable, err := k.exec.RunProcessAndCaptureOutput("kubectl",
+			fmt.Sprintf("--request-timeout=%s", k.timeout),
+			"get", "deployment", deployment, "--namespace", namespace, "--output",
 			`jsonpath={.status.unavailableReplicas}`)
 		if err != nil {
 			return err
@@ -159,7 +185,9 @@ func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 }
 
 func (k Kubectl) GetPodsforDeployment(namespace string, deployment string) ([]string, error) {
-	jsonString, _ := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "deployment", deployment, "--namespace", namespace, "--output=json")
+	jsonString, _ := k.exec.RunProcessAndCaptureOutput("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"get", "deployment", deployment, "--namespace", namespace, "--output=json")
 	var deploymentMap map[string]interface{}
 	err := json.Unmarshal([]byte(jsonString), &deploymentMap)
 	if err != nil {
@@ -183,7 +211,8 @@ func (k Kubectl) GetPodsforDeployment(namespace string, deployment string) ([]st
 func (k Kubectl) GetPods(args ...string) ([]string, error) {
 	kubectlArgs := []string{"get", "pods"}
 	kubectlArgs = append(kubectlArgs, args...)
-	pods, err := k.exec.RunProcessAndCaptureOutput("kubectl", kubectlArgs)
+	pods, err := k.exec.RunProcessAndCaptureOutput("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout), kubectlArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -191,15 +220,21 @@ func (k Kubectl) GetPods(args ...string) ([]string, error) {
 }
 
 func (k Kubectl) GetEvents(namespace string) error {
-	return k.exec.RunProcess("kubectl", "get", "events", "--output", "wide", "--namespace", namespace)
+	return k.exec.RunProcess("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"get", "events", "--output", "wide", "--namespace", namespace)
 }
 
 func (k Kubectl) DescribePod(namespace string, pod string) error {
-	return k.exec.RunProcess("kubectl", "describe", "pod", pod, "--namespace", namespace)
+	return k.exec.RunProcess("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"describe", "pod", pod, "--namespace", namespace)
 }
 
 func (k Kubectl) Logs(namespace string, pod string, container string) error {
-	return k.exec.RunProcess("kubectl", "logs", pod, "--namespace", namespace, "--container", container)
+	return k.exec.RunProcess("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"logs", pod, "--namespace", namespace, "--container", container)
 }
 
 func (k Kubectl) GetInitContainers(namespace string, pod string) ([]string, error) {
@@ -211,7 +246,10 @@ func (k Kubectl) GetContainers(namespace string, pod string) ([]string, error) {
 }
 
 func (k Kubectl) getNamespace(namespace string) bool {
-	if _, err := k.exec.RunProcessAndCaptureOutput("kubectl", "get", "namespace", namespace); err != nil {
+	_, err := k.exec.RunProcessAndCaptureOutput("kubectl",
+		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		"get", "namespace", namespace)
+	if err != nil {
 		fmt.Printf("Namespace '%s' terminated.\n", namespace)
 		return false
 	}
