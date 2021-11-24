@@ -35,6 +35,7 @@ snapshot:
   name_template: "{{ .Tag }}-next"
 dockers:
   - skip_push: false
+    use_buildx: true
     dockerfile: Dockerfile
     image_templates:
       - quay.io/helmpack/chart-testing:{{ .Tag }}-amd64
@@ -54,6 +55,8 @@ dockers:
       - etc/chart_schema.yaml
       - etc/lintconf.yaml
   - skip_push: false
+    goarch: arm64
+    use_buildx: true
     dockerfile: Dockerfile
     image_templates:
       - quay.io/helmpack/chart-testing:{{ .Tag }}-arm64
