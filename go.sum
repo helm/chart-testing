@@ -433,12 +433,8 @@ github.com/goreleaser/chglog v0.1.2 h1:tdzAb/ILeMnphzI9zQ7Nkq+T8R9qyXli8GydD8plF
 github.com/goreleaser/chglog v0.1.2/go.mod h1:tTZsFuSZK4epDXfjMkxzcGbrIOXprf0JFp47BjIr3B8=
 github.com/goreleaser/fileglob v1.2.0 h1:OErqbdzeg/eibfDGPHDQDN8jL5u1jNyxA5IQzNPLLoU=
 github.com/goreleaser/fileglob v1.2.0/go.mod h1:rFyb2pXaK3YdnYnSjn6lifw0h2Q6s8OfOsx6I6bXkKE=
-github.com/goreleaser/goreleaser v1.0.0 h1:83h1R0Y6K4JegTI3K4/koFoAjK14lJ716f0vS6/6ABg=
-github.com/goreleaser/goreleaser v1.0.0/go.mod h1:cf++C2P5dMPOGdpoZVfNoJHbhfoK3r0Tasin0z2C0yA=
 github.com/goreleaser/goreleaser v1.1.0 h1:YySqqYTX9kxRU0e/fGQrhivXk8/zD4iUOlL7h0I2gBk=
 github.com/goreleaser/goreleaser v1.1.0/go.mod h1:Xi4DvX/N7e2hXC5tJlXsKEb+XEo83tkSqcinWunNtjs=
-github.com/goreleaser/nfpm/v2 v2.9.2 h1:L6CnpgugnSXFuC2eYvfDiYsb6Kb4o2g9rIBxJL31hpc=
-github.com/goreleaser/nfpm/v2 v2.9.2/go.mod h1:Bj/ztLvdnBnEgMae0fl/bLF6By1+yFFKeL97WiS6ZJg=
 github.com/goreleaser/nfpm/v2 v2.10.0 h1:SshT2D1MTzCifmjaagQA+5XW9Iq+qvXUavrgP0HvmWg=
 github.com/goreleaser/nfpm/v2 v2.10.0/go.mod h1:Bj/ztLvdnBnEgMae0fl/bLF6By1+yFFKeL97WiS6ZJg=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
