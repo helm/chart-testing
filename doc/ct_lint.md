@@ -14,11 +14,6 @@ and maintainer validation on
 
 in given chart directories.
 
-Charts may have multiple custom values files matching the glob pattern
-'*-values.yaml' in a directory named 'ci' in the root of the chart's
-directory. The chart is linted for each of these files. If no custom
-values file is present, the chart is linted with defaults.
-
 ```
 ct lint [flags]
 ```
@@ -67,6 +62,7 @@ ct lint [flags]
       --validate-maintainers           Enable validation of maintainer account names in chart.yml.
                                        Works for GitHub, GitLab, and Bitbucket (default true)
       --validate-yaml                  Enable linting of 'Chart.yaml' and values files (default true)
+      --values-glob string             The glob pattern used to search for additional values files in chart directories (default "ci/*-values.yaml")
 ```
 
 ### SEE ALSO

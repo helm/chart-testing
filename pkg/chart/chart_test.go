@@ -320,6 +320,26 @@ func TestLintYamlValidation(t *testing.T) {
 	runTests(false, 0, 0)
 }
 
+func TestDifferentGlob(t *testing.T) {
+	type testData struct {
+		name     string
+		chartDir string
+		expected []string
+	}
+
+	testCases := []testData{
+		{"test-glob", "testdata/test_glob", []string{"testdata/test_glob/values.other.yaml"}},
+	}
+
+	for _, testData := range testCases {
+		t.Run(testData.name, func(t *testing.T) {
+			chart, err := NewChart(testData.chartDir, "values.*.yaml")
+			assert.Nil(t, err)
+			assert.Equal(t, testData.expected, chart.ciValuesPaths)
+		})
+	}
+}
+
 func TestGenerateInstallConfig(t *testing.T) {
 	type testData struct {
 		name  string
@@ -384,7 +404,7 @@ func TestGenerateInstallConfig(t *testing.T) {
 	}
 }
 
-func TestChart_HasCIValuesFile(t *testing.T) {
+func TestChart_DifferentGlobPattern(t *testing.T) {
 	type testData struct {
 		name     string
 		chart    *Chart

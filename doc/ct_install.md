@@ -16,12 +16,6 @@ command will validate that 'helm test' passes for the following upgrade paths:
 * previous chart revision => current chart version (if non-breaking SemVer change)
 * current chart version => current chart version
 
-Charts may have multiple custom values files matching the glob pattern
-'*-values.yaml' in a directory named 'ci' in the root of the chart's
-directory. The chart is installed and tested for each of these files.
-If no custom values file is present, the chart is installed and
-tested with defaults.
-
 ```
 ct install [flags]
 ```
@@ -69,6 +63,7 @@ ct install [flags]
       --target-branch string           The name of the target branch used to identify changed charts (default "master")
       --upgrade                        Whether to test an in-place upgrade of each chart from its previous revision if the
                                        current version should not introduce a breaking change according to the SemVer spec
+      --values-glob string             The glob pattern used to search for additional values files in chart directories (default "ci/*-values.yaml")
 ```
 
 ### SEE ALSO
