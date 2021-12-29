@@ -185,7 +185,7 @@ func TestValidateMaintainers(t *testing.T) {
 
 	for _, testData := range testDataSlice {
 		t.Run(testData.name, func(t *testing.T) {
-			chart, err := NewChart(testData.chartDir)
+			chart, err := NewChart(testData.chartDir, "ci/*-values.yaml")
 			assert.Nil(t, err)
 			validationErr := ct.ValidateMaintainers(chart)
 			assert.Equal(t, testData.expected, validationErr == nil)
@@ -217,7 +217,7 @@ func TestLintChartMaintainerValidation(t *testing.T) {
 
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
-				chart, err := NewChart(testData.chartDir)
+				chart, err := NewChart(testData.chartDir, "ci/*-values.yaml")
 				assert.Nil(t, err)
 				result := ct.LintChart(chart)
 				assert.Equal(t, testData.expected, result.Error == nil)
@@ -260,7 +260,7 @@ func TestLintChartSchemaValidation(t *testing.T) {
 
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
-				chart, err := NewChart(testData.chartDir)
+				chart, err := NewChart(testData.chartDir, "ci/*-values.yaml")
 				assert.Nil(t, err)
 				result := ct.LintChart(chart)
 				assert.Equal(t, testData.expected, result.Error == nil)
@@ -306,7 +306,7 @@ func TestLintYamlValidation(t *testing.T) {
 
 		for _, testData := range testCases {
 			t.Run(testData.name, func(t *testing.T) {
-				chart, err := NewChart(testData.chartDir)
+				chart, err := NewChart(testData.chartDir, "ci/*-values.yaml")
 				assert.Nil(t, err)
 				result := ct.LintChart(chart)
 				assert.Equal(t, testData.expected, result.Error == nil)
