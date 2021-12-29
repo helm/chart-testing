@@ -181,7 +181,8 @@ func (c *Chart) String() string {
 	return fmt.Sprintf(`%s => (version: "%s", path: "%s")`, c.yaml.Name, c.yaml.Version, c.Path())
 }
 
-// ValuesFilePathsForCI returns all file paths in the 'ci' subfolder of the chart directory matching the pattern '*-values.yaml'
+// ValuesFilePathsForCI returns all file paths in the 'ci' subfolder of the chart directory
+// matching the pattern given via --values-glob (default: '*-values.yaml')
 func (c *Chart) ValuesFilePathsForCI() []string {
 	return c.ciValuesPaths
 }
@@ -217,12 +218,12 @@ func (c *Chart) CreateInstallParams(buildID string) (release string, namespace s
 
 // NewChart parses the path to a chart directory and allocates a new Chart object. If chartPath is
 // not a valid chart directory an error is returned.
-func NewChart(chartPath string) (*Chart, error) {
+func NewChart(chartPath string, glob string) (*Chart, error) {
 	yaml, err := util.ReadChartYaml(chartPath)
 	if err != nil {
 		return nil, err
 	}
-	matches, _ := filepath.Glob(filepath.Join(chartPath, "ci", "*-values.yaml"))
+	matches, _ := filepath.Glob(filepath.Join(chartPath, glob))
 	return &Chart{chartPath, yaml, matches}, nil
 }
 
@@ -247,8 +248,9 @@ type TestResults struct {
 
 // TestResult holds test results for a specific chart
 type TestResult struct {
-	Chart *Chart
-	Error error
+	Chart  *Chart
+	Error  error
+	Errors []error
 }
 
 // NewTesting creates a new Testing struct with the given config.
@@ -301,7 +303,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 
 	var charts []*Chart
 	for _, dir := range chartDirs {
-		chart, err := NewChart(dir)
+		chart, err := NewChart(dir, t.config.ValuesGlob)
 		if err != nil {
 			return nil, err
 		}
@@ -380,7 +382,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 
 		result := action(chart)
-		if result.Error != nil {
+		if result.Error != nil || len(result.Errors) > 0 {
 			testResults.OverallSuccess = false
 		}
 		results = append(results, result)
@@ -412,8 +414,8 @@ func (t *Testing) PrintResults(results []TestResult) {
 	util.PrintDelimiterLine("-")
 	if results != nil {
 		for _, result := range results {
-			err := result.Error
-			if err != nil {
+			err := append(result.Errors, result.Error)
+			if len(err) > 0 {
 				fmt.Printf(" %s %s > %s\n", "✖︎", result.Chart, err)
 			} else {
 				fmt.Printf(" %s %s\n", "✔︎", result.Chart)
@@ -445,7 +447,7 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 	if t.config.ValidateChartSchema {
 		if err := t.linter.Yamale(chartYaml, t.config.ChartYamlSchema); err != nil {
 			result.Error = err
-			return result
+			result.Errors = append(result.Errors, err)
 		}
 	}
 
@@ -454,7 +456,7 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 		for _, yamlFile := range yamlFiles {
 			if err := t.linter.YamlLint(yamlFile, t.config.LintConf); err != nil {
 				result.Error = err
-				return result
+				result.Errors = append(result.Errors, err)
 			}
 		}
 	}
@@ -462,14 +464,14 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 	if t.config.ValidateMaintainers {
 		if err := t.ValidateMaintainers(chart); err != nil {
 			result.Error = err
-			return result
+			result.Errors = append(result.Errors, err)
 		}
 	}
 
 	for _, cmd := range t.config.AdditionalCommands {
 		if err := t.cmdExecutor.RunCommand(cmd, chart); err != nil {
 			result.Error = err
-			return result
+			result.Errors = append(result.Errors, err)
 		}
 	}
 
@@ -484,7 +486,7 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 		}
 		if err := t.helm.LintWithValues(chart.Path(), valuesFile); err != nil {
 			result.Error = err
-			break
+			result.Errors = append(result.Errors, err)
 		}
 	}
 
@@ -537,7 +539,7 @@ func (t *Testing) UpgradeChart(chart *Chart) TestResult {
 		return result
 	}
 
-	if oldChart, err := NewChart(t.computePreviousRevisionPath(chart.Path())); err == nil {
+	if oldChart, err := NewChart(t.computePreviousRevisionPath(chart.Path()), t.config.ValuesGlob); err == nil {
 		result.Error = t.doUpgrade(oldChart, chart, false)
 	}
 
