@@ -76,7 +76,7 @@ func addCommonFlags(flags *pflag.FlagSet) {
 		expose sensitive data when helm-repo-extra-args contains passwords)`))
 	flags.Bool("exclude-deprecated", false, "Skip charts that are marked as deprecated")
 	flags.String("values-glob", "ci/*-values.yaml", heredoc.Doc(`
-	Glob pattern to look for values files`))
+	The glob pattern used to search for additional values files in chart directories`))
 }
 
 func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
