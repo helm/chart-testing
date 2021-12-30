@@ -404,7 +404,7 @@ func TestGenerateInstallConfig(t *testing.T) {
 	}
 }
 
-func TestChart_DifferentGlobPattern(t *testing.T) {
+func TestChart_HasCIValuesFile(t *testing.T) {
 	type testData struct {
 		name     string
 		chart    *Chart
