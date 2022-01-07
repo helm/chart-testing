@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build tools
 // +build tools
 
 package tools
 
 import (
+	_ "github.com/anchore/syft"
 	_ "github.com/goreleaser/goreleaser"
 	_ "golang.org/x/tools/cmd/goimports"
 )

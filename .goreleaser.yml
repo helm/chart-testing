@@ -1,7 +1,12 @@
 project_name: chart-testing
+
 before:
   hooks:
     - go mod download
+
+sboms:
+- artifacts: archive
+
 builds:
   - main: ct/main.go
     binary: ct
@@ -15,11 +20,15 @@ builds:
       - linux
       - darwin
       - windows
+    flags:
+      - -trimpath
+    mod_timestamp: '{{ .CommitTimestamp }}'
     ldflags:
       - >-
         -X github.com/helm/chart-testing/v3/ct/cmd.Version={{ .Tag }}
         -X github.com/helm/chart-testing/v3/ct/cmd.GitCommit={{ .Commit }}
         -X github.com/helm/chart-testing/v3/ct/cmd.BuildDate={{ .Date }}
+
 archives:
   - format_overrides:
       - goos: windows
@@ -29,13 +38,16 @@ archives:
       - README.md
       - etc/chart_schema.yaml
       - etc/lintconf.yaml
+
 checksum:
   name_template: 'checksums.txt'
+
 snapshot:
   name_template: "{{ .Tag }}-next"
+
 dockers:
   - skip_push: false
-    use_buildx: true
+    use: buildx
     dockerfile: Dockerfile
     image_templates:
       - quay.io/helmpack/chart-testing:{{ .Tag }}-amd64
@@ -56,7 +68,7 @@ dockers:
       - etc/lintconf.yaml
   - skip_push: false
     goarch: arm64
-    use_buildx: true
+    use: buildx
     dockerfile: Dockerfile
     image_templates:
       - quay.io/helmpack/chart-testing:{{ .Tag }}-arm64
@@ -75,6 +87,7 @@ dockers:
     extra_files:
       - etc/chart_schema.yaml
       - etc/lintconf.yaml
+
 docker_manifests:
 - name_template: quay.io/helmpack/chart-testing:latest
   image_templates:
