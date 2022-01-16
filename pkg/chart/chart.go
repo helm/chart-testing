@@ -651,8 +651,12 @@ func (t *Testing) testRelease(namespace, release, releaseSelector string) error 
 }
 
 func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, releaseSelector string, cleanup func()) {
-	if t.config.Namespace != "" {
-		namespace = t.config.Namespace
+	if _, ok := t.config.ChartNamespaces[chart.Yaml().Name]; ok || t.config.Namespace != "" {
+		if ok {
+			namespace = t.config.ChartNamespaces[chart.Yaml().Name]
+		} else {
+			namespace = t.config.Namespace
+		}
 		release, _ = chart.CreateInstallParams(t.config.BuildId)
 		releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
 		cleanup = func() {
