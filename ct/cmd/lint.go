@@ -74,6 +74,8 @@ func addLintFlags(flags *flag.FlagSet) {
             Commands will be executed in the same order as provided in the list and will
             be rendered with go template before being executed.
             Example: "helm unittest --helm3 -f tests/*.yaml {{ .Path }}"`))
+	flags.StringSlice("yamale-extra-args", []string{}, "Additional arguments to pass to 'yamale'")
+	flags.StringSlice("yamllint-extra-args", []string{}, "Additional arguments to pass to 'yamllint'")
 }
 
 func lint(cmd *cobra.Command, args []string) error {

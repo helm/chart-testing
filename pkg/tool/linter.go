@@ -26,10 +26,10 @@ func NewLinter(exec exec.ProcessExecutor) Linter {
 	}
 }
 
-func (l Linter) YamlLint(yamlFile string, configFile string) error {
-	return l.exec.RunProcess("yamllint", "--config-file", configFile, yamlFile)
+func (l Linter) YamlLint(yamlFile string, configFile string, extraArgs []string) error {
+	return l.exec.RunProcess("yamllint", "--config-file", configFile, extraArgs, yamlFile)
 }
 
-func (l Linter) Yamale(yamlFile string, schemaFile string) error {
-	return l.exec.RunProcess("yamale", "--schema", schemaFile, yamlFile)
+func (l Linter) Yamale(yamlFile string, schemaFile string, extraArgs []string) error {
+	return l.exec.RunProcess("yamale", "--schema", schemaFile, extraArgs, yamlFile)
 }

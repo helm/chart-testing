@@ -130,8 +130,8 @@ type Kubectl interface {
 //
 // Yamale runs `yamale` on the specified file with the specified schema file
 type Linter interface {
-	YamlLint(yamlFile string, configFile string) error
-	Yamale(yamlFile string, schemaFile string) error
+	YamlLint(yamlFile string, configFile string, extraArgs []string) error
+	Yamale(yamlFile string, schemaFile string, extraArgs []string) error
 }
 
 // CmdExecutor is the interface
@@ -445,7 +445,7 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 	valuesFiles := chart.ValuesFilePathsForCI()
 
 	if t.config.ValidateChartSchema {
-		if err := t.linter.Yamale(chartYaml, t.config.ChartYamlSchema); err != nil {
+		if err := t.linter.Yamale(chartYaml, t.config.ChartYamlSchema, t.config.YamaleExtraArgs); err != nil {
 			result.Error = err
 			return result
 		}
@@ -454,7 +454,7 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 	if t.config.ValidateYaml {
 		yamlFiles := append([]string{chartYaml, valuesYaml}, valuesFiles...)
 		for _, yamlFile := range yamlFiles {
-			if err := t.linter.YamlLint(yamlFile, t.config.LintConf); err != nil {
+			if err := t.linter.YamlLint(yamlFile, t.config.LintConf, t.config.YamllintExtraArgs); err != nil {
 				result.Error = err
 				return result
 			}

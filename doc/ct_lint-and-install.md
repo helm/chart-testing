@@ -72,6 +72,8 @@ ct lint-and-install [flags]
       --validate-maintainers                 Enable validation of maintainer account names in chart.yml.
                                              Works for GitHub, GitLab, and Bitbucket (default true)
       --validate-yaml                        Enable linting of 'Chart.yaml' and values files (default true)
+      --yamale-extra-args strings            Additional arguments to pass to 'yamale'
+      --yamllint-extra-args strings          Additional arguments to pass to 'yamllint'
 ```
 
 ### SEE ALSO

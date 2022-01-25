@@ -83,12 +83,12 @@ type fakeLinter struct {
 	mock.Mock
 }
 
-func (l *fakeLinter) YamlLint(yamlFile, configFile string) error {
-	l.Called(yamlFile, configFile)
+func (l *fakeLinter) YamlLint(yamlFile, configFile string, extraArgs []string) error {
+	l.Called(yamlFile, configFile, extraArgs)
 	return nil
 }
-func (l *fakeLinter) Yamale(yamlFile, schemaFile string) error {
-	l.Called(yamlFile, schemaFile)
+func (l *fakeLinter) Yamale(yamlFile, schemaFile string, extraArgs []string) error {
+	l.Called(yamlFile, schemaFile, extraArgs)
 	return nil
 }
 

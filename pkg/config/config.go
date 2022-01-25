@@ -71,6 +71,8 @@ type Configuration struct {
 	ExcludeDeprecated       bool          `mapstructure:"exclude-deprecated"`
 	KubectlTimeout          time.Duration `mapstructure:"kubectl-timeout"`
 	PrintLogs               bool          `mapstructure:"print-logs"`
+	YamaleExtraArgs         []string      `mapstructure:"yamale-extra-args"`
+	YamllintExtraArgs       []string      `mapstructure:"yamllint-extra-args"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
