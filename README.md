@@ -79,7 +79,24 @@ The following example show various way of configuring the same thing:
 
 #### CLI
 
+#### Remote repo
+
+With remote repo:
+
     ct install --remote upstream --chart-dirs stable,incubator --build-id pr-42
+
+#### Local repo
+
+If you have a chart in current directory and ct installed on the host then you can run:
+
+    ct install --chart-dirs . --charts .
+
+With docker it works with:
+
+    docker run -it --workdir=/data --volume ~/.kube/config:/root/.kube/config:ro --volume $(pwd):/data quay.io/helmpack/chart-testing:v3.5.0 ct install --chart-dirs . --charts .
+
+Notice that `workdir` param is important and must be the same as volume mounted.
+
 
 #### Environment Variables
 
