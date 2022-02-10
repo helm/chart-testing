@@ -63,7 +63,7 @@ func addInstallFlags(flags *flag.FlagSet) {
 		the ID of a pull request. If not specified, the name of the chart is used`))
 	flags.String("helm-extra-args", "", heredoc.Doc(`
 		Additional arguments for Helm. Must be passed as a single quoted string
-		(e.g. "--timeout 500"`))
+		(e.g. "--timeout 500s"`))
 	flags.Bool("upgrade", false, heredoc.Doc(`
 		Whether to test an in-place upgrade of each chart from its previous revision if the
 		current version should not introduce a breaking change according to the SemVer spec`))
