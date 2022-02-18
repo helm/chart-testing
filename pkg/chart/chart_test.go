@@ -93,23 +93,29 @@ func (l *fakeLinter) Yamale(yamlFile, schemaFile string) error {
 	return nil
 }
 
-type fakeHelm struct{}
+type fakeHelm struct {
+	mock.Mock
+}
 
-func (h fakeHelm) AddRepo(name, url string, extraArgs []string) error   { return nil }
-func (h fakeHelm) BuildDependencies(chart string) error                 { return nil }
-func (h fakeHelm) LintWithValues(chart string, valuesFile string) error { return nil }
-func (h fakeHelm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {
+func (h *fakeHelm) AddRepo(name, url string, extraArgs []string) error { return nil }
+func (h *fakeHelm) BuildDependencies(chart string) error               { return nil }
+func (h *fakeHelm) BuildDependenciesWithArgs(chart string, extraArgs []string) error {
+	h.Called(chart, extraArgs)
 	return nil
 }
-func (h fakeHelm) Upgrade(chart string, namespace string, release string) error {
+func (h *fakeHelm) LintWithValues(chart string, valuesFile string) error { return nil }
+func (h *fakeHelm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {
 	return nil
 }
-func (h fakeHelm) Test(namespace string, release string) error {
+func (h *fakeHelm) Upgrade(chart string, namespace string, release string) error {
 	return nil
 }
-func (h fakeHelm) DeleteRelease(namespace string, release string) {}
+func (h *fakeHelm) Test(namespace string, release string) error {
+	return nil
+}
+func (h *fakeHelm) DeleteRelease(namespace string, release string) {}
 
-func (h fakeHelm) Version() (string, error) {
+func (h *fakeHelm) Version() (string, error) {
 	return "v3.0.0", nil
 }
 
@@ -142,7 +148,7 @@ func newTestingMock(cfg config.Configuration) Testing {
 		chartUtils:       util.ChartUtils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
-		helm:             fakeHelm{},
+		helm:             new(fakeHelm),
 	}
 }
 
@@ -337,6 +343,29 @@ func TestLintYamlValidation(t *testing.T) {
 
 	runTests(true, 2, 0)
 	runTests(false, 0, 0)
+}
+
+func TestLintDependencyExtraArgs(t *testing.T) {
+	chart := "testdata/test_lints"
+	args := []string{"--skip-refresh"}
+
+	fakeMockHelm := new(fakeHelm)
+	ct.helm = fakeMockHelm
+	ct.config.HelmDependencyExtraArgs = args
+	ct.config.Charts = []string{chart}
+
+	t.Run("lint-helm-dependency-extra-args", func(t *testing.T) {
+		call := fakeMockHelm.On("BuildDependenciesWithArgs", chart, args).Return(nil)
+		call.Repeatability = 1
+
+		results, err := ct.LintCharts()
+		assert.Nil(t, err)
+		for _, result := range results {
+			assert.Nil(t, result.Error)
+		}
+		// -1 is set after Repeatability runs out
+		assert.Equal(t, -1, call.Repeatability)
+	})
 }
 
 func TestGenerateInstallConfig(t *testing.T) {
