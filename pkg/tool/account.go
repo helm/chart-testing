@@ -24,7 +24,8 @@ import (
 
 type AccountValidator struct{}
 
-var repoDomainPattern = regexp.MustCompile("(?:https://(?:[^@:]+:[^@:]+@)?|git@)([^/:]+)")
+// See https://regex101.com/r/B4MZwl/1
+var repoDomainPattern = regexp.MustCompile("(?:https://|git@)w*[[:punct:]]?([^/]+)")
 
 func (v AccountValidator) Validate(repoURL string, account string) error {
 	domain, err := parseOutGitRepoDomain(repoURL)
