@@ -77,6 +77,9 @@ func addInstallFlags(flags *flag.FlagSet) {
 	flags.String("release-label", "app.kubernetes.io/instance", heredoc.Doc(`
 		The label to be used as a selector when inspecting resources created by charts.
 		This is only used if namespace is specified`))
+	flags.String("helm-extra-set-args", "", heredoc.Doc(`
+		Additional arguments for Helm. Must be passed as a single quoted string
+		(e.g. "--set=name=value"`))
 }
 
 func install(cmd *cobra.Command, args []string) error {
@@ -91,7 +94,11 @@ func install(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Error loading configuration: %s", err)
 	}
 
-	testing, err := chart.NewTesting(*configuration)
+	extraSetArgs, err := cmd.Flags().GetString("helm-extra-set-args")
+	if err != nil {
+		return err
+	}
+	testing, err := chart.NewTesting(*configuration, extraSetArgs)
 	if err != nil {
 		fmt.Println(err)
 	}

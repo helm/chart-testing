@@ -50,7 +50,8 @@ func listChanged(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("Error loading configuration: %s", err)
 	}
 
-	testing, err := chart.NewTesting(*configuration)
+	emptyExtraSetArgs := ""
+	testing, err := chart.NewTesting(*configuration, emptyExtraSetArgs)
 	if err != nil {
 		return err
 	}
