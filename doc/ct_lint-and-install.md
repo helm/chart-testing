@@ -41,7 +41,7 @@ ct lint-and-install [flags]
       --excluded-charts strings        Charts that should be skipped. May be specified multiple times
                                        or separate values with commas
       --helm-extra-args string         Additional arguments for Helm. Must be passed as a single quoted string
-                                       (e.g. "--timeout 500"
+                                       (e.g. "--timeout 500s"
       --helm-repo-extra-args strings   Additional arguments for the 'helm repo add' command to be
                                        specified on a per-repo basis with an equals sign as delimiter
                                        (e.g. 'myrepo=--username test --password secret'). May be specified
