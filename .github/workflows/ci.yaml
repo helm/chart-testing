@@ -12,21 +12,21 @@ jobs:
     steps:
 
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 # v2.4.0
         with:
           fetch-depth: 0
 
       - name: shellcheck
-        uses: ludeeus/action-shellcheck@1.1.0
+        uses: ludeeus/action-shellcheck@94e0aab03ca135d11a35e5bfc14e6746dc56e7e9 # v1.1.0
 
       - name: Setup go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v2.2.0
         with:
-          go-version: 1.17
+          go-version: 1.17.x
 
-      - uses: azure/setup-helm@v1
+      - uses: azure/setup-helm@18bc76811624f360dbd7f18c2d4ecb32c7b87bab # v1.1
         with:
-          version: v3.7.2
+          version: v3.8.1
 
       - name: Install tools
         run: |
@@ -34,7 +34,7 @@ jobs:
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
 
-          curl -fsSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.11.1/kind-linux-amd64"
+          curl -fsSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.12.0/kind-linux-amd64"
           chmod +x kind
           sudo mv kind /usr/local/bin/kind
 
@@ -52,10 +52,10 @@ jobs:
           git diff --exit-code
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@27d0a4f181a40b142cce983c5393082c365d1480 # v1.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25 # v1.6.0
 
       - name: Build
         run: |
