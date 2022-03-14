@@ -17,3 +17,4 @@
 go install github.com/goreleaser/goreleaser
 go install golang.org/x/tools/cmd/goimports
 go install github.com/anchore/syft
+go install github.com/sigstore/cosign/cmd/cosign
