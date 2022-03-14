@@ -93,7 +93,7 @@ If you have a chart in current directory and ct installed on the host then you c
 
 With docker it works with:
 
-    docker run -it --workdir=/data --volume ~/.kube/config:/root/.kube/config:ro --volume $(pwd):/data quay.io/helmpack/chart-testing:v3.5.0 ct install --chart-dirs . --charts .
+    docker run -it --network host --workdir=/data --volume ~/.kube/config:/root/.kube/config:ro --volume $(pwd):/data quay.io/helmpack/chart-testing:v3.5.0 ct install --chart-dirs . --charts .
 
 Notice that `workdir` param is important and must be the same as volume mounted.
 
