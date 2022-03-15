@@ -23,10 +23,10 @@ import (
 type Helm struct {
 	exec         exec.ProcessExecutor
 	extraArgs    []string
-	extraSetArgs string
+	extraSetArgs []string
 }
 
-func NewHelm(exec exec.ProcessExecutor, extraArgs []string, extraSetArgs string) Helm {
+func NewHelm(exec exec.ProcessExecutor, extraArgs []string, extraSetArgs []string) Helm {
 	return Helm{
 		exec:         exec,
 		extraArgs:    extraArgs,
