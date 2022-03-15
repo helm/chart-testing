@@ -75,6 +75,9 @@ func addCommonFlags(flags *pflag.FlagSet) {
 		Prints the configuration to stderr (caution: setting this may
 		expose sensitive data when helm-repo-extra-args contains passwords)`))
 	flags.Bool("exclude-deprecated", false, "Skip charts that are marked as deprecated")
+	flags.Bool("debug", false, heredoc.Doc(`
+		Print CLI calls of external tools to stdout (caution: setting this may
+		expose sensitive data when helm-repo-extra-args contains passwords)`))
 }
 
 func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
@@ -95,7 +98,4 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		specified on a per-repo basis with an equals sign as delimiter
 		(e.g. 'myrepo=--username test --password secret'). May be specified
 		multiple times or separate values with commas`))
-	flags.Bool("debug", false, heredoc.Doc(`
-		Print CLI calls of external tools to stdout (caution: setting this may
-		expose sensitive data when helm-repo-extra-args contains passwords)`))
 }

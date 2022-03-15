@@ -41,30 +41,32 @@ var (
 )
 
 type Configuration struct {
-	Remote                string   `mapstructure:"remote"`
-	TargetBranch          string   `mapstructure:"target-branch"`
-	Since                 string   `mapstructure:"since"`
-	BuildId               string   `mapstructure:"build-id"`
-	LintConf              string   `mapstructure:"lint-conf"`
-	ChartYamlSchema       string   `mapstructure:"chart-yaml-schema"`
-	ValidateMaintainers   bool     `mapstructure:"validate-maintainers"`
-	ValidateChartSchema   bool     `mapstructure:"validate-chart-schema"`
-	ValidateYaml          bool     `mapstructure:"validate-yaml"`
-	AdditionalCommands    []string `mapstructure:"additional-commands"`
-	CheckVersionIncrement bool     `mapstructure:"check-version-increment"`
-	ProcessAllCharts      bool     `mapstructure:"all"`
-	Charts                []string `mapstructure:"charts"`
-	ChartRepos            []string `mapstructure:"chart-repos"`
-	ChartDirs             []string `mapstructure:"chart-dirs"`
-	ExcludedCharts        []string `mapstructure:"excluded-charts"`
-	HelmExtraArgs         string   `mapstructure:"helm-extra-args"`
-	HelmRepoExtraArgs     []string `mapstructure:"helm-repo-extra-args"`
-	Debug                 bool     `mapstructure:"debug"`
-	Upgrade               bool     `mapstructure:"upgrade"`
-	SkipMissingValues     bool     `mapstructure:"skip-missing-values"`
-	Namespace             string   `mapstructure:"namespace"`
-	ReleaseLabel          string   `mapstructure:"release-label"`
-	ExcludeDeprecated     bool     `mapstructure:"exclude-deprecated"`
+	Remote                   string   `mapstructure:"remote"`
+	TargetBranch             string   `mapstructure:"target-branch"`
+	Since                    string   `mapstructure:"since"`
+	BuildId                  string   `mapstructure:"build-id"`
+	LintConf                 string   `mapstructure:"lint-conf"`
+	ChartYamlSchema          string   `mapstructure:"chart-yaml-schema"`
+	ValidateMaintainers      bool     `mapstructure:"validate-maintainers"`
+	ValidateChartSchema      bool     `mapstructure:"validate-chart-schema"`
+	ValidateYaml             bool     `mapstructure:"validate-yaml"`
+	AdditionalCommands       []string `mapstructure:"additional-commands"`
+	CheckVersionIncrement    bool     `mapstructure:"check-version-increment"`
+	ProcessAllCharts         bool     `mapstructure:"all"`
+	Charts                   []string `mapstructure:"charts"`
+	ChartRepos               []string `mapstructure:"chart-repos"`
+	ChartDirs                []string `mapstructure:"chart-dirs"`
+	ExcludedCharts           []string `mapstructure:"excluded-charts"`
+	HelmExtraArgs            string   `mapstructure:"helm-extra-args"`
+	HelmRepoExtraArgs        []string `mapstructure:"helm-repo-extra-args"`
+	Debug                    bool     `mapstructure:"debug"`
+	Upgrade                  bool     `mapstructure:"upgrade"`
+	SkipMissingValues        bool     `mapstructure:"skip-missing-values"`
+	Namespace                string   `mapstructure:"namespace"`
+	ReleaseLabel             string   `mapstructure:"release-label"`
+	ExcludeDeprecated        bool     `mapstructure:"exclude-deprecated"`
+	EvaluateDotignoreFiles   bool     `mapstructure:"evaluate-dotignore-files"`
+	ConsideredDotignoreFiles []string `mapstructure:"considered-dotignore-files"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
@@ -83,6 +85,9 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	v.AutomaticEnv()
 	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	v.SetEnvPrefix("CT")
+
+	v.SetDefault("evaluate-dotignore-files", false)
+	v.SetDefault("considered-dotignore-files", []string{".ctignore", ".helmignore"})
 
 	if cfgFile != "" {
 		v.SetConfigFile(cfgFile)

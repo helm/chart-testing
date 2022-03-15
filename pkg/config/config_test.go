@@ -57,6 +57,16 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, "default", cfg.Namespace)
 	require.Equal(t, "release", cfg.ReleaseLabel)
 	require.Equal(t, true, cfg.ExcludeDeprecated)
+	require.Equal(t, true, cfg.EvaluateDotignoreFiles)
+	require.Equal(t, []string{".ctignore", ".helmignore", ".customignore"}, cfg.ConsideredDotignoreFiles)
+}
+
+func TestConfigDefaultValues(t *testing.T) {
+	cfg, _ := LoadConfiguration(filepath.Join("testdata", "default", "test.yaml"), &cobra.Command{
+		Use: "install",
+	}, true)
+	require.Equal(t, false, cfg.EvaluateDotignoreFiles)
+	require.Equal(t, []string{".ctignore", ".helmignore"}, cfg.ConsideredDotignoreFiles)
 }
 
 func Test_findConfigFile(t *testing.T) {

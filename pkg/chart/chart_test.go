@@ -147,13 +147,45 @@ func newTestingMock(cfg config.Configuration) Testing {
 }
 
 func TestComputeChangedChartDirectories(t *testing.T) {
-	actual, err := ct.ComputeChangedChartDirectories()
-	expected := []string{"test_charts/foo", "test_charts/bar", "test_chart_at_root"}
-	for _, chart := range actual {
-		assert.Contains(t, expected, chart)
+	type testData struct {
+		name     string
+		cfg      config.Configuration
+		expected []string
 	}
-	assert.Len(t, actual, 3)
-	assert.Nil(t, err)
+
+	testCases := []testData{
+		{
+			name: "do not evaluate dotignore files",
+			cfg: config.Configuration{
+				ExcludedCharts:         []string{"excluded"},
+				ChartDirs:              []string{"test_charts", "."},
+				EvaluateDotignoreFiles: false,
+			},
+			expected: []string{"test_charts/foo", "test_charts/bar", "test_chart_at_root"},
+		},
+		{
+			name: "evaluate dotignore files",
+			cfg: config.Configuration{
+				ExcludedCharts:           []string{"excluded"},
+				ChartDirs:                []string{"test_charts", "."},
+				EvaluateDotignoreFiles:   true,
+				ConsideredDotignoreFiles: []string{".helmignore", ".ctignore"},
+			},
+			expected: []string{"test_charts/bar"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ct := newTestingMock(tc.cfg)
+			actual, err := ct.ComputeChangedChartDirectories()
+			for _, chart := range actual {
+				assert.Contains(t, tc.expected, chart)
+			}
+			assert.Len(t, actual, len(tc.expected))
+			assert.Nil(t, err)
+		})
+	}
 }
 
 func TestComputeChangedChartDirectoriesWithMultiLevelChart(t *testing.T) {
@@ -486,6 +518,125 @@ func TestChart_AdditionalCommandsAreRun(t *testing.T) {
 			ct.LintChart(&Chart{})
 
 			fakeCmdExecutor.AssertNumberOfCalls(t, "RunCommand", testData.callsRunCommand)
+		})
+	}
+}
+
+func TestComputeDotignoreFile(t *testing.T) {
+	type testData struct {
+		name     string
+		cfg      config.Configuration
+		expected []string
+	}
+
+	testCases := []testData{
+		{
+			name: "do not evaluate dotignore files",
+			cfg: config.Configuration{
+				ChartDirs:              []string{"test_charts", "testdata"},
+				EvaluateDotignoreFiles: false,
+			},
+			expected: []string{},
+		},
+		{
+			name: "evaluate dotignore files",
+			cfg: config.Configuration{
+				ExcludedCharts:           []string{"excluded"},
+				ChartDirs:                []string{"test_charts", "testdata"},
+				EvaluateDotignoreFiles:   true,
+				ConsideredDotignoreFiles: []string{".helmignore", ".ctignore"},
+			},
+			expected: []string{
+				"test_charts/bar/build/*",
+				"test_charts/bar/ci.yaml",
+				"test_charts/bar/**/.DS_Store",
+				"test_charts/bar/**/.git/*",
+				"test_charts/bar/**/.gitignore",
+				"test_charts/bar/**/*.swp",
+				"test_charts/bar/**/*.bak",
+				"test_charts/bar/**/*~",
+				"test_charts/bar/templates/foo.yaml",
+				"test_charts/foo/**/*.yaml",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ct := newTestingMock(tc.cfg)
+			actual, err := ct.computeDotignoreFiles()
+			for _, files := range actual {
+				assert.Contains(t, tc.expected, files)
+			}
+			assert.Len(t, actual, len(tc.expected))
+			assert.Nil(t, err)
+		})
+	}
+}
+
+func TestFilterIgnoredFiles(t *testing.T) {
+	type testData struct {
+		name          string
+		files         []string
+		ignorePattern []string
+		expected      []string
+		cfg           config.Configuration
+	}
+
+	testCases := []testData{
+		{
+			name: "test with common glob patterns",
+			files: []string{
+				"test_chart/ci.yaml",
+				"test_chart/sub1/ci.yaml",
+				"test_chart/.DS_Store",
+				"test_chart/sub1/sub2/.DS_Store",
+				"test_chart/.git/test.txt",
+				"test_chart/sub1/sub2/.git/test.txt",
+				"test_chart/test.swp",
+				"test_chart/sub1/test.swp",
+				"test_chart/sub1/test.swp1",
+				"test_chart/test.bak",
+				"test_chart/sub1/test.bak",
+				"test_chart/test.bak~",
+			},
+			ignorePattern: []string{
+				"test_chart/ci.yaml",
+				"test_chart/**/.DS_Store",
+				"test_chart/**/.git/*",
+				"test_chart/**/*.swp",
+				"test_chart/*.bak",
+				"test_chart/**/*~",
+			},
+			expected: []string{
+				"test_chart/sub1/ci.yaml",
+				"test_chart/sub1/test.swp1",
+				"test_chart/sub1/test.bak",
+			},
+		}, {
+			name: "test with no glob patterns (input == output)",
+			files: []string{
+				"test_chart/a.yaml",
+				"test_chart/sub/b.yaml",
+				"test_chart/sub/c.yaml",
+			},
+			ignorePattern: []string{},
+			expected: []string{
+				"test_chart/a.yaml",
+				"test_chart/sub/b.yaml",
+				"test_chart/sub/c.yaml",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := ct.filterIgnoredFiles(tc.files, tc.ignorePattern, false)
+			for _, file := range actual {
+				assert.Contains(t, tc.expected, file)
+			}
+			assert.Len(t, actual, len(tc.expected))
+			assert.Nil(t, err)
 		})
 	}
 }

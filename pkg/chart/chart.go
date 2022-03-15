@@ -15,10 +15,15 @@
 package chart
 
 import (
+	"bufio"
 	"fmt"
+	"github.com/bmatcuk/doublestar/v4"
+	"io/fs"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -700,6 +705,96 @@ func (t *Testing) computeMergeBase() (string, error) {
 	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Since)
 }
 
+// computeDotignoreFiles identifies .ignore files and extracts the glob-patterns
+func (t *Testing) computeDotignoreFiles() ([]string, error) {
+	cfg := t.config
+	var ignorePatterns []string
+	for _, chart := range cfg.ChartDirs {
+		err := filepath.WalkDir(chart, func(filePath string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if util.StringSliceContains(cfg.ConsideredDotignoreFiles, d.Name()) {
+				if err = t.extractDotignoreFile(filePath, &ignorePatterns); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ignorePatterns, nil
+}
+
+// extractDotignoreFile extracts the glob-patterns from .ignore files
+func (t *Testing) extractDotignoreFile(filePath string, ignorePatterns *[]string) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	commentOrEmpty, err := regexp.Compile("(^#.+|^$)")
+	if err != nil {
+		return err
+	}
+	absolutePath, err := regexp.Compile("^/")
+	if err != nil {
+		return err
+	}
+	directory, err := regexp.Compile("^.*/$")
+	if err != nil {
+		return err
+	}
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if !commentOrEmpty.MatchString(scanner.Text()) {
+			pattern := scanner.Text()
+			if !absolutePath.MatchString(pattern) {
+				pattern = fmt.Sprintf("%s%s", "/**/", pattern)
+			}
+			if directory.MatchString(pattern) {
+				pattern = fmt.Sprintf("%s%s", pattern, "*")
+			}
+			pattern = fmt.Sprintf("%s%s", filepath.ToSlash(path.Dir(filePath)), pattern)
+			*ignorePatterns = append(*ignorePatterns, pattern)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *Testing) filterIgnoredFiles(files []string, ignoreGlobPatterns []string, debug bool) ([]string, error) {
+	var err error
+	var filteredFiles []string
+	if len(ignoreGlobPatterns) == 0 {
+		return files, err
+	}
+
+	for _, filePath := range files {
+		match := false
+		for _, pattern := range ignoreGlobPatterns {
+			if match, err = doublestar.Match(pattern, filePath); err != nil {
+				return nil, err
+			} else if match {
+				break
+			}
+		}
+		if !match {
+			filteredFiles = append(filteredFiles, filePath)
+		} else if debug {
+			fmt.Printf("Changes in '%s' are ignored due to .ignore rules.\n", filePath)
+		}
+	}
+
+	return filteredFiles, nil
+}
+
 // ComputeChangedChartDirectories takes the merge base of HEAD and the configured remote and target branch and computes a
 // slice of changed charts from that in the configured chart directories excluding those configured to be excluded.
 func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
@@ -713,6 +808,17 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, cfg.ChartDirs...)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error creating diff")
+	}
+
+	if cfg.EvaluateDotignoreFiles {
+		ignorePatterns, err := t.computeDotignoreFiles()
+		if err != nil {
+			return nil, errors.Wrap(err, "Error when computing .ignore files")
+		}
+		allChangedChartFiles, err = t.filterIgnoredFiles(allChangedChartFiles, ignorePatterns, cfg.Debug)
+		if err != nil {
+			return nil, errors.Wrap(err, "Error when filtering files based on .ignore rules")
+		}
 	}
 
 	var changedChartDirs []string

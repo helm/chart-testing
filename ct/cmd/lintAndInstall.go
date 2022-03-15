@@ -33,6 +33,7 @@ func newLintAndInstallCmd() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
+	addListChangedFlags(flags)
 	addLintFlags(flags)
 	addInstallFlags(flags)
 	addCommonLintAndInstallFlags(flags)

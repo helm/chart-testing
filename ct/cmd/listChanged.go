@@ -22,6 +22,7 @@ import (
 	"github.com/helm/chart-testing/v3/pkg/chart"
 	"github.com/helm/chart-testing/v3/pkg/config"
 	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 )
 
 func newListChangedCmd() *cobra.Command {
@@ -37,7 +38,17 @@ func newListChangedCmd() *cobra.Command {
 
 	flags := cmd.Flags()
 	addCommonFlags(flags)
+	addListChangedFlags(flags)
 	return cmd
+}
+
+func addListChangedFlags(flags *flag.FlagSet) {
+	flags.Bool("evaluate-dotignore-files", true, heredoc.Doc(`
+		If enabled, all .ctingnore & .helmingore files inside the configured
+		chart directories are evaluated and applied relative to the file path`))
+	flags.StringSlice("considered-dotignore-files", []string{}, heredoc.Doc(`
+		Specifies which .ignore files are considered. May be specified multiple
+		times or separate values with commas. (default .ctignore,.helmignore)`))
 }
 
 func listChanged(cmd *cobra.Command, args []string) error {
