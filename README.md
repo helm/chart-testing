@@ -149,7 +149,7 @@ helm-repo-extra-args:
 #### Evaluate .ignore files during the change detection process
 
 It is possible to exclude files during the change detection process. This can be particularly useful in the
-context of the version increment check. If enabled, all `.ctingnore` & `.helmingore` files inside the
+context of the version increment check. If enabled, all `.ctignore` & `.helmignore` files inside the
 configured chart directories are evaluated by default and applied relative to the file path. All common glob
 patterns including the globstar pattern `**` are supported. In addition, the config parameter
 `considered-dotignore-files` can be adjusted to specify which .ignore files are to be considered.
