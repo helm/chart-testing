@@ -1,5 +1,8 @@
 project_name: chart-testing
 
+env:
+  - COSIGN_EXPERIMENTAL=true
+
 before:
   hooks:
     - go mod download
@@ -97,3 +100,17 @@ docker_manifests:
   image_templates:
   - quay.io/helmpack/chart-testing:{{ .Tag }}-amd64
   - quay.io/helmpack/chart-testing:{{ .Tag }}-arm64
+
+signs:
+  - id: all
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    cmd: cosign
+    args: ["sign-blob", "--output-signature", "${artifact}.sig", "--output-certificate", "${artifact}.pem", "${artifact}"]
+    artifacts: all
+
+docker_signs:
+  - id: images
+    cmd: cosign
+    args: ["sign", "${artifact}"]
+    artifacts: manifests

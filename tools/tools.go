@@ -20,5 +20,6 @@ package tools
 import (
 	_ "github.com/anchore/syft"
 	_ "github.com/goreleaser/goreleaser"
+	_ "github.com/sigstore/cosign/cmd/cosign"
 	_ "golang.org/x/tools/cmd/goimports"
 )
