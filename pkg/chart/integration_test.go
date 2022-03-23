@@ -29,7 +29,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func newTestingHelmIntegration(cfg config.Configuration) Testing {
+func newTestingHelmIntegration(cfg config.Configuration, extraSetArgs string) Testing {
 	fakeMockLinter := new(fakeLinter)
 	procExec := exec.NewProcessExecutor(true)
 	extraArgs := strings.Fields(cfg.HelmExtraArgs)
@@ -40,7 +40,7 @@ func newTestingHelmIntegration(cfg config.Configuration) Testing {
 		chartUtils:       util.ChartUtils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
-		helm:             tool.NewHelm(procExec, extraArgs),
+		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs)),
 		kubectl:          tool.NewKubectl(procExec),
 	}
 }
@@ -51,6 +51,7 @@ func TestInstallChart(t *testing.T) {
 		cfg      config.Configuration
 		chartDir string
 		output   TestResult
+		extraSet string
 	}
 
 	cases := []testCase{
@@ -63,6 +64,7 @@ func TestInstallChart(t *testing.T) {
 			},
 			"test_charts/must-pass-upgrade-install",
 			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
+			"",
 		},
 		{
 			"install only in random namespace",
@@ -71,12 +73,22 @@ func TestInstallChart(t *testing.T) {
 			},
 			"test_charts/must-pass-upgrade-install",
 			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
+			"",
+		},
+		{
+			"install with override set",
+			config.Configuration{
+				Debug: true,
+			},
+			"test_charts/must-pass-upgrade-install",
+			TestResult{mustNewChart("test_charts/must-pass-upgrade-install"), nil},
+			"--set=image.tag=latest",
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			ct := newTestingHelmIntegration(tc.cfg)
+			ct := newTestingHelmIntegration(tc.cfg, tc.extraSet)
 			namespace := tc.cfg.Namespace
 			if namespace != "" {
 				ct.kubectl.CreateNamespace(namespace)
@@ -107,7 +119,7 @@ func TestUpgradeChart(t *testing.T) {
 		Debug:   true,
 		Upgrade: true,
 	}
-	ct := newTestingHelmIntegration(cfg)
+	ct := newTestingHelmIntegration(cfg, "")
 	processError := fmt.Errorf("Error waiting for process: exit status 1")
 
 	cases := []testCase{

@@ -21,14 +21,16 @@ import (
 )
 
 type Helm struct {
-	exec      exec.ProcessExecutor
-	extraArgs []string
+	exec         exec.ProcessExecutor
+	extraArgs    []string
+	extraSetArgs []string
 }
 
-func NewHelm(exec exec.ProcessExecutor, extraArgs []string) Helm {
+func NewHelm(exec exec.ProcessExecutor, extraArgs []string, extraSetArgs []string) Helm {
 	return Helm{
-		exec:      exec,
-		extraArgs: extraArgs,
+		exec:         exec,
+		extraArgs:    extraArgs,
+		extraSetArgs: extraSetArgs,
 	}
 }
 
@@ -56,7 +58,7 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 	}
 
 	if err := h.exec.RunProcess("helm", "install", release, chart, "--namespace", namespace,
-		"--wait", values, h.extraArgs); err != nil {
+		"--wait", values, h.extraArgs, h.extraSetArgs); err != nil {
 		return err
 	}
 
@@ -65,7 +67,7 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 
 func (h Helm) Upgrade(chart string, namespace string, release string) error {
 	if err := h.exec.RunProcess("helm", "upgrade", release, chart, "--namespace", namespace,
-		"--reuse-values", "--wait", h.extraArgs); err != nil {
+		"--reuse-values", "--wait", h.extraArgs, h.extraSetArgs); err != nil {
 		return err
 	}
 
