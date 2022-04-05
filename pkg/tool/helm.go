@@ -39,7 +39,11 @@ func (h Helm) AddRepo(name string, url string, extraArgs []string) error {
 }
 
 func (h Helm) BuildDependencies(chart string) error {
-	return h.exec.RunProcess("helm", "dependency", "build", chart)
+	return h.BuildDependenciesWithArgs(chart, []string{})
+}
+
+func (h Helm) BuildDependenciesWithArgs(chart string, extraArgs []string) error {
+	return h.exec.RunProcess("helm", "dependency", "build", chart, extraArgs)
 }
 
 func (h Helm) LintWithValues(chart string, valuesFile string) error {

@@ -67,6 +67,8 @@ type Git interface {
 //
 // BuildDependencies builds the chart's dependencies
 //
+// BuildDependenciesWithArgs allows passing additional arguments to BuildDependencies
+//
 // LintWithValues runs `helm lint` for the given chart using the specified values file.
 // Pass a zero value for valuesFile in order to run lint without specifying a values file.
 //
@@ -82,6 +84,7 @@ type Git interface {
 type Helm interface {
 	AddRepo(name string, url string, extraArgs []string) error
 	BuildDependencies(chart string) error
+	BuildDependenciesWithArgs(chart string, extraArgs []string) error
 	LintWithValues(chart string, valuesFile string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
 	Upgrade(chart string, namespace string, release string) error
@@ -367,7 +370,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		defer t.git.RemoveWorktree(worktreePath)
 
 		for _, chart := range charts {
-			if err := t.helm.BuildDependencies(t.computePreviousRevisionPath(chart.Path())); err != nil {
+			if err := t.helm.BuildDependenciesWithArgs(t.computePreviousRevisionPath(chart.Path()), t.config.HelmDependencyExtraArgs); err != nil {
 				// Only print error (don't exit) if building dependencies for previous revision fails.
 				fmt.Println(errors.Wrapf(err, "Error building dependencies for previous revision of chart '%s'\n", chart))
 			}
@@ -375,7 +378,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 	}
 
 	for _, chart := range charts {
-		if err := t.helm.BuildDependencies(chart.Path()); err != nil {
+		if err := t.helm.BuildDependenciesWithArgs(chart.Path(), t.config.HelmDependencyExtraArgs); err != nil {
 			return nil, errors.Wrapf(err, "Error building dependencies for chart '%s'", chart)
 		}
 
