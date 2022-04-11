@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/helm/chart-testing/v3/pkg/config"
 	"github.com/helm/chart-testing/v3/pkg/exec"
@@ -41,7 +42,7 @@ func newTestingHelmIntegration(cfg config.Configuration, extraSetArgs string) Te
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
 		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs)),
-		kubectl:          tool.NewKubectl(procExec),
+		kubectl:          tool.NewKubectl(procExec, 30*time.Second),
 	}
 }
 
