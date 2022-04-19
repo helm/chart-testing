@@ -12,7 +12,7 @@ jobs:
     steps:
 
       - name: checkout
-        uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 # v2.4.0
+        uses: actions/checkout@dcd71f646680f2efd8db4afa5ad64fdcba30e748 # v3.0.1
         with:
           fetch-depth: 0
 
