@@ -22,11 +22,11 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v2.2.0
         with:
-          go-version: 1.17.x
+          go-version: 1.18.x
 
       - uses: azure/setup-helm@18bc76811624f360dbd7f18c2d4ecb32c7b87bab # v1.1
         with:
-          version: v3.8.1
+          version: v3.8.2
 
       - name: Install tools
         run: |
