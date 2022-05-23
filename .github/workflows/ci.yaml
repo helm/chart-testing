@@ -27,7 +27,7 @@ jobs:
 
       - uses: azure/setup-helm@18bc76811624f360dbd7f18c2d4ecb32c7b87bab # v1.1
         with:
-          version: v3.8.2
+          version: v3.9.0
 
       - name: Install tools
         run: |
@@ -35,7 +35,7 @@ jobs:
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
 
-          curl -fsSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.12.0/kind-linux-amd64"
+          curl -fsSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.14.0/kind-linux-amd64"
           chmod +x kind
           sudo mv kind /usr/local/bin/kind
 

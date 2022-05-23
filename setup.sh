@@ -16,7 +16,7 @@
 
 set -o errexit
 
-go install github.com/goreleaser/goreleaser@v1.8.2
+go install github.com/goreleaser/goreleaser@v1.9.1
 go install golang.org/x/tools/cmd/goimports@latest
-go install github.com/sigstore/cosign/cmd/cosign@v1.7.2
-go install github.com/anchore/syft@v0.44.1
+go install github.com/sigstore/cosign/cmd/cosign@v1.8.0
+go install github.com/anchore/syft@v0.46.1
