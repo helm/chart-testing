@@ -12,6 +12,11 @@ metadata:
     revision: {{ .Release.Revision | quote }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "nginx.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      revision: {{ .Release.Revision | quote }}
   template:
     metadata:
       labels:
