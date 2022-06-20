@@ -628,7 +628,7 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 				return nil
 			}
 
-			if err := t.helm.Upgrade(oldChart.Path(), namespace, release); err != nil {
+			if err := t.helm.Upgrade(newChart.Path(), namespace, release); err != nil {
 				return err
 			}
 
