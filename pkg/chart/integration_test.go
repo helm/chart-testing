@@ -141,6 +141,12 @@ func TestUpgradeChart(t *testing.T) {
 			"test_charts/mutating-sfs-volumeclaim",
 			processError,
 		},
+		{
+			"change immutable deployment.spec.selector.matchLabels field",
+			"test_charts/simple-deployment",
+			"test_charts/simple-deployment-different-selector",
+			processError,
+		},
 	}
 
 	for _, tc := range cases {
