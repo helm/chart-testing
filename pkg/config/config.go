@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/mitchellh/go-homedir"
 
@@ -41,35 +42,38 @@ var (
 )
 
 type Configuration struct {
-	Remote                  string   `mapstructure:"remote"`
-	TargetBranch            string   `mapstructure:"target-branch"`
-	Since                   string   `mapstructure:"since"`
-	BuildId                 string   `mapstructure:"build-id"`
-	LintConf                string   `mapstructure:"lint-conf"`
-	ChartYamlSchema         string   `mapstructure:"chart-yaml-schema"`
-	ValidateMaintainers     bool     `mapstructure:"validate-maintainers"`
-	ValidateChartSchema     bool     `mapstructure:"validate-chart-schema"`
-	ValidateYaml            bool     `mapstructure:"validate-yaml"`
-	AdditionalCommands      []string `mapstructure:"additional-commands"`
-	CheckVersionIncrement   bool     `mapstructure:"check-version-increment"`
-	ProcessAllCharts        bool     `mapstructure:"all"`
-	Charts                  []string `mapstructure:"charts"`
-	ChartRepos              []string `mapstructure:"chart-repos"`
-	ChartDirs               []string `mapstructure:"chart-dirs"`
-	ExcludedCharts          []string `mapstructure:"excluded-charts"`
-	HelmExtraArgs           string   `mapstructure:"helm-extra-args"`
-	HelmRepoExtraArgs       []string `mapstructure:"helm-repo-extra-args"`
-	HelmDependencyExtraArgs []string `mapstructure:"helm-dependency-extra-args"`
-	Debug                   bool     `mapstructure:"debug"`
-	Upgrade                 bool     `mapstructure:"upgrade"`
-	SkipMissingValues       bool     `mapstructure:"skip-missing-values"`
-	Namespace               string   `mapstructure:"namespace"`
-	ReleaseLabel            string   `mapstructure:"release-label"`
-	ExcludeDeprecated       bool     `mapstructure:"exclude-deprecated"`
+	Remote                  string        `mapstructure:"remote"`
+	TargetBranch            string        `mapstructure:"target-branch"`
+	Since                   string        `mapstructure:"since"`
+	BuildId                 string        `mapstructure:"build-id"`
+	LintConf                string        `mapstructure:"lint-conf"`
+	ChartYamlSchema         string        `mapstructure:"chart-yaml-schema"`
+	ValidateMaintainers     bool          `mapstructure:"validate-maintainers"`
+	ValidateChartSchema     bool          `mapstructure:"validate-chart-schema"`
+	ValidateYaml            bool          `mapstructure:"validate-yaml"`
+	AdditionalCommands      []string      `mapstructure:"additional-commands"`
+	CheckVersionIncrement   bool          `mapstructure:"check-version-increment"`
+	ProcessAllCharts        bool          `mapstructure:"all"`
+	Charts                  []string      `mapstructure:"charts"`
+	ChartRepos              []string      `mapstructure:"chart-repos"`
+	ChartDirs               []string      `mapstructure:"chart-dirs"`
+	ExcludedCharts          []string      `mapstructure:"excluded-charts"`
+	HelmExtraArgs           string        `mapstructure:"helm-extra-args"`
+	HelmRepoExtraArgs       []string      `mapstructure:"helm-repo-extra-args"`
+	HelmDependencyExtraArgs []string      `mapstructure:"helm-dependency-extra-args"`
+	Debug                   bool          `mapstructure:"debug"`
+	Upgrade                 bool          `mapstructure:"upgrade"`
+	SkipMissingValues       bool          `mapstructure:"skip-missing-values"`
+	Namespace               string        `mapstructure:"namespace"`
+	ReleaseLabel            string        `mapstructure:"release-label"`
+	ExcludeDeprecated       bool          `mapstructure:"exclude-deprecated"`
+	KubectlTimeout          time.Duration `mapstructure:"kubectl-timeout"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
 	v := viper.New()
+
+	v.SetDefault("kubectl-timeout", time.Duration(30*time.Second))
 
 	cmd.Flags().VisitAll(func(flag *flag.Flag) {
 		flagName := flag.Name

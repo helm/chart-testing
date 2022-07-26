@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
@@ -57,6 +58,7 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, "default", cfg.Namespace)
 	require.Equal(t, "release", cfg.ReleaseLabel)
 	require.Equal(t, true, cfg.ExcludeDeprecated)
+	require.Equal(t, 120*time.Second, cfg.KubectlTimeout)
 }
 
 func Test_findConfigFile(t *testing.T) {
