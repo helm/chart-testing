@@ -27,7 +27,7 @@ jobs:
 
       - uses: azure/setup-helm@18bc76811624f360dbd7f18c2d4ecb32c7b87bab # v1.1
         with:
-          version: v3.9.0
+          version: v3.9.2
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@68acf3b1adf004ac9c2f0a4259e85c5f66e99bef # v3.0.0
