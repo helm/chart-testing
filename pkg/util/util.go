@@ -17,7 +17,7 @@ package util
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"math/rand"
 	"net"
 	"os"
@@ -28,7 +28,6 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/hashicorp/go-multierror"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -70,7 +69,7 @@ func doFlatten(result []string, items interface{}) ([]string, error) {
 			}
 		}
 	default:
-		return nil, errors.New(fmt.Sprintf("Flatten does not support %T", v))
+		return nil, fmt.Errorf("flatten does not support %T", v)
 	}
 
 	return result, err
@@ -97,7 +96,7 @@ func RandomString(length int) string {
 	n := len(chars)
 	bytes := make([]byte, length)
 	for i := range bytes {
-		bytes[i] = chars[rand.Intn(n)]
+		bytes[i] = chars[rand.Intn(n)] // nolint: gosec
 	}
 	return string(bytes)
 }
@@ -106,9 +105,17 @@ type DirectoryLister struct{}
 
 // ListChildDirs lists subdirectories of parentDir matching the test function.
 func (l DirectoryLister) ListChildDirs(parentDir string, test func(dir string) bool) ([]string, error) {
-	fileInfos, err := ioutil.ReadDir(parentDir)
+	entries, err := os.ReadDir(parentDir)
 	if err != nil {
 		return nil, err
+	}
+	fileInfos := make([]fs.FileInfo, 0, len(entries))
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			return nil, err
+		}
+		fileInfos = append(fileInfos, info)
 	}
 
 	var dirs []string
@@ -123,9 +130,9 @@ func (l DirectoryLister) ListChildDirs(parentDir string, test func(dir string) b
 	return dirs, nil
 }
 
-type ChartUtils struct{}
+type Utils struct{}
 
-func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, error) {
+func (u Utils) LookupChartDir(chartDirs []string, dir string) (string, error) {
 	for _, chartDir := range chartDirs {
 		currentDir := dir
 		for {
@@ -147,16 +154,16 @@ func (u ChartUtils) LookupChartDir(chartDirs []string, dir string) (string, erro
 			}
 		}
 	}
-	return "", errors.New("no chart directory")
+	return "", fmt.Errorf("no chart directory")
 }
 
 // ReadChartYaml attempts to parse Chart.yaml within the specified directory
 // and return a newly allocated ChartYaml object. If no Chart.yaml is present
 // or there is an error unmarshaling the file contents, an error will be returned.
 func ReadChartYaml(dir string) (*ChartYaml, error) {
-	yamlBytes, err := ioutil.ReadFile(filepath.Join(dir, "Chart.yaml"))
+	yamlBytes, err := os.ReadFile(filepath.Join(dir, "Chart.yaml"))
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not read 'Chart.yaml'")
+		return nil, fmt.Errorf("could not read 'Chart.yaml': %w", err)
 	}
 	return UnmarshalChartYaml(yamlBytes)
 }
@@ -166,7 +173,7 @@ func ReadChartYaml(dir string) (*ChartYaml, error) {
 func UnmarshalChartYaml(yamlBytes []byte) (*ChartYaml, error) {
 	chartYaml := &ChartYaml{}
 	if err := yaml.Unmarshal(yamlBytes, chartYaml); err != nil {
-		return nil, errors.Wrap(err, "Could not unmarshal 'Chart.yaml'")
+		return nil, fmt.Errorf("could not unmarshal 'Chart.yaml': %w", err)
 	}
 	return chartYaml, nil
 }
@@ -174,11 +181,11 @@ func UnmarshalChartYaml(yamlBytes []byte) (*ChartYaml, error) {
 func CompareVersions(left string, right string) (int, error) {
 	leftVersion, err := semver.NewVersion(left)
 	if err != nil {
-		return 0, errors.Wrap(err, "Error parsing semantic version")
+		return 0, fmt.Errorf("failed parsing semantic version: %w", err)
 	}
 	rightVersion, err := semver.NewVersion(right)
 	if err != nil {
-		return 0, errors.Wrap(err, "Error parsing semantic version")
+		return 0, fmt.Errorf("failed parsing semantic version: %w", err)
 	}
 	return leftVersion.Compare(rightVersion), nil
 }
@@ -186,11 +193,11 @@ func CompareVersions(left string, right string) (int, error) {
 func BreakingChangeAllowed(left string, right string) (bool, error) {
 	leftVersion, err := semver.NewVersion(left)
 	if err != nil {
-		return false, errors.Wrap(err, "Error parsing semantic version")
+		return false, fmt.Errorf("failed parsing semantic version: %w", err)
 	}
 	rightVersion, err := semver.NewVersion(right)
 	if err != nil {
-		return false, errors.Wrap(err, "Error parsing semantic version")
+		return false, fmt.Errorf("failed parsing semantic version: %w", err)
 	}
 
 	constraintOp := "^"
@@ -199,7 +206,7 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 	}
 	c, err := semver.NewConstraint(fmt.Sprintf("%s %s", constraintOp, leftVersion.String()))
 	if err != nil {
-		return false, errors.Wrap(err, "Error parsing semantic version constraint")
+		return false, fmt.Errorf("failed parsing semantic version constraint: %w", err)
 	}
 
 	minor, reasons := c.Validate(rightVersion)
@@ -208,11 +215,6 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 	}
 
 	return !minor, err
-}
-
-// Deprecated: To be removed in v4. Use PrintDelimiterLineToWriter instead.
-func PrintDelimiterLine(delimiterChar string) {
-	PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
 }
 
 func PrintDelimiterLineToWriter(w io.Writer, delimiterChar string) {
@@ -235,8 +237,8 @@ func SanitizeName(s string, maxLength int) string {
 }
 
 func GetRandomPort() (int, error) {
-	listener, err := net.Listen("tcp", ":0")
-	defer listener.Close()
+	listener, err := net.Listen("tcp", ":0") // nolint: gosec
+	defer listener.Close()                   // nolint: staticcheck
 	if err != nil {
 		return 0, err
 	}

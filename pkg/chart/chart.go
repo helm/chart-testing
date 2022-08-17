@@ -16,7 +16,6 @@ package chart
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +26,6 @@ import (
 	"github.com/helm/chart-testing/v3/pkg/exec"
 	"github.com/helm/chart-testing/v3/pkg/tool"
 	"github.com/helm/chart-testing/v3/pkg/util"
-	"github.com/pkg/errors"
 )
 
 const maxNameLength = 63
@@ -46,7 +44,7 @@ const maxNameLength = 63
 //
 // ListChangedFilesInDirs diffs commit against HEAD and returns changed files for the specified dirs.
 //
-// GetUrlForRemote returns the repo URL for the specified remote.
+// GetURLForRemote returns the repo URL for the specified remote.
 //
 // ValidateRepository checks that the current working directory is a valid git repository,
 // and returns nil if valid.
@@ -57,17 +55,17 @@ type Git interface {
 	RemoveWorktree(path string) error
 	MergeBase(commit1 string, commit2 string) (string, error)
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
-	GetUrlForRemote(remote string) (string, error)
+	GetURLForRemote(remote string) (string, error)
 	ValidateRepository() error
 }
 
 // Helm is the interface that wraps Helm operations
 //
-// AddRepo adds a chart repository to the local Helm configuration
+// # AddRepo adds a chart repository to the local Helm configuration
 //
-// BuildDependencies builds the chart's dependencies
+// # BuildDependencies builds the chart's dependencies
 //
-// BuildDependenciesWithArgs allows passing additional arguments to BuildDependencies
+// # BuildDependenciesWithArgs allows passing additional arguments to BuildDependencies
 //
 // LintWithValues runs `helm lint` for the given chart using the specified values file.
 // Pass a zero value for valuesFile in order to run lint without specifying a values file.
@@ -95,21 +93,21 @@ type Helm interface {
 
 // Kubectl is the interface that wraps kubectl operations
 //
-// DeleteNamespace deletes a namespace
+// # DeleteNamespace deletes a namespace
 //
-// WaitForDeployments waits for a deployment to become ready
+// # WaitForDeployments waits for a deployment to become ready
 //
-// GetPodsforDeployment gets all pods for a deployment
+// # GetPodsforDeployment gets all pods for a deployment
 //
-// GetPods gets pods for the given args
+// # GetPods gets pods for the given args
 //
-// GetEvents prints all events for namespace
+// # GetEvents prints all events for namespace
 //
-// DescribePod prints the pod's description
+// # DescribePod prints the pod's description
 //
-// Logs prints the logs of container
+// # Logs prints the logs of container
 //
-// GetInitContainers gets all init containers of pod
+// # GetInitContainers gets all init containers of pod
 //
 // GetContainers gets all containers of pod
 type Kubectl interface {
@@ -127,7 +125,7 @@ type Kubectl interface {
 
 // Linter is the interface that wrap linting operations
 //
-// YamlLint runs `yamllint` on the specified file with the specified configuration
+// # YamlLint runs `yamllint` on the specified file with the specified configuration
 //
 // Yamale runs `yamale` on the specified file with the specified schema file
 type Linter interface {
@@ -149,10 +147,10 @@ type DirectoryLister interface {
 	ListChildDirs(parentDir string, test func(string) bool) ([]string, error)
 }
 
-// ChartUtils is the interface that wraps chart-related methods
+// Utils is the interface that wraps chart-related methods
 //
 // LookupChartDir looks up the chart's root directory based on some chart file that has changed
-type ChartUtils interface {
+type Utils interface {
 	LookupChartDir(chartDirs []string, dir string) (string, error)
 }
 
@@ -238,7 +236,7 @@ type Testing struct {
 	cmdExecutor              CmdExecutor
 	accountValidator         AccountValidator
 	directoryLister          DirectoryLister
-	chartUtils               ChartUtils
+	utils                    Utils
 	previousRevisionWorktree string
 }
 
@@ -268,7 +266,7 @@ func NewTesting(config config.Configuration, extraSetArgs string) (Testing, erro
 		cmdExecutor:      tool.NewCmdTemplateExecutor(procExec),
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
-		chartUtils:       util.ChartUtils{},
+		utils:            util.Utils{},
 	}
 
 	versionString, err := testing.helm.Version()
@@ -294,10 +292,10 @@ func (t *Testing) computePreviousRevisionPath(fileOrDirPath string) string {
 }
 
 func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestResult, error) {
-	var results []TestResult
+	var results []TestResult // nolint: prealloc
 	chartDirs, err := t.FindChartDirsToBeProcessed()
 	if err != nil {
-		return nil, errors.Wrap(err, "Error identifying charts to process")
+		return nil, fmt.Errorf("failed identifying charts to process: %w", err)
 	} else if len(chartDirs) == 0 {
 		return results, nil
 	}
@@ -310,20 +308,20 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 
 		if t.config.ExcludeDeprecated && chart.yaml.Deprecated {
-			fmt.Printf("Chart '%s' is deprecated and will be ignored because '--exclude-deprecated' is set\n", chart.String())
+			fmt.Printf("Chart %q is deprecated and will be ignored because '--exclude-deprecated' is set\n", chart.String())
 		} else {
 			charts = append(charts, chart)
 		}
 	}
 
 	fmt.Println()
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLineToWriter(os.Stdout, "-")
 	fmt.Println(" Charts to be processed:")
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLineToWriter(os.Stdout, "-")
 	for _, chart := range charts {
 		fmt.Printf(" %s\n", chart)
 	}
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLineToWriter(os.Stdout, "-")
 	fmt.Println()
 
 	repoArgs := map[string][]string{}
@@ -342,7 +340,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 
 		repoExtraArgs := repoArgs[name]
 		if err := t.helm.AddRepo(name, url, repoExtraArgs); err != nil {
-			return nil, errors.Wrapf(err, "Error adding repo: %s=%s", name, url)
+			return nil, fmt.Errorf("failed adding repo: %s=%s: %w", name, url, err)
 		}
 	}
 
@@ -355,31 +353,31 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 	if t.config.Upgrade {
 		mergeBase, err := t.computeMergeBase()
 		if err != nil {
-			return results, errors.Wrap(err, "Error identifying merge base")
+			return results, fmt.Errorf("failed identifying merge base: %w", err)
 		}
 		// Add worktree for the target revision
-		worktreePath, err := ioutil.TempDir("./", "ct_previous_revision")
+		worktreePath, err := os.MkdirTemp("./", "ct_previous_revision")
 		if err != nil {
-			return results, errors.Wrap(err, "Could not create previous revision directory")
+			return results, fmt.Errorf("could not create previous revision directory: %w", err)
 		}
 		t.previousRevisionWorktree = worktreePath
 		err = t.git.AddWorktree(worktreePath, mergeBase)
 		if err != nil {
-			return results, errors.Wrap(err, "Could not create worktree for previous revision")
+			return results, fmt.Errorf("could not create worktree for previous revision: %w", err)
 		}
-		defer t.git.RemoveWorktree(worktreePath)
+		defer t.git.RemoveWorktree(worktreePath) // nolint: errcheck
 
 		for _, chart := range charts {
 			if err := t.helm.BuildDependenciesWithArgs(t.computePreviousRevisionPath(chart.Path()), t.config.HelmDependencyExtraArgs); err != nil {
 				// Only print error (don't exit) if building dependencies for previous revision fails.
-				fmt.Println(errors.Wrapf(err, "Error building dependencies for previous revision of chart '%s'\n", chart))
+				fmt.Printf("failed building dependencies for previous revision of chart %q: %v\n", chart, err.Error())
 			}
 		}
 	}
 
 	for _, chart := range charts {
 		if err := t.helm.BuildDependenciesWithArgs(chart.Path(), t.config.HelmDependencyExtraArgs); err != nil {
-			return nil, errors.Wrapf(err, "Error building dependencies for chart '%s'", chart)
+			return nil, fmt.Errorf("failed building dependencies for chart %q: %w", chart, err)
 		}
 
 		result := action(chart)
@@ -392,7 +390,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		return results, nil
 	}
 
-	return results, errors.New("Error processing charts")
+	return results, fmt.Errorf("failed processing charts")
 }
 
 // LintCharts lints charts (changed, all, specific) depending on the configuration.
@@ -412,7 +410,7 @@ func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
 
 // PrintResults writes test results to stdout.
 func (t *Testing) PrintResults(results []TestResult) {
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLineToWriter(os.Stdout, "-")
 	if results != nil {
 		for _, result := range results {
 			err := result.Error
@@ -425,12 +423,12 @@ func (t *Testing) PrintResults(results []TestResult) {
 	} else {
 		fmt.Println("No chart changes detected.")
 	}
-	util.PrintDelimiterLine("-")
+	util.PrintDelimiterLineToWriter(os.Stdout, "-")
 }
 
 // LintChart lints the specified chart.
 func (t *Testing) LintChart(chart *Chart) TestResult {
-	fmt.Printf("Linting chart '%s'\n", chart)
+	fmt.Printf("Linting chart %q\n", chart)
 
 	result := TestResult{Chart: chart}
 
@@ -483,7 +481,7 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 
 	for _, valuesFile := range valuesFiles {
 		if valuesFile != "" {
-			fmt.Printf("\nLinting chart with values file '%s'...\n\n", valuesFile)
+			fmt.Printf("\nLinting chart with values file %q...\n\n", valuesFile)
 		}
 		if err := t.helm.LintWithValues(chart.Path(), valuesFile); err != nil {
 			result.Error = err
@@ -531,11 +529,11 @@ func (t *Testing) UpgradeChart(chart *Chart) TestResult {
 
 	if breakingChangeAllowed {
 		if err != nil {
-			fmt.Println(errors.Wrap(err, fmt.Sprintf("Skipping upgrade test of '%s' because", chart)))
+			fmt.Printf("Skipping upgrade test of %q because: %v\n", chart, err.Error())
 		}
 		return result
 	} else if err != nil {
-		fmt.Printf("Error comparing chart versions for '%s'\n", chart)
+		fmt.Printf("Error comparing chart versions for %q\n", chart)
 		result.Error = err
 		return result
 	}
@@ -548,7 +546,7 @@ func (t *Testing) UpgradeChart(chart *Chart) TestResult {
 }
 
 func (t *Testing) doInstall(chart *Chart) error {
-	fmt.Printf("Installing chart '%s'...\n", chart)
+	fmt.Printf("Installing chart %q...\n", chart)
 	valuesFiles := chart.ValuesFilePathsForCI()
 
 	// Test with defaults if no values files are specified.
@@ -558,7 +556,7 @@ func (t *Testing) doInstall(chart *Chart) error {
 
 	for _, valuesFile := range valuesFiles {
 		if valuesFile != "" {
-			fmt.Printf("\nInstalling chart with values file '%s'...\n\n", valuesFile)
+			fmt.Printf("\nInstalling chart with values file %q...\n\n", valuesFile)
 		}
 
 		// Use anonymous function. Otherwise deferred calls would pile up
@@ -587,7 +585,7 @@ func (t *Testing) doInstall(chart *Chart) error {
 }
 
 func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) error {
-	fmt.Printf("Testing upgrades of chart '%s' relative to previous revision '%s'...\n", newChart, oldChart)
+	fmt.Printf("Testing upgrades of chart %q relative to previous revision %q...\n", newChart, oldChart)
 	valuesFiles := oldChart.ValuesFilePathsForCI()
 	if len(valuesFiles) == 0 {
 		valuesFiles = append(valuesFiles, "")
@@ -595,10 +593,10 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 	for _, valuesFile := range valuesFiles {
 		if valuesFile != "" {
 			if t.config.SkipMissingValues && !newChart.HasCIValuesFile(valuesFile) {
-				fmt.Printf("Upgrade testing for values file '%s' skipped because a corresponding values file was not found in %s/ci", valuesFile, newChart.Path())
+				fmt.Printf("Upgrade testing for values file %q skipped because a corresponding values file was not found in %s/ci\n", valuesFile, newChart.Path())
 				continue
 			}
-			fmt.Printf("\nInstalling chart '%s' with values file '%s'...\n\n", oldChart, valuesFile)
+			fmt.Printf("\nInstalling chart %q with values file %q...\n\n", oldChart, valuesFile)
 		}
 
 		// Use anonymous function. Otherwise deferred calls would pile up
@@ -617,14 +615,14 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 				if oldChartMustPass {
 					return err
 				}
-				fmt.Println(errors.Wrap(err, fmt.Sprintf("Upgrade testing for release '%s' skipped because of previous revision installation error", release)))
+				fmt.Printf("Upgrade testing for release %q skipped because of previous revision installation error: %v\n", release, err.Error())
 				return nil
 			}
 			if err := t.testRelease(namespace, release, releaseSelector); err != nil {
 				if oldChartMustPass {
 					return err
 				}
-				fmt.Println(errors.Wrap(err, fmt.Sprintf("Upgrade testing for release '%s' skipped because of previous revision testing error", release)))
+				fmt.Printf("Upgrade testing for release %q skipped because of previous revision testing error: %v\n", release, err.Error())
 				return nil
 			}
 
@@ -656,14 +654,14 @@ func (t *Testing) testRelease(namespace, release, releaseSelector string) error 
 func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, releaseSelector string, cleanup func()) {
 	if t.config.Namespace != "" {
 		namespace = t.config.Namespace
-		release, _ = chart.CreateInstallParams(t.config.BuildId)
+		release, _ = chart.CreateInstallParams(t.config.BuildID)
 		releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
 		cleanup = func() {
 			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(namespace, release)
 		}
 	} else {
-		release, namespace = chart.CreateInstallParams(t.config.BuildId)
+		release, namespace = chart.CreateInstallParams(t.config.BuildID)
 		cleanup = func() {
 			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(namespace, release)
@@ -698,7 +696,7 @@ func (t *Testing) FindChartDirsToBeProcessed() ([]string, error) {
 func (t *Testing) computeMergeBase() (string, error) {
 	err := t.git.ValidateRepository()
 	if err != nil {
-		return "", errors.New("Must be in a git repository")
+		return "", fmt.Errorf("must be in a git repository")
 	}
 	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Since)
 }
@@ -715,7 +713,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 
 	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, cfg.ChartDirs...)
 	if err != nil {
-		return nil, errors.Wrap(err, "Error creating diff")
+		return nil, fmt.Errorf("failed creating diff: %w", err)
 	}
 
 	var changedChartDirs []string
@@ -726,7 +724,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		}
 		dir := filepath.Dir(file)
 		// Make sure directory is really a chart directory
-		chartDir, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
+		chartDir, err := t.utils.LookupChartDir(cfg.ChartDirs, dir)
 		chartDirElement := strings.Split(chartDir, "/")
 		if err == nil {
 			if len(chartDirElement) > 1 {
@@ -740,7 +738,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 				changedChartDirs = append(changedChartDirs, chartDir)
 			}
 		} else {
-			fmt.Fprintf(os.Stderr, "Directory '%s' is not a valid chart directory. Skipping...\n", dir)
+			fmt.Fprintf(os.Stderr, "Directory %q is not a valid chart directory. Skipping...\n", dir)
 		}
 	}
 
@@ -756,11 +754,11 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 	for _, chartParentDir := range cfg.ChartDirs {
 		dirs, err := t.directoryLister.ListChildDirs(chartParentDir,
 			func(dir string) bool {
-				_, err := t.chartUtils.LookupChartDir(cfg.ChartDirs, dir)
+				_, err := t.utils.LookupChartDir(cfg.ChartDirs, dir)
 				return err == nil && !util.StringSliceContains(cfg.ExcludedCharts, filepath.Base(dir))
 			})
 		if err != nil {
-			return nil, errors.Wrap(err, "Error reading chart directories")
+			return nil, fmt.Errorf("failed reading chart directories: %w", err)
 		}
 		chartDirs = append(chartDirs, dirs...)
 	}
@@ -770,7 +768,7 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 
 // CheckVersionIncrement checks that the new chart version is greater than the old one using semantic version comparison.
 func (t *Testing) CheckVersionIncrement(chart *Chart) error {
-	fmt.Printf("Checking chart '%s' for a version bump...\n", chart)
+	fmt.Printf("Checking chart %q for a version bump...\n", chart)
 
 	oldVersion, err := t.GetOldChartVersion(chart.Path())
 	if err != nil {
@@ -793,7 +791,7 @@ func (t *Testing) CheckVersionIncrement(chart *Chart) error {
 	}
 
 	if result >= 0 {
-		return errors.New("Chart version not ok. Needs a version bump!")
+		return fmt.Errorf("chart version not ok. needs a version bump! ")
 	}
 
 	fmt.Println("Chart version ok.")
@@ -827,12 +825,12 @@ func (t *Testing) GetOldChartVersion(chartPath string) (string, error) {
 
 	chartYamlContents, err := t.git.Show(chartYamlFile, cfg.Remote, cfg.TargetBranch)
 	if err != nil {
-		return "", errors.Wrap(err, "Error reading old Chart.yaml")
+		return "", fmt.Errorf("failed reading old Chart.yaml: %w", err)
 	}
 
 	chartYaml, err := util.UnmarshalChartYaml([]byte(chartYamlContents))
 	if err != nil {
-		return "", errors.Wrap(err, "Error reading old chart version")
+		return "", fmt.Errorf("failed reading old chart version: %w", err)
 	}
 
 	return chartYaml.Version, nil
@@ -847,22 +845,22 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 
 	if chartYaml.Deprecated {
 		if len(chartYaml.Maintainers) > 0 {
-			return errors.New("Deprecated chart must not have maintainers")
+			return fmt.Errorf("deprecated chart must not have maintainers")
 		}
 		return nil
 	}
 
 	if len(chartYaml.Maintainers) == 0 {
-		return errors.New("Chart doesn't have maintainers")
+		return fmt.Errorf("chart doesn't have maintainers")
 	}
 
-	repoUrl, err := t.git.GetUrlForRemote(t.config.Remote)
+	repoURL, err := t.git.GetURLForRemote(t.config.Remote)
 	if err != nil {
 		return err
 	}
 
 	for _, maintainer := range chartYaml.Maintainers {
-		if err := t.accountValidator.Validate(repoUrl, maintainer.Name); err != nil {
+		if err := t.accountValidator.Validate(repoURL, maintainer.Name); err != nil {
 			return err
 		}
 	}
@@ -871,7 +869,7 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 }
 
 func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string) {
-	util.PrintDelimiterLine("=")
+	util.PrintDelimiterLineToWriter(os.Stdout, "=")
 
 	printDetails(namespace, "Events of namespace", ".", func(item string) error {
 		return t.kubectl.GetEvents(namespace)
@@ -909,7 +907,7 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 
 		containers, err := t.kubectl.GetContainers(namespace, pod)
 		if err != nil {
-			fmt.Println("Error printing logs:", err)
+			fmt.Printf("failed printing logs: %v\n", err.Error())
 			return
 		}
 
@@ -920,24 +918,24 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 			containers...)
 	}
 
-	util.PrintDelimiterLine("=")
+	util.PrintDelimiterLineToWriter(os.Stdout, "=")
 }
 
 func printDetails(resource string, text string, delimiterChar string, printFunc func(item string) error, items ...string) {
 	for _, item := range items {
 		item = strings.Trim(item, "'")
 
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
 		fmt.Printf("==> %s %s\n", text, resource)
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
 
 		if err := printFunc(item); err != nil {
 			fmt.Println("Error printing details:", err)
 			return
 		}
 
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
 		fmt.Printf("<== %s %s\n", text, resource)
-		util.PrintDelimiterLine(delimiterChar)
+		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
 	}
 }

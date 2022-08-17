@@ -47,7 +47,7 @@ func listChanged(cmd *cobra.Command, args []string) error {
 	}
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, printConfig)
 	if err != nil {
-		return fmt.Errorf("Error loading configuration: %s", err)
+		return fmt.Errorf("failed loading configuration: %w", err)
 	}
 
 	emptyExtraSetArgs := ""
@@ -63,5 +63,6 @@ func listChanged(cmd *cobra.Command, args []string) error {
 	for _, dir := range chartDirs {
 		fmt.Println(dir)
 	}
+
 	return nil
 }

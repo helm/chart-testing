@@ -25,7 +25,6 @@ import (
 	"github.com/mitchellh/go-homedir"
 
 	"github.com/helm/chart-testing/v3/pkg/util"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -45,7 +44,7 @@ type Configuration struct {
 	Remote                  string        `mapstructure:"remote"`
 	TargetBranch            string        `mapstructure:"target-branch"`
 	Since                   string        `mapstructure:"since"`
-	BuildId                 string        `mapstructure:"build-id"`
+	BuildID                 string        `mapstructure:"build-id"`
 	LintConf                string        `mapstructure:"lint-conf"`
 	ChartYamlSchema         string        `mapstructure:"chart-yaml-schema"`
 	ValidateMaintainers     bool          `mapstructure:"validate-maintainers"`
@@ -73,14 +72,14 @@ type Configuration struct {
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
 	v := viper.New()
 
-	v.SetDefault("kubectl-timeout", time.Duration(30*time.Second))
+	v.SetDefault("kubectl-timeout", 30*time.Second)
 
 	cmd.Flags().VisitAll(func(flag *flag.Flag) {
 		flagName := flag.Name
 		if flagName != "config" && flagName != "help" {
 			if err := v.BindPFlag(flagName, flag); err != nil {
 				// can't really happen
-				panic(fmt.Sprintln(errors.Wrapf(err, "Error binding flag '%s'", flagName)))
+				panic(fmt.Sprintf("failed binding flag %q: %v\n", flagName, err.Error()))
 			}
 		}
 	})
@@ -105,7 +104,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	if err := v.ReadInConfig(); err != nil {
 		if cfgFile != "" {
 			// Only error out for specified config file. Ignore for default locations.
-			return nil, errors.Wrap(err, "Error loading config file")
+			return nil, fmt.Errorf("failed loading config file: %w", err)
 		}
 	} else {
 		if printConfig {
@@ -118,22 +117,22 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 
 	cfg := &Configuration{}
 	if err := v.Unmarshal(cfg); err != nil {
-		return nil, errors.Wrap(err, "Error unmarshaling configuration")
+		return nil, fmt.Errorf("failed unmarshaling configuration: %w", err)
 	}
 
 	if cfg.ProcessAllCharts && len(cfg.Charts) > 0 {
-		return nil, errors.New("specifying both, '--all' and '--charts', is not allowed")
+		return nil, fmt.Errorf("specifying both, '--all' and '--charts', is not allowed")
 	}
 
 	if cfg.Namespace != "" && cfg.ReleaseLabel == "" {
-		return nil, errors.New("specifying '--namespace' without '--release-label' is not allowed")
+		return nil, fmt.Errorf("specifying '--namespace' without '--release-label' is not allowed")
 	}
 
 	// Disable upgrade (this does some expensive dependency building on previous revisions)
 	// when neither "install" nor "lint-and-install" have not been specified.
 	cfg.Upgrade = isInstall && cfg.Upgrade
 	if (cfg.TargetBranch == "" || cfg.Remote == "") && cfg.Upgrade {
-		return nil, errors.New("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
+		return nil, fmt.Errorf("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
 	}
 
 	chartYamlSchemaPath := cfg.ChartYamlSchema
@@ -141,7 +140,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		var err error
 		cfgFile, err = findConfigFile("chart_schema.yaml")
 		if err != nil && isLint && cfg.ValidateChartSchema {
-			return nil, errors.New("'chart_schema.yaml' neither specified nor found in default locations")
+			return nil, fmt.Errorf("'chart_schema.yaml' neither specified nor found in default locations")
 		}
 		cfg.ChartYamlSchema = cfgFile
 	}
@@ -151,7 +150,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		var err error
 		cfgFile, err = findConfigFile("lintconf.yaml")
 		if err != nil && isLint && cfg.ValidateYaml {
-			return nil, errors.New("'lintconf.yaml' neither specified nor found in default locations")
+			return nil, fmt.Errorf("'lintconf.yaml' neither specified nor found in default locations")
 		}
 		cfg.LintConf = cfgFile
 	}
@@ -202,5 +201,5 @@ func findConfigFile(fileName string) (string, error) {
 		}
 	}
 
-	return "", errors.New(fmt.Sprintf("Config file not found: %s", fileName))
+	return "", fmt.Errorf("config file not found: %s", fileName)
 }

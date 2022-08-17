@@ -38,7 +38,7 @@ func newTestingHelmIntegration(cfg config.Configuration, extraSetArgs string) Te
 		config:           cfg,
 		directoryLister:  util.DirectoryLister{},
 		git:              fakeGit{},
-		chartUtils:       util.ChartUtils{},
+		utils:            util.Utils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
 		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs)),

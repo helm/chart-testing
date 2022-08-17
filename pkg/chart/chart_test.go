@@ -21,7 +21,6 @@ import (
 
 	"github.com/helm/chart-testing/v3/pkg/config"
 	"github.com/helm/chart-testing/v3/pkg/util"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -63,7 +62,7 @@ func (g fakeGit) RemoveWorktree(path string) error {
 	return nil
 }
 
-func (g fakeGit) GetUrlForRemote(remote string) (string, error) {
+func (g fakeGit) GetURLForRemote(remote string) (string, error) {
 	return "git@github.com/helm/chart-testing", nil
 }
 
@@ -77,7 +76,7 @@ func (v fakeAccountValidator) Validate(repoDomain string, account string) error 
 	if strings.HasPrefix(account, "valid") {
 		return nil
 	}
-	return errors.New(fmt.Sprintf("Error validating account: %s", account))
+	return fmt.Errorf("failed validating account: %s", account)
 }
 
 type fakeLinter struct {
@@ -145,7 +144,7 @@ func newTestingMock(cfg config.Configuration) Testing {
 		config:           cfg,
 		directoryLister:  util.DirectoryLister{},
 		git:              fakeGit{},
-		chartUtils:       util.ChartUtils{},
+		utils:            util.Utils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
 		helm:             new(fakeHelm),
@@ -299,7 +298,6 @@ func TestLintChartSchemaValidation(t *testing.T) {
 
 	runTests(true, 0, 1)
 	runTests(false, 0, 0)
-
 }
 
 func TestLintYamlValidation(t *testing.T) {

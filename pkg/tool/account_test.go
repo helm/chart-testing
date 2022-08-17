@@ -10,7 +10,7 @@ import (
 func TestParseOutGitDomain(t *testing.T) {
 	var testDataSlice = []struct {
 		name     string
-		repoUrl  string
+		repoURL  string
 		expected string
 		err      error
 	}{
@@ -28,7 +28,7 @@ func TestParseOutGitDomain(t *testing.T) {
 
 	for _, testData := range testDataSlice {
 		t.Run(testData.name, func(t *testing.T) {
-			actual, err := parseOutGitRepoDomain(testData.repoUrl)
+			actual, err := parseOutGitRepoDomain(testData.repoURL)
 			assert.Equal(t, err, testData.err)
 			assert.Equal(t, testData.expected, actual)
 		})

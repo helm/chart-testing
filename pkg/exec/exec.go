@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/helm/chart-testing/v3/pkg/util"
-	"github.com/pkg/errors"
 )
 
 type ProcessExecutor struct {
@@ -54,7 +53,7 @@ func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string
 	bytes, err := cmd.CombinedOutput()
 
 	if err != nil {
-		return "", errors.Wrap(err, "Error running process")
+		return "", fmt.Errorf("failed running process: %w", err)
 	}
 	return strings.TrimSpace(string(bytes)), nil
 }
@@ -69,7 +68,7 @@ func (p ProcessExecutor) RunProcessInDirAndCaptureStdout(workingDirectory string
 	bytes, err := cmd.Output()
 
 	if err != nil {
-		return "", errors.Wrap(err, "Error running process")
+		return "", fmt.Errorf("failed running process: %w", err)
 	}
 	return strings.TrimSpace(string(bytes)), nil
 }
@@ -82,12 +81,12 @@ func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) 
 
 	outReader, err := cmd.StdoutPipe()
 	if err != nil {
-		return errors.Wrap(err, "Error getting StdoutPipe for command")
+		return fmt.Errorf("failed getting StdoutPipe for command: %w", err)
 	}
 
 	errReader, err := cmd.StderrPipe()
 	if err != nil {
-		return errors.Wrap(err, "Error getting StderrPipe for command")
+		return fmt.Errorf("failed getting StderrPipe for command: %w", err)
 	}
 
 	scanner := bufio.NewScanner(io.MultiReader(outReader, errReader))
@@ -99,12 +98,12 @@ func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) 
 
 	err = cmd.Start()
 	if err != nil {
-		return errors.Wrap(err, "Error running process")
+		return fmt.Errorf("failed running process: %w", err)
 	}
 
 	err = cmd.Wait()
 	if err != nil {
-		return errors.Wrap(err, "Error waiting for process")
+		return fmt.Errorf("failed waiting for process: %w", err)
 	}
 
 	return nil
@@ -116,7 +115,7 @@ func (p ProcessExecutor) CreateProcess(executable string, execArgs ...interface{
 		fmt.Println(">>>", executable, strings.Join(args, " "))
 	}
 	if err != nil {
-		return nil, errors.Wrap(err, "Invalid arguments supplied")
+		return nil, fmt.Errorf("invalid arguments supplied: %w", err)
 	}
 	cmd := exec.Command(executable, args...)
 
@@ -128,25 +127,25 @@ type fn func(port int) error
 func (p ProcessExecutor) RunWithProxy(withProxy fn) error {
 	randomPort, err := util.GetRandomPort()
 	if err != nil {
-		return errors.Wrap(err, "Could not find a free port for running 'kubectl proxy'")
+		return fmt.Errorf("could not find a free port for running 'kubectl proxy': %w", err)
 	}
 
 	fmt.Printf("Running 'kubectl proxy' on port %d\n", randomPort)
 	cmdProxy, err := p.CreateProcess("kubectl", "proxy", fmt.Sprintf("--port=%d", randomPort))
 	if err != nil {
-		return errors.Wrap(err, "Error creating the 'kubectl proxy' process")
+		return fmt.Errorf("failed creating the 'kubectl proxy' process: %w", err)
 	}
 	err = cmdProxy.Start()
 	if err != nil {
-		return errors.Wrap(err, "Error starting the 'kubectl proxy' process")
+		return fmt.Errorf("failed starting the 'kubectl proxy' process: %w", err)
 	}
 
 	err = withProxy(randomPort)
 
-	cmdProxy.Process.Signal(os.Kill)
+	_ = cmdProxy.Process.Signal(os.Kill)
 
 	if err != nil {
-		return errors.Wrap(err, "Error running command with proxy")
+		return fmt.Errorf("failed running command with proxy: %w", err)
 	}
 
 	return nil

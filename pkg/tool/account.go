@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-
-	"github.com/pkg/errors"
 )
 
 type AccountValidator struct{}
@@ -32,12 +30,12 @@ func (v AccountValidator) Validate(repoURL string, account string) error {
 		return err
 	}
 	url := fmt.Sprintf("https://%s/%s", domain, account)
-	response, err := http.Head(url)
+	response, err := http.Head(url) // nolint: gosec
 	if err != nil {
-		return errors.Wrap(err, "Error validating maintainers")
+		return fmt.Errorf("failed validating maintainers: %w", err)
 	}
 	if response.StatusCode != 200 {
-		return fmt.Errorf("Error validating maintainer '%s': %s", account, response.Status)
+		return fmt.Errorf("failed validating maintainer %q: %s", account, response.Status)
 	}
 	return nil
 }
@@ -46,7 +44,7 @@ func parseOutGitRepoDomain(repoURL string) (string, error) {
 	// This works for GitHub, Bitbucket, and Gitlab
 	submatch := repoDomainPattern.FindStringSubmatch(repoURL)
 	if submatch == nil || len(submatch) < 2 {
-		return "", fmt.Errorf("Could not parse git repository domain for '%s'", repoURL)
+		return "", fmt.Errorf("could not parse git repository domain for %q", repoURL)
 	}
 	return submatch[1], nil
 }

@@ -48,7 +48,7 @@ func lintAndInstall(cmd *cobra.Command, args []string) error {
 	}
 	configuration, err := config.LoadConfiguration(cfgFile, cmd, printConfig)
 	if err != nil {
-		return fmt.Errorf("Error loading configuration: %s", err)
+		return fmt.Errorf("failed loading configuration: %w", err)
 	}
 
 	extraSetArgs, err := cmd.Flags().GetString("helm-extra-set-args")
@@ -63,7 +63,7 @@ func lintAndInstall(cmd *cobra.Command, args []string) error {
 	testing.PrintResults(results)
 
 	if err != nil {
-		return fmt.Errorf("Error linting and installing charts: %s", err)
+		return fmt.Errorf("failed linting and installing charts: %w", err)
 	}
 
 	fmt.Println("All charts linted and installed successfully")
