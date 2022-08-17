@@ -12,7 +12,7 @@ jobs:
     steps:
 
       - name: checkout
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.1
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
         with:
           fetch-depth: 0
 
@@ -22,7 +22,7 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3.3.0
         with:
-          go-version: '1.18'
+          go-version-file: './go.mod'
           check-latest: true
 
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1 # v3.3
@@ -40,15 +40,14 @@ jobs:
       - name: Install syft
         uses: anchore/sbom-action/download-syft@b5042e9d19d8b32849779bfe17673ff84aec702d # v0.12.0
 
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@d08cf6ff1575077dee99962540d77ce91c62387d # v1.3.0
+
       - name: Install tools
         run: |
           curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
-
-          curl -fsSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/v0.14.0/kind-linux-amd64"
-          chmod +x kind
-          sudo mv kind /usr/local/bin/kind
 
           ./setup.sh
 
@@ -64,10 +63,10 @@ jobs:
           git diff --exit-code
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@8b122486cedac8393e77aa9734c3528886e4a1a8 # v1.2.0
+        uses: docker/setup-qemu-action@8b122486cedac8393e77aa9734c3528886e4a1a8 # v2.0.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@dc7b9719a96d48369863986a06765841d7ea23f6 # v1.6.0
+        uses: docker/setup-buildx-action@dc7b9719a96d48369863986a06765841d7ea23f6 # v2.0.0
 
       - name: Build
         run: |

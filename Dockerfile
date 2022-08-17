@@ -30,7 +30,7 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG helm_version=v3.9.2
+ARG helm_version=v3.9.3
 LABEL helm_version=$helm_version
 RUN targetArch=$(echo $TARGETPLATFORM | cut -f2 -d '/') \
     && if [ ${targetArch} = "amd64" ]; then \
