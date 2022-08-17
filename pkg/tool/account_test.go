@@ -23,7 +23,7 @@ func TestParseOutGitDomain(t *testing.T) {
 		{"Bitbucket SSH", "git@bitbucket.com:foo/bar", "bitbucket.com", nil},
 		{"Bitbucket HTTPS", "https://bitbucket.com/foo/bar", "bitbucket.com", nil},
 		{"Bitbucket HTTPS with username/password", "https://user:pass@bitbucket.com/foo/bar", "bitbucket.com", nil},
-		{"Invalid", "foo/bar", "", fmt.Errorf("Could not parse git repository domain for 'foo/bar'")},
+		{"Invalid", "foo/bar", "", fmt.Errorf("could not parse git repository domain for \"foo/bar\"")},
 	}
 
 	for _, testData := range testDataSlice {

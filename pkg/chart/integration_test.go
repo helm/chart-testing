@@ -121,7 +121,7 @@ func TestUpgradeChart(t *testing.T) {
 		Upgrade: true,
 	}
 	ct := newTestingHelmIntegration(cfg, "")
-	processError := fmt.Errorf("Error waiting for process: exit status 1")
+	processError := fmt.Errorf("failed waiting for process: exit status 1")
 
 	cases := []testCase{
 		{
