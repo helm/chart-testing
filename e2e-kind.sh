@@ -7,7 +7,7 @@ set -o pipefail
 CLUSTER_NAME=chart-testing
 readonly CLUSTER_NAME
 
-K8S_VERSION=v1.21.2
+K8S_VERSION=v1.22.9
 readonly K8S_VERSION
 
 create_kind_cluster() {
