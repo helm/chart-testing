@@ -15,6 +15,7 @@
 package chart
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -696,7 +697,7 @@ func (t *Testing) FindChartDirsToBeProcessed() ([]string, error) {
 func (t *Testing) computeMergeBase() (string, error) {
 	err := t.git.ValidateRepository()
 	if err != nil {
-		return "", fmt.Errorf("must be in a git repository")
+		return "", errors.New("must be in a git repository")
 	}
 	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Since)
 }
@@ -791,7 +792,7 @@ func (t *Testing) CheckVersionIncrement(chart *Chart) error {
 	}
 
 	if result >= 0 {
-		return fmt.Errorf("chart version not ok. needs a version bump! ")
+		return errors.New("chart version not ok. Needs a version bump! ")
 	}
 
 	fmt.Println("Chart version ok.")
@@ -845,13 +846,13 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 
 	if chartYaml.Deprecated {
 		if len(chartYaml.Maintainers) > 0 {
-			return fmt.Errorf("deprecated chart must not have maintainers")
+			return errors.New("deprecated chart must not have maintainers")
 		}
 		return nil
 	}
 
 	if len(chartYaml.Maintainers) == 0 {
-		return fmt.Errorf("chart doesn't have maintainers")
+		return errors.New("chart doesn't have maintainers")
 	}
 
 	repoURL, err := t.git.GetURLForRemote(t.config.Remote)

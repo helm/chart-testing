@@ -3,6 +3,7 @@ package tool
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -106,9 +107,9 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 		client := retryablehttp.NewClient()
 		client.Logger = nil
 		if resp, err := client.Do(req); err != nil {
-			return fmt.Errorf(errMsg)
+			return fmt.Errorf("%s:%w", errMsg, err)
 		} else if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf(errMsg)
+			return errors.New(errMsg)
 		}
 
 		return nil

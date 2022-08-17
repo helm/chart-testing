@@ -15,6 +15,7 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -154,7 +155,7 @@ func (u Utils) LookupChartDir(chartDirs []string, dir string) (string, error) {
 			}
 		}
 	}
-	return "", fmt.Errorf("no chart directory")
+	return "", errors.New("no chart directory")
 }
 
 // ReadChartYaml attempts to parse Chart.yaml within the specified directory

@@ -15,6 +15,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -121,18 +122,18 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	}
 
 	if cfg.ProcessAllCharts && len(cfg.Charts) > 0 {
-		return nil, fmt.Errorf("specifying both, '--all' and '--charts', is not allowed")
+		return nil, errors.New("specifying both, '--all' and '--charts', is not allowed")
 	}
 
 	if cfg.Namespace != "" && cfg.ReleaseLabel == "" {
-		return nil, fmt.Errorf("specifying '--namespace' without '--release-label' is not allowed")
+		return nil, errors.New("specifying '--namespace' without '--release-label' is not allowed")
 	}
 
 	// Disable upgrade (this does some expensive dependency building on previous revisions)
 	// when neither "install" nor "lint-and-install" have not been specified.
 	cfg.Upgrade = isInstall && cfg.Upgrade
 	if (cfg.TargetBranch == "" || cfg.Remote == "") && cfg.Upgrade {
-		return nil, fmt.Errorf("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
+		return nil, errors.New("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
 	}
 
 	chartYamlSchemaPath := cfg.ChartYamlSchema
@@ -140,7 +141,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		var err error
 		cfgFile, err = findConfigFile("chart_schema.yaml")
 		if err != nil && isLint && cfg.ValidateChartSchema {
-			return nil, fmt.Errorf("'chart_schema.yaml' neither specified nor found in default locations")
+			return nil, errors.New("'chart_schema.yaml' neither specified nor found in default locations")
 		}
 		cfg.ChartYamlSchema = cfgFile
 	}
@@ -150,7 +151,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		var err error
 		cfgFile, err = findConfigFile("lintconf.yaml")
 		if err != nil && isLint && cfg.ValidateYaml {
-			return nil, fmt.Errorf("'lintconf.yaml' neither specified nor found in default locations")
+			return nil, errors.New("'lintconf.yaml' neither specified nor found in default locations")
 		}
 		cfg.LintConf = cfgFile
 	}
