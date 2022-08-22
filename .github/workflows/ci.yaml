@@ -38,7 +38,7 @@ jobs:
         uses: sigstore/cosign-installer@09a077b27eb1310dcfb21981bee195b30ce09de0 # v2.4.0
 
       - name: Install syft
-        uses: anchore/sbom-action/download-syft@bb716408e75840bbb01e839347cd213767269d4a # v0.11.0
+        uses: anchore/sbom-action/download-syft@b5042e9d19d8b32849779bfe17673ff84aec702d # v0.11.0
 
       - name: Install tools
         run: |
