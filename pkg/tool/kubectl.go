@@ -146,7 +146,7 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 }
 
 func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
-	output, err := k.exec.RunProcessAndCaptureOutput("kubectl",
+	output, err := k.exec.RunProcessAndCaptureStdout("kubectl",
 		fmt.Sprintf("--request-timeout=%s", k.timeout),
 		"get", "deployments", "--namespace", namespace, "--selector", selector,
 		"--output", "jsonpath={.items[*].metadata.name}")
