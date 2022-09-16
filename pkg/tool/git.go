@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	"github.com/helm/chart-testing/v3/pkg/exec"
-	"github.com/pkg/errors"
 )
 
 type Git struct {
@@ -59,7 +58,7 @@ func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, er
 	changedChartFilesString, err :=
 		g.exec.RunProcessAndCaptureOutput("git", "diff", "--find-renames", "--name-only", commit, "--", dirs)
 	if err != nil {
-		return nil, errors.Wrap(err, "Error creating diff")
+		return nil, fmt.Errorf("failed creating diff: %w", err)
 	}
 	if changedChartFilesString == "" {
 		return nil, nil
@@ -67,7 +66,7 @@ func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, er
 	return strings.Split(changedChartFilesString, "\n"), nil
 }
 
-func (g Git) GetUrlForRemote(remote string) (string, error) {
+func (g Git) GetURLForRemote(remote string) (string, error) {
 	return g.exec.RunProcessAndCaptureOutput("git", "ls-remote", "--get-url", remote)
 }
 

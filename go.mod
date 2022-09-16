@@ -1,6 +1,6 @@
 module github.com/helm/chart-testing/v3
 
-go 1.18
+go 1.19
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
@@ -9,7 +9,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.13.0

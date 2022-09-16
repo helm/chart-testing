@@ -10,7 +10,7 @@ import (
 func TestParseOutGitDomain(t *testing.T) {
 	var testDataSlice = []struct {
 		name     string
-		repoUrl  string
+		repoURL  string
 		expected string
 		err      error
 	}{
@@ -23,12 +23,12 @@ func TestParseOutGitDomain(t *testing.T) {
 		{"Bitbucket SSH", "git@bitbucket.com:foo/bar", "bitbucket.com", nil},
 		{"Bitbucket HTTPS", "https://bitbucket.com/foo/bar", "bitbucket.com", nil},
 		{"Bitbucket HTTPS with username/password", "https://user:pass@bitbucket.com/foo/bar", "bitbucket.com", nil},
-		{"Invalid", "foo/bar", "", fmt.Errorf("Could not parse git repository domain for 'foo/bar'")},
+		{"Invalid", "foo/bar", "", fmt.Errorf("could not parse git repository domain for \"foo/bar\"")},
 	}
 
 	for _, testData := range testDataSlice {
 		t.Run(testData.name, func(t *testing.T) {
-			actual, err := parseOutGitRepoDomain(testData.repoUrl)
+			actual, err := parseOutGitRepoDomain(testData.repoURL)
 			assert.Equal(t, err, testData.err)
 			assert.Equal(t, testData.expected, actual)
 		})

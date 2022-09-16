@@ -69,8 +69,8 @@ func TestCmdTemplateExecutor_RunCommand(t *testing.T) {
 			if err := templateExecutor.RunCommand(tt.args.cmdTemplate, tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("RunCommand() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			tt.validate(t, processExecutor)
 
+			tt.validate(t, processExecutor)
 		})
 	}
 }
