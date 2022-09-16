@@ -25,9 +25,9 @@ jobs:
           go-version: '1.18'
           check-latest: true
 
-      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1 # v1.1
+      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1 # v3.3
         with:
-          version: v3.9.2
+          version: v3.9.4
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@68acf3b1adf004ac9c2f0a4259e85c5f66e99bef # v3.0.0
