@@ -901,22 +901,24 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 			return
 		}
 
-		printDetails(pod, "Logs of init container", "-",
-			func(item string) error {
-				return t.kubectl.Logs(namespace, pod, item)
-			}, initContainers...)
+		if t.config.PrintLogs {
+			printDetails(pod, "Logs of init container", "-",
+				func(item string) error {
+					return t.kubectl.Logs(namespace, pod, item)
+				}, initContainers...)
 
-		containers, err := t.kubectl.GetContainers(namespace, pod)
-		if err != nil {
-			fmt.Printf("failed printing logs: %v\n", err.Error())
-			return
+			containers, err := t.kubectl.GetContainers(namespace, pod)
+			if err != nil {
+				fmt.Printf("failed printing logs: %v\n", err.Error())
+				return
+			}
+
+			printDetails(pod, "Logs of container", "-",
+				func(item string) error {
+					return t.kubectl.Logs(namespace, pod, item)
+				},
+				containers...)
 		}
-
-		printDetails(pod, "Logs of container", "-",
-			func(item string) error {
-				return t.kubectl.Logs(namespace, pod, item)
-			},
-			containers...)
 	}
 
 	util.PrintDelimiterLineToWriter(os.Stdout, "=")
