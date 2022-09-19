@@ -49,6 +49,8 @@ func NewRootCmd() *cobra.Command {
 	cmd.AddCommand(newVersionCmd())
 	cmd.AddCommand(newGenerateDocsCmd())
 
+	cmd.DisableAutoGenTag = true
+
 	return cmd
 }
 

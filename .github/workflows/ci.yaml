@@ -78,6 +78,27 @@ jobs:
           echo "Building snapshot..."
           ./build.sh
 
+  check-docs:
+    name: check-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+      - uses: actions/setup-go@84cbf8094393cdc5fe1fe1671ff2647332956b1a # v3
+        with:
+          go-version-file: './go.mod'
+          check-latest: true
+
+      - name: generate docs
+        run: |
+          go build -o ct-bin ./ct/main.go
+          ./ct-bin doc-gen
+          git_status="$(git status --porcelain)"
+          if [[ ${git_status} ]]; then
+              echo -e 'Documentation is outdated. Please update the docs\n'
+              echo "${git_status}"
+              exit 1
+          fi
+
   golangci:
     name: lint
     runs-on: ubuntu-latest
