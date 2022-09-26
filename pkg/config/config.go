@@ -68,12 +68,14 @@ type Configuration struct {
 	ReleaseLabel            string        `mapstructure:"release-label"`
 	ExcludeDeprecated       bool          `mapstructure:"exclude-deprecated"`
 	KubectlTimeout          time.Duration `mapstructure:"kubectl-timeout"`
+	PrintLogs               bool          `mapstructure:"print-logs"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
 	v := viper.New()
 
 	v.SetDefault("kubectl-timeout", 30*time.Second)
+	v.SetDefault("print-logs", bool(true))
 
 	cmd.Flags().VisitAll(func(flag *flag.Flag) {
 		flagName := flag.Name
