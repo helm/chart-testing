@@ -26,3 +26,4 @@ namespace: default
 release-label: release
 exclude-deprecated: true
 kubectl-timeout: 120s
+skip-clean-up: true
