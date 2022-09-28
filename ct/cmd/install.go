@@ -80,6 +80,8 @@ func addInstallFlags(flags *flag.FlagSet) {
 	flags.String("helm-extra-set-args", "", heredoc.Doc(`
 		Additional arguments for Helm. Must be passed as a single quoted string
 		(e.g. "--set=name=value"`))
+	flags.Bool("skip-clean-up", false, heredoc.Doc(`
+		Skip resources clean-up. Used if need to continue other flows or keep it around.`))
 }
 
 func install(cmd *cobra.Command, args []string) error {

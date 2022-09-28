@@ -64,6 +64,7 @@ type Configuration struct {
 	Debug                   bool          `mapstructure:"debug"`
 	Upgrade                 bool          `mapstructure:"upgrade"`
 	SkipMissingValues       bool          `mapstructure:"skip-missing-values"`
+	SkipCleanUp             bool          `mapstructure:"skip-clean-up"`
 	Namespace               string        `mapstructure:"namespace"`
 	ReleaseLabel            string        `mapstructure:"release-label"`
 	ExcludeDeprecated       bool          `mapstructure:"exclude-deprecated"`

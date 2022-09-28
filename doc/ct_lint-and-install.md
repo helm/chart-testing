@@ -61,6 +61,7 @@ ct lint-and-install [flags]
                                              This is only used if namespace is specified (default "app.kubernetes.io/instance")
       --remote string                        The name of the Git remote used to identify changed charts (default "origin")
       --since string                         The Git reference used to identify changed charts (default "HEAD")
+      --skip-clean-up                        Skip resources clean-up. Used if need to continue other flows or keep it around.
       --skip-missing-values                  When --upgrade has been passed, this flag will skip testing CI values files from the
                                              previous chart revision if they have been deleted or renamed at the current chart
                                              revision
