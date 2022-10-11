@@ -70,7 +70,7 @@ The following order of precedence applies:
 1. Config file
 
 Note that linting requires config file for [yamllint](https://github.com/adrienverge/yamllint) and [yamale](https://github.com/23andMe/Yamale).
-If not specified, these files are search in the current directory, `$HOME/.ct`, and `/etc/ct`, in that order.
+If not specified, these files are search in the current directory, the `.ct` directory in current directory, `$HOME/.ct`, and `/etc/ct`, in that order.
 Samples are provided in the [etc](etc) folder.
 
 ### Examples

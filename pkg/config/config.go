@@ -35,6 +35,7 @@ var (
 	homeDir, _            = homedir.Dir()
 	configSearchLocations = []string{
 		".",
+		".ct",
 		filepath.Join(homeDir, ".ct"),
 		"/usr/local/etc/ct",
 		"/etc/ct",
