@@ -102,4 +102,7 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 	flags.Bool("debug", false, heredoc.Doc(`
 		Print CLI calls of external tools to stdout (caution: setting this may
 		expose sensitive data when helm-repo-extra-args contains passwords)`))
+	flags.StringSlice("extra-values", []string{}, heredoc.Doc(`
+		Additional value files (will be deep merged with defaults values for charts
+		as well as value files of the format "*-values.yaml" under the "ci" folder`))
 }
