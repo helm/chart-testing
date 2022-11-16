@@ -84,7 +84,7 @@ type Helm interface {
 	AddRepo(name string, url string, extraArgs []string) error
 	BuildDependencies(chart string) error
 	BuildDependenciesWithArgs(chart string, extraArgs []string) error
-	LintWithValues(chart string, valuesFile string) error
+	LintWithValues(chart string, valuesFile []string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
 	Upgrade(chart string, namespace string, release string) error
 	Test(namespace string, release string) error
@@ -481,10 +481,16 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 	}
 
 	for _, valuesFile := range valuesFiles {
+		// Lint with extra value files if specified
+		extraValues := append(t.config.ExtraValues, valuesFile)
+
 		if valuesFile != "" {
-			fmt.Printf("\nLinting chart with values file %q...\n\n", valuesFile)
+			fmt.Printf("\nLinting chart with values file %q...", valuesFile)
 		}
-		if err := t.helm.LintWithValues(chart.Path(), valuesFile); err != nil {
+		if len(t.config.ExtraValues) > 0 {
+			fmt.Printf("\nIncluding extra value files: %s...\n\n", strings.Join(t.config.ExtraValues, ", "))
+		}
+		if err := t.helm.LintWithValues(chart.Path(), extraValues); err != nil {
 			result.Error = err
 			break
 		}
