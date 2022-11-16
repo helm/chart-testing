@@ -55,8 +55,6 @@ func (h Helm) LintWithValues(chart string, valuesFiles []string) error {
 		}
 	}
 
-	fmt.Print("cmd line argument sent :", values)
-
 	return h.exec.RunProcess("helm", "lint", chart, values)
 }
 
