@@ -46,11 +46,16 @@ func (h Helm) BuildDependenciesWithArgs(chart string, extraArgs []string) error 
 	return h.exec.RunProcess("helm", "dependency", "build", chart, extraArgs)
 }
 
-func (h Helm) LintWithValues(chart string, valuesFile string) error {
+func (h Helm) LintWithValues(chart string, valuesFiles []string) error {
 	var values []string
-	if valuesFile != "" {
-		values = []string{"--values", valuesFile}
+	for _, valuesFile := range valuesFiles {
+
+		if valuesFile != "" {
+			values = append(values, []string{"--values", valuesFile}...)
+		}
 	}
+
+	fmt.Print("cmd line argument sent :", values)
 
 	return h.exec.RunProcess("helm", "lint", chart, values)
 }
