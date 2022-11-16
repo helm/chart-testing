@@ -71,6 +71,7 @@ type Configuration struct {
 	ExcludeDeprecated       bool          `mapstructure:"exclude-deprecated"`
 	KubectlTimeout          time.Duration `mapstructure:"kubectl-timeout"`
 	PrintLogs               bool          `mapstructure:"print-logs"`
+	ExtraValues             []string      `mapstructure:"extra-values"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
