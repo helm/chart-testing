@@ -20,7 +20,7 @@ jobs:
         uses: ludeeus/action-shellcheck@94e0aab03ca135d11a35e5bfc14e6746dc56e7e9 # v1.1.0
 
       - name: Setup go
-        uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3.3.0
+        uses: actions/setup-go@d0a58c1c4d2b25278816e339b944508c875f3613 # v3.3.0
         with:
           go-version-file: './go.mod'
           check-latest: true
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-      - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3
+      - uses: actions/setup-go@d0a58c1c4d2b25278816e339b944508c875f3613 # v3
         with:
           go-version-file: './go.mod'
           check-latest: true
@@ -104,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-      - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3
+      - uses: actions/setup-go@d0a58c1c4d2b25278816e339b944508c875f3613 # v3
         with:
           go-version-file: './go.mod'
           check-latest: true
