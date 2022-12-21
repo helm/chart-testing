@@ -31,8 +31,8 @@ func NewGit(exec exec.ProcessExecutor) Git {
 	}
 }
 
-func (g Git) FileExistsOnBranch(file string, remote string, branch string) bool {
-	fileSpec := fmt.Sprintf("%s/%s:%s", remote, branch, file)
+func (g Git) FileExistsOnBranch(commit string, file string) bool {
+	fileSpec := fmt.Sprintf("%s:%s", commit, file)
 	_, err := g.exec.RunProcessAndCaptureOutput("git", "cat-file", "-e", fileSpec)
 	return err == nil
 }
@@ -45,8 +45,8 @@ func (g Git) RemoveWorktree(path string) error {
 	return g.exec.RunProcess("git", "worktree", "remove", path)
 }
 
-func (g Git) Show(file string, remote string, branch string) (string, error) {
-	fileSpec := fmt.Sprintf("%s/%s:%s", remote, branch, file)
+func (g Git) Show(commit string, file string) (string, error) {
+	fileSpec := fmt.Sprintf("%s:%s", commit, file)
 	return g.exec.RunProcessAndCaptureOutput("git", "show", fileSpec)
 }
 

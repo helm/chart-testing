@@ -27,11 +27,11 @@ import (
 
 type fakeGit struct{}
 
-func (g fakeGit) FileExistsOnBranch(file string, remote string, branch string) bool {
+func (g fakeGit) FileExistsOnBranch(commit string, file string) bool {
 	return true
 }
 
-func (g fakeGit) Show(file string, remote string, branch string) (string, error) {
+func (g fakeGit) Show(commit string, file string) (string, error) {
 	return "", nil
 }
 

@@ -50,8 +50,8 @@ const maxNameLength = 63
 // ValidateRepository checks that the current working directory is a valid git repository,
 // and returns nil if valid.
 type Git interface {
-	FileExistsOnBranch(file string, remote string, branch string) bool
-	Show(file string, remote string, branch string) (string, error)
+	FileExistsOnBranch(commit string, file string) bool
+	Show(file string, commit string) (string, error)
 	AddWorktree(path string, ref string) error
 	RemoveWorktree(path string) error
 	MergeBase(commit1 string, commit2 string) (string, error)
@@ -820,15 +820,18 @@ func (t *Testing) checkBreakingChangeAllowed(chart *Chart) (allowed bool, err er
 
 // GetOldChartVersion gets the version of the old Chart.yaml file from the target branch.
 func (t *Testing) GetOldChartVersion(chartPath string) (string, error) {
-	cfg := t.config
+	mergeBase, err := t.computeMergeBase()
+	if err != nil {
+		return "", err
+	}
 
 	chartYamlFile := filepath.Join(chartPath, "Chart.yaml")
-	if !t.git.FileExistsOnBranch(chartYamlFile, cfg.Remote, cfg.TargetBranch) {
-		fmt.Printf("Unable to find chart on %s. New chart detected.\n", cfg.TargetBranch)
+	if !t.git.FileExistsOnBranch(mergeBase, chartYamlFile) {
+		fmt.Printf("Unable to find chart on commit %s. New chart detected.\n", mergeBase)
 		return "", nil
 	}
 
-	chartYamlContents, err := t.git.Show(chartYamlFile, cfg.Remote, cfg.TargetBranch)
+	chartYamlContents, err := t.git.Show(mergeBase, chartYamlFile)
 	if err != nil {
 		return "", fmt.Errorf("failed reading old Chart.yaml: %w", err)
 	}
