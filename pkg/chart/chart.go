@@ -708,7 +708,7 @@ func (t *Testing) computeMergeBase() (string, error) {
 	}
 
 	if !t.git.BranchExists(t.config.TargetBranch) {
-		return "", errors.New(fmt.Sprintf("targetBranch '%s' does not exist", t.config.TargetBranch))
+		return "", fmt.Errorf("targetBranch '%s' does not exist", t.config.TargetBranch)
 	}
 
 	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Since)
