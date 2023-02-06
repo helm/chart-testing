@@ -1,29 +1,29 @@
 linters:
   enable:
-  - asciicheck
-  - deadcode
-  - depguard
-  - errcheck
-  - errorlint
-  - gofmt
-  - goimports
-  - gosec
-  - gocritic
-  - importas
-  - prealloc
-  - revive
-  - misspell
-  - stylecheck
-  - unconvert
-  - whitespace
+    - asciicheck
+    - depguard
+    - errcheck
+    - errorlint
+    - gofmt
+    - goimports
+    - gosec
+    - gocritic
+    - importas
+    - prealloc
+    - revive
+    - misspell
+    - stylecheck
+    - unconvert
+    - unused
+    - whitespace
 output:
   uniq-by-line: false
 issues:
   exclude-rules:
-  - path: _test\.go
-    linters:
-    - errcheck
-    - gosec
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
   max-issues-per-linter: 0
   max-same-issues: 0
 run:

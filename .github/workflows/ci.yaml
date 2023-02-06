@@ -27,7 +27,7 @@ jobs:
 
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
         with:
-          version: v3.9.4
+          version: v3.11.0
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v3.1.0
@@ -111,4 +111,4 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5 # v3
         with:
-          version: v1.48.0
+          version: v1.51.0
