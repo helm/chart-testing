@@ -51,7 +51,7 @@ func Flatten(items []interface{}) ([]string, error) {
 }
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano())) // nolint: gosec
 }
 
 func doFlatten(result []string, items interface{}) ([]string, error) {
