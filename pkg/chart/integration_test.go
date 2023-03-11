@@ -41,7 +41,7 @@ func newTestingHelmIntegration(cfg config.Configuration, extraSetArgs string) Te
 		utils:            util.Utils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
-		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs)),
+		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs), cfg.ReuseValues),
 		kubectl:          tool.NewKubectl(procExec, 30*time.Second),
 	}
 }

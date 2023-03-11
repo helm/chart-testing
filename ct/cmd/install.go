@@ -82,6 +82,9 @@ func addInstallFlags(flags *flag.FlagSet) {
 		(e.g. "--set=name=value"`))
 	flags.Bool("skip-clean-up", false, heredoc.Doc(`
 		Skip resources clean-up. Used if need to continue other flows or keep it around.`))
+	flags.Bool("reuse-values", true, heredoc.Doc(`
+		Can be reset to disable adding the reuse-values flag for upgrades when
+		using the --upgrade flag.`))
 }
 
 func install(cmd *cobra.Command, args []string) error {

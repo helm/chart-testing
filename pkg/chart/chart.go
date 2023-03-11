@@ -260,7 +260,7 @@ func NewTesting(config config.Configuration, extraSetArgs string) (Testing, erro
 
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs)),
+		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs), config.ReuseValues),
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec, config.KubectlTimeout),
 		linter:           tool.NewLinter(procExec),
