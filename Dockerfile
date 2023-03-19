@@ -12,12 +12,12 @@ RUN apk --no-cache add \
     pip install --upgrade pip==21.0.1
 
 # Install a YAML Linter
-ARG yamllint_version=1.26.3
+ARG yamllint_version=1.29.0
 LABEL yamllint_version=$yamllint_version
 RUN pip install "yamllint==$yamllint_version"
 
 # Install Yamale YAML schema validator
-ARG yamale_version=4.0.0
+ARG yamale_version=4.0.4
 LABEL yamale_version=$yamale_version
 RUN pip install "yamale==$yamale_version"
 
