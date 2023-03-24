@@ -76,7 +76,7 @@ func addLintFlags(flags *flag.FlagSet) {
             Example: "helm unittest --helm3 -f tests/*.yaml {{ .Path }}"`))
 }
 
-func lint(cmd *cobra.Command, args []string) error {
+func lint(cmd *cobra.Command, _ []string) error {
 	fmt.Println("Linting charts...")
 
 	printConfig, err := cmd.Flags().GetBool("print-config")

@@ -40,7 +40,7 @@ func newListChangedCmd() *cobra.Command {
 	return cmd
 }
 
-func listChanged(cmd *cobra.Command, args []string) error {
+func listChanged(cmd *cobra.Command, _ []string) error {
 	printConfig, err := cmd.Flags().GetBool("print-config")
 	if err != nil {
 		return err
