@@ -59,7 +59,7 @@ main() {
         shift
     done
 
-    local goreleaser_args=(--rm-dist)
+    local goreleaser_args=(--clean)
 
     if [[ -n "$debug" ]]; then
         goreleaser_args+=(--debug)

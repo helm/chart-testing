@@ -33,7 +33,8 @@ builds:
         -X github.com/helm/chart-testing/v3/ct/cmd.BuildDate={{ .Date }}
 
 archives:
-  - format_overrides:
+  - rlcp: true
+    format_overrides:
       - goos: windows
         format: zip
     files:
@@ -114,3 +115,6 @@ docker_signs:
     cmd: cosign
     args: ["sign", "${artifact}"]
     artifacts: manifests
+
+changelog:
+  use: github-native
