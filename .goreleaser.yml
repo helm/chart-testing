@@ -1,14 +1,14 @@
 project_name: chart-testing
 
 env:
-  - COSIGN_EXPERIMENTAL=true
+  - COSIGN_YES=true
 
 before:
   hooks:
     - go mod download
 
 sboms:
-- artifacts: archive
+  - artifacts: archive
 
 builds:
   - main: ct/main.go
@@ -92,14 +92,14 @@ dockers:
       - etc/lintconf.yaml
 
 docker_manifests:
-- name_template: quay.io/helmpack/chart-testing:latest
-  image_templates:
-  - quay.io/helmpack/chart-testing:latest-amd64
-  - quay.io/helmpack/chart-testing:latest-arm64
-- name_template: quay.io/helmpack/chart-testing:{{ .Tag }}
-  image_templates:
-  - quay.io/helmpack/chart-testing:{{ .Tag }}-amd64
-  - quay.io/helmpack/chart-testing:{{ .Tag }}-arm64
+  - name_template: quay.io/helmpack/chart-testing:latest
+    image_templates:
+      - quay.io/helmpack/chart-testing:latest-amd64
+      - quay.io/helmpack/chart-testing:latest-arm64
+  - name_template: quay.io/helmpack/chart-testing:{{ .Tag }}
+    image_templates:
+      - quay.io/helmpack/chart-testing:{{ .Tag }}-amd64
+      - quay.io/helmpack/chart-testing:{{ .Tag }}-arm64
 
 signs:
   - id: all
