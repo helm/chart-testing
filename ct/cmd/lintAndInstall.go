@@ -39,7 +39,7 @@ func newLintAndInstallCmd() *cobra.Command {
 	return cmd
 }
 
-func lintAndInstall(cmd *cobra.Command, args []string) error {
+func lintAndInstall(cmd *cobra.Command, _ []string) error {
 	fmt.Println("Linting and installing charts...")
 
 	printConfig, err := cmd.Flags().GetBool("print-config")

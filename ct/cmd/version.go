@@ -37,7 +37,7 @@ func newVersionCmd() *cobra.Command {
 	}
 }
 
-func version(cmd *cobra.Command, args []string) {
+func version(_ *cobra.Command, _ []string) {
 	fmt.Println("Version:\t", Version)
 	fmt.Println("Git commit:\t", GitCommit)
 	fmt.Println("Date:\t\t", BuildDate)

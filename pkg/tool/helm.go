@@ -61,21 +61,13 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 		values = []string{"--values", valuesFile}
 	}
 
-	if err := h.exec.RunProcess("helm", "install", release, chart, "--namespace", namespace,
-		"--wait", values, h.extraArgs, h.extraSetArgs); err != nil {
-		return err
-	}
-
-	return nil
+	return h.exec.RunProcess("helm", "install", release, chart, "--namespace", namespace,
+		"--wait", values, h.extraArgs, h.extraSetArgs)
 }
 
 func (h Helm) Upgrade(chart string, namespace string, release string) error {
-	if err := h.exec.RunProcess("helm", "upgrade", release, chart, "--namespace", namespace,
-		"--reuse-values", "--wait", h.extraArgs, h.extraSetArgs); err != nil {
-		return err
-	}
-
-	return nil
+	return h.exec.RunProcess("helm", "upgrade", release, chart, "--namespace", namespace,
+		"--reuse-values", "--wait", h.extraArgs, h.extraSetArgs)
 }
 
 func (h Helm) Test(namespace string, release string) error {

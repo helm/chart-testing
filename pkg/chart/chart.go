@@ -650,10 +650,8 @@ func (t *Testing) testRelease(namespace, release, releaseSelector string) error 
 	if err := t.kubectl.WaitForDeployments(namespace, releaseSelector); err != nil {
 		return err
 	}
-	if err := t.helm.Test(namespace, release); err != nil {
-		return err
-	}
-	return nil
+
+	return t.helm.Test(namespace, release)
 }
 
 func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, releaseSelector string, cleanup func()) {

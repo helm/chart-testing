@@ -84,7 +84,7 @@ func addInstallFlags(flags *flag.FlagSet) {
 		Skip resources clean-up. Used if need to continue other flows or keep it around.`))
 }
 
-func install(cmd *cobra.Command, args []string) error {
+func install(cmd *cobra.Command, _ []string) error {
 	fmt.Println("Installing charts...")
 
 	printConfig, err := cmd.Flags().GetBool("print-config")
