@@ -115,3 +115,6 @@ docker_signs:
     cmd: cosign
     args: ["sign", "${artifact}"]
     artifacts: manifests
+
+changelog:
+  use: github-native
