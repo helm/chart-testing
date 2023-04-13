@@ -49,6 +49,8 @@ const maxNameLength = 63
 //
 // ValidateRepository checks that the current working directory is a valid git repository,
 // and returns nil if valid.
+//
+// BranchExists checks whether a given branch exists in the git repository.
 type Git interface {
 	FileExistsOnBranch(file string, remote string, branch string) bool
 	Show(file string, remote string, branch string) (string, error)
@@ -58,6 +60,7 @@ type Git interface {
 	ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error)
 	GetURLForRemote(remote string) (string, error)
 	ValidateRepository() error
+	BranchExists(branch string) bool
 }
 
 // Helm is the interface that wraps Helm operations
@@ -701,6 +704,11 @@ func (t *Testing) computeMergeBase() (string, error) {
 	if err != nil {
 		return "", errors.New("must be in a git repository")
 	}
+
+	if !t.git.BranchExists(t.config.TargetBranch) {
+		return "", fmt.Errorf("targetBranch '%s' does not exist", t.config.TargetBranch)
+	}
+
 	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Since)
 }
 

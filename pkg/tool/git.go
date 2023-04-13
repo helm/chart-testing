@@ -74,3 +74,8 @@ func (g Git) ValidateRepository() error {
 	_, err := g.exec.RunProcessAndCaptureOutput("git", "rev-parse", "--is-inside-work-tree")
 	return err
 }
+
+func (g Git) BranchExists(branch string) bool {
+	_, err := g.exec.RunProcessAndCaptureOutput("git", "rev-parse", "--verify", branch)
+	return err == nil
+}

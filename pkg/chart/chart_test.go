@@ -70,6 +70,10 @@ func (g fakeGit) ValidateRepository() error {
 	return nil
 }
 
+func (g fakeGit) BranchExists(branch string) bool {
+	return true
+}
+
 type fakeAccountValidator struct{}
 
 func (v fakeAccountValidator) Validate(repoDomain string, account string) error {
