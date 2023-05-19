@@ -95,6 +95,9 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		Additional chart repositories for dependency resolutions.
 		Repositories should be formatted as 'name=url' (ex: local=http://127.0.0.1:8879/charts).
 		May be specified multiple times or separate values with commas`))
+	flags.String("helm-extra-args", "", heredoc.Doc(`
+		Additional arguments for Helm. Must be passed as a single quoted string
+		(e.g. "--timeout 500s")`))
 	flags.StringSlice("helm-repo-extra-args", []string{}, heredoc.Doc(`
 		Additional arguments for the 'helm repo add' command to be
 		specified on a per-repo basis with an equals sign as delimiter

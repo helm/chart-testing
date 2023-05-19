@@ -52,7 +52,7 @@ func (h Helm) LintWithValues(chart string, valuesFile string) error {
 		values = []string{"--values", valuesFile}
 	}
 
-	return h.exec.RunProcess("helm", "lint", chart, values)
+	return h.exec.RunProcess("helm", "lint", chart, values, h.extraArgs)
 }
 
 func (h Helm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {

@@ -54,26 +54,26 @@ func newLintCmd() *cobra.Command {
 
 func addLintFlags(flags *flag.FlagSet) {
 	flags.String("lint-conf", "", heredoc.Doc(`
-			The config file for YAML linting. If not specified, 'lintconf.yaml'
-			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-			that order`))
+		The config file for YAML linting. If not specified, 'lintconf.yaml'
+		is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+		that order`))
 	flags.String("chart-yaml-schema", "", heredoc.Doc(`
-			The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
-			is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
-			that order.`))
+		The schema for chart.yml validation. If not specified, 'chart_schema.yaml'
+		is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
+		that order.`))
 	flags.Bool("validate-maintainers", true, heredoc.Doc(`
-			Enable validation of maintainer account names in chart.yml.
-			Works for GitHub, GitLab, and Bitbucket`))
+		Enable validation of maintainer account names in chart.yml.
+		Works for GitHub, GitLab, and Bitbucket`))
 	flags.Bool("check-version-increment", true, "Activates a check for chart version increments")
 	flags.Bool("validate-chart-schema", true, heredoc.Doc(`
-			Enable schema validation of 'Chart.yaml' using Yamale`))
+		Enable schema validation of 'Chart.yaml' using Yamale`))
 	flags.Bool("validate-yaml", true, heredoc.Doc(`
-			Enable linting of 'Chart.yaml' and values files`))
+		Enable linting of 'Chart.yaml' and values files`))
 	flags.StringSlice("additional-commands", []string{}, heredoc.Doc(`
-            Additional commands to run per chart (default: [])
-            Commands will be executed in the same order as provided in the list and will
-            be rendered with go template before being executed.
-            Example: "helm unittest --helm3 -f tests/*.yaml {{ .Path }}"`))
+		Additional commands to run per chart (default: [])
+		Commands will be executed in the same order as provided in the list and will
+		be rendered with go template before being executed.
+		Example: "helm unittest --helm3 -f tests/*.yaml {{ .Path }}"`))
 }
 
 func lint(cmd *cobra.Command, _ []string) error {
