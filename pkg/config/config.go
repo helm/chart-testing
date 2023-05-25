@@ -71,6 +71,7 @@ type Configuration struct {
 	ExcludeDeprecated       bool          `mapstructure:"exclude-deprecated"`
 	KubectlTimeout          time.Duration `mapstructure:"kubectl-timeout"`
 	PrintLogs               bool          `mapstructure:"print-logs"`
+	GithubGroups            bool          `mapstructure:"github-groups"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
@@ -173,9 +174,13 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 }
 
 func printCfg(cfg *Configuration) {
-	util.PrintDelimiterLineToWriter(os.Stderr, "-")
-	fmt.Fprintln(os.Stderr, " Configuration")
-	util.PrintDelimiterLineToWriter(os.Stderr, "-")
+	if !cfg.GithubGroups {
+		util.PrintDelimiterLineToWriter(os.Stderr, "-")
+		fmt.Fprintln(os.Stderr, " Configuration")
+		util.PrintDelimiterLineToWriter(os.Stderr, "-")
+	} else {
+		util.GithubGroupsBegin(os.Stderr, "Configuration")
+	}
 
 	e := reflect.ValueOf(cfg).Elem()
 	typeOfCfg := e.Type()
@@ -191,7 +196,11 @@ func printCfg(cfg *Configuration) {
 		fmt.Fprintf(os.Stderr, pattern, typeOfCfg.Field(i).Name, e.Field(i).Interface())
 	}
 
-	util.PrintDelimiterLineToWriter(os.Stderr, "-")
+	if !cfg.GithubGroups {
+		util.PrintDelimiterLineToWriter(os.Stderr, "-")
+	} else {
+		util.GithubGroupsEnd(os.Stderr)
+	}
 }
 
 func findConfigFile(fileName string) (string, error) {

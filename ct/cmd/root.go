@@ -77,6 +77,9 @@ func addCommonFlags(flags *pflag.FlagSet) {
 		Prints the configuration to stderr (caution: setting this may
 		expose sensitive data when helm-repo-extra-args contains passwords)`))
 	flags.Bool("exclude-deprecated", false, "Skip charts that are marked as deprecated")
+	flags.Bool("github-groups", false, heredoc.Doc(`
+		Change the delimiters for github to create collapsible groups
+		for command output`))
 }
 
 func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {

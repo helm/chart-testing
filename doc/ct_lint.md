@@ -50,6 +50,8 @@ ct lint [flags]
       --exclude-deprecated                   Skip charts that are marked as deprecated
       --excluded-charts strings              Charts that should be skipped. May be specified multiple times
                                              or separate values with commas
+      --github-groups                        Change the delimiters for github to create collapsible groups
+                                             for command output
       --helm-dependency-extra-args strings   Additional arguments for 'helm dependency build' (e.g. ["--skip-refresh"]
       --helm-repo-extra-args strings         Additional arguments for the 'helm repo add' command to be
                                              specified on a per-repo basis with an equals sign as delimiter
