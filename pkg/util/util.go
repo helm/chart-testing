@@ -219,11 +219,15 @@ func BreakingChangeAllowed(left string, right string) (bool, error) {
 }
 
 func PrintDelimiterLineToWriter(w io.Writer, delimiterChar string) {
-	delim := make([]string, 120)
-	for i := 0; i < 120; i++ {
-		delim[i] = delimiterChar
-	}
-	fmt.Fprintln(w, strings.Join(delim, ""))
+	fmt.Fprintln(w, strings.Repeat(delimiterChar, 120))
+}
+
+func GithubGroupsBegin(w io.Writer, title string) {
+	fmt.Fprintf(w, "::group::%s\n", title)
+}
+
+func GithubGroupsEnd(w io.Writer) {
+	fmt.Fprintln(w, "::endgroup::")
 }
 
 func SanitizeName(s string, maxLength int) string {

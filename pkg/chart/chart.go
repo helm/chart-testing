@@ -318,15 +318,23 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 	}
 
-	fmt.Println()
-	util.PrintDelimiterLineToWriter(os.Stdout, "-")
-	fmt.Println(" Charts to be processed:")
-	util.PrintDelimiterLineToWriter(os.Stdout, "-")
+	if !t.config.GithubGroups {
+		fmt.Println()
+		util.PrintDelimiterLineToWriter(os.Stdout, "-")
+		fmt.Println(" Charts to be processed:")
+		util.PrintDelimiterLineToWriter(os.Stdout, "-")
+	} else {
+		util.GithubGroupsBegin(os.Stdout, "Charts to be processed")
+	}
 	for _, chart := range charts {
 		fmt.Printf(" %s\n", chart)
 	}
-	util.PrintDelimiterLineToWriter(os.Stdout, "-")
-	fmt.Println()
+	if !t.config.GithubGroups {
+		util.PrintDelimiterLineToWriter(os.Stdout, "-")
+		fmt.Println()
+	} else {
+		util.GithubGroupsEnd(os.Stdout)
+	}
 
 	repoArgs := map[string][]string{}
 
@@ -414,7 +422,12 @@ func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
 
 // PrintResults writes test results to stdout.
 func (t *Testing) PrintResults(results []TestResult) {
-	util.PrintDelimiterLineToWriter(os.Stdout, "-")
+	if !t.config.GithubGroups {
+		fmt.Println()
+		util.PrintDelimiterLineToWriter(os.Stdout, "-")
+	} else {
+		util.GithubGroupsBegin(os.Stdout, "Test Results")
+	}
 	if results != nil {
 		for _, result := range results {
 			err := result.Error
@@ -427,7 +440,11 @@ func (t *Testing) PrintResults(results []TestResult) {
 	} else {
 		fmt.Println("No chart changes detected.")
 	}
-	util.PrintDelimiterLineToWriter(os.Stdout, "-")
+	if !t.config.GithubGroups {
+		util.PrintDelimiterLineToWriter(os.Stdout, "-")
+	} else {
+		util.GithubGroupsEnd(os.Stdout)
+	}
 }
 
 // LintChart lints the specified chart.
@@ -882,7 +899,7 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string) {
 	util.PrintDelimiterLineToWriter(os.Stdout, "=")
 
-	printDetails(namespace, "Events of namespace", ".", func(item string) error {
+	t.printDetails(namespace, "Events of namespace", ".", func(item string) error {
 		return t.kubectl.GetEvents(namespace)
 	}, namespace)
 
@@ -901,7 +918,7 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 	}
 
 	for _, pod := range pods {
-		printDetails(pod, "Description of pod", "~", func(item string) error {
+		t.printDetails(pod, "Description of pod", "~", func(item string) error {
 			return t.kubectl.DescribePod(namespace, pod)
 		}, pod)
 
@@ -912,7 +929,7 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 		}
 
 		if t.config.PrintLogs {
-			printDetails(pod, "Logs of init container", "-",
+			t.printDetails(pod, "Logs of init container", "-",
 				func(item string) error {
 					return t.kubectl.Logs(namespace, pod, item)
 				}, initContainers...)
@@ -923,7 +940,7 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 				return
 			}
 
-			printDetails(pod, "Logs of container", "-",
+			t.printDetails(pod, "Logs of container", "-",
 				func(item string) error {
 					return t.kubectl.Logs(namespace, pod, item)
 				},
@@ -934,21 +951,29 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 	util.PrintDelimiterLineToWriter(os.Stdout, "=")
 }
 
-func printDetails(resource string, text string, delimiterChar string, printFunc func(item string) error, items ...string) {
+func (t *Testing) printDetails(resource string, text string, delimiterChar string, printFunc func(item string) error, items ...string) {
 	for _, item := range items {
 		item = strings.Trim(item, "'")
 
-		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
-		fmt.Printf("==> %s %s\n", text, resource)
-		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
+		if !t.config.GithubGroups {
+			util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
+			fmt.Printf("==> %s %s\n", text, resource)
+			util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
+		} else {
+			util.GithubGroupsBegin(os.Stdout, fmt.Sprintf("%s %s", text, resource))
+		}
 
 		if err := printFunc(item); err != nil {
 			fmt.Println("Error printing details:", err)
 			return
 		}
 
-		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
-		fmt.Printf("<== %s %s\n", text, resource)
-		util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
+		if !t.config.GithubGroups {
+			util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
+			fmt.Printf("<== %s %s\n", text, resource)
+			util.PrintDelimiterLineToWriter(os.Stdout, delimiterChar)
+		} else {
+			util.GithubGroupsEnd(os.Stdout)
+		}
 	}
 }
