@@ -91,6 +91,8 @@ func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) 
 
 	scanner := bufio.NewScanner(io.MultiReader(outReader, errReader))
 	go func() {
+		defer outReader.Close()
+		defer errReader.Close()
 		for scanner.Scan() {
 			fmt.Println(scanner.Text())
 		}
