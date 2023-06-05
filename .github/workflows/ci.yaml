@@ -109,6 +109,6 @@ jobs:
           go-version-file: './go.mod'
           check-latest: true
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5 # v3
+        uses: golangci/golangci-lint-action@5f1fec7010f6ae3b84ea4f7b2129beb8639b564f # v3
         with:
           version: v1.52.1
