@@ -44,7 +44,7 @@ ct lint-and-install [flags]
                                              for command output
       --helm-dependency-extra-args strings   Additional arguments for 'helm dependency build' (e.g. ["--skip-refresh"]
       --helm-extra-args string               Additional arguments for Helm. Must be passed as a single quoted string
-                                             (e.g. "--timeout 500s"
+                                             (e.g. "--timeout 500s")
       --helm-extra-set-args string           Additional arguments for Helm. Must be passed as a single quoted string
                                              (e.g. "--set=name=value"
       --helm-repo-extra-args strings         Additional arguments for the 'helm repo add' command to be

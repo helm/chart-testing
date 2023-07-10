@@ -53,6 +53,8 @@ ct lint [flags]
       --github-groups                        Change the delimiters for github to create collapsible groups
                                              for command output
       --helm-dependency-extra-args strings   Additional arguments for 'helm dependency build' (e.g. ["--skip-refresh"]
+      --helm-extra-args string               Additional arguments for Helm. Must be passed as a single quoted string
+                                             (e.g. "--timeout 500s")
       --helm-repo-extra-args strings         Additional arguments for the 'helm repo add' command to be
                                              specified on a per-repo basis with an equals sign as delimiter
                                              (e.g. 'myrepo=--username test --password secret'). May be specified
