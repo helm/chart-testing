@@ -13,25 +13,25 @@ RUN apk --no-cache add \
 
 # Install a YAML Linter
 ARG yamllint_version=1.29.0
-LABEL yamllint_version=$yamllint_version
+LABEL yamllint-version=$yamllint_version
 RUN pip install "yamllint==$yamllint_version"
 
 # Install Yamale YAML schema validator
 ARG yamale_version=4.0.4
-LABEL yamale_version=$yamale_version
+LABEL yamale-version=$yamale_version
 RUN pip install "yamale==$yamale_version"
 
 ARG TARGETPLATFORM
 # Install kubectl
 ARG kubectl_version=v1.26.2
-LABEL kubectl_version=$kubectl_version
+LABEL kubectl-version=$kubectl_version
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl_version/bin/$TARGETPLATFORM/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
 ARG helm_version=v3.11.2
-LABEL helm_version=$helm_version
+LABEL helm-version=$helm_version
 RUN targetArch=$(echo $TARGETPLATFORM | cut -f2 -d '/') \
     && if [ ${targetArch} = "amd64" ]; then \
     HELM_ARCH="linux-amd64"; \
