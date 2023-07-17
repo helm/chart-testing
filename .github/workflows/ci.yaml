@@ -41,7 +41,7 @@ jobs:
         uses: anchore/sbom-action/download-syft@78fc58e266e87a38d4194b2137a3d4e9bcaf7ca1 # v0.14.0
 
       - name: Install k8s Kind
-        uses: helm/kind-action@fa81e57adff234b2908110485695db0f181f3c67 # v1.3.0
+        uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.3.0
         with:
           install_only: true
 
