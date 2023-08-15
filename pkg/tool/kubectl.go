@@ -222,7 +222,7 @@ func (k Kubectl) GetPods(args ...string) ([]string, error) {
 func (k Kubectl) GetEvents(namespace string) error {
 	return k.exec.RunProcess("kubectl",
 		fmt.Sprintf("--request-timeout=%s", k.timeout),
-		"get", "events", "--output", "wide", "--namespace", namespace)
+		"get", "events", "--output", "wide", "--namespace", namespace, "--sort-by", "lastTimestamp")
 }
 
 func (k Kubectl) DescribePod(namespace string, pod string) error {
