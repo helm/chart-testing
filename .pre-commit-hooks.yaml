@@ -1,0 +1,39 @@
+- id: ct-binary
+  args: []
+  description: Uses 'ct' binary to lint helm charts
+  entry: ct
+  files: ''
+  language: system
+  name: "[binary] chart testing"
+  require_serial: true
+  pass_filenames: false
+
+- id: ct-golang
+  args: []
+  description: Uses golang to build a local copy of 'ct'
+  entry: ct
+  files: ''
+  language: golang
+  name: "[golang] chart testing"
+  require_serial: true
+  pass_filenames: false
+
+- id: ct-lint-binary
+  args: []
+  description: Uses 'ct' binary to lint helm charts
+  entry: ct lint
+  files: ''
+  language: system
+  name: "[binary] chart testing lint (please wait)"
+  require_serial: true
+  pass_filenames: false
+
+- id: ct-lint-golang
+  args: []
+  description: Uses golang to build a local copy of 'ct' to lint helm charts
+  entry: ct lint
+  files: ''
+  language: golang
+  name: "[golang] chart testing lint (please wait)"
+  require_serial: true
+  pass_filenames: false
