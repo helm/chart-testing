@@ -1,10 +1,10 @@
 - id: ct-binary
   args: []
-  description: Uses 'ct' binary to lint helm charts
+  description: Uses 'ct' binary
   entry: ct
   files: ''
   language: system
-  name: "[binary] chart testing"
+  name: "chart testing"
   require_serial: true
   pass_filenames: false
 
@@ -14,7 +14,17 @@
   entry: ct
   files: ''
   language: golang
-  name: "[golang] chart testing"
+  name: "chart testing"
+  require_serial: true
+  pass_filenames: false
+
+- id: ct-container
+  args: []
+  description: Uses container image of 'ct'
+  entry: .pre-commit/bin/pre-commit-ct-container.sh ct
+  files: ''
+  language: script
+  name: "chart testing"
   require_serial: true
   pass_filenames: false
 
@@ -24,7 +34,7 @@
   entry: ct lint
   files: ''
   language: system
-  name: "[binary] chart testing lint (please wait)"
+  name: "chart testing lint (please wait)"
   require_serial: true
   pass_filenames: false
 
@@ -34,6 +44,16 @@
   entry: ct lint
   files: ''
   language: golang
-  name: "[golang] chart testing lint (please wait)"
+  name: "chart testing lint (please wait)"
+  require_serial: true
+  pass_filenames: false
+
+- id: ct-lint-container
+  args: []
+  description: Uses container image of 'ct' to lint helm charts
+  entry: .pre-commit/bin/pre-commit-ct-container.sh ct lint
+  files: ''
+  language: script
+  name: "chart testing lint (please wait)"
   require_serial: true
   pass_filenames: false
