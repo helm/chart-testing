@@ -25,6 +25,7 @@ import (
 
 	"github.com/helm/chart-testing/v3/pkg/config"
 	"github.com/helm/chart-testing/v3/pkg/exec"
+	"github.com/helm/chart-testing/v3/pkg/loader"
 	"github.com/helm/chart-testing/v3/pkg/tool"
 	"github.com/helm/chart-testing/v3/pkg/util"
 )
@@ -739,13 +740,30 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		return nil, err
 	}
 
-	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, cfg.ChartDirs...)
+	chartDirs, err := t.ReadAllChartDirectories()
+	if err != nil {
+		return nil, err
+	}
+
+	chartFiles := []string{}
+	for _, dir := range chartDirs {
+		files, err := loader.LoadDir(dir, cfg.UseHelmignore)
+		if err != nil {
+			return nil, err
+		}
+		for _, file := range files {
+			chartFiles = append(chartFiles, filepath.Join(dir, file))
+		}
+	}
+
+	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, chartFiles...)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating diff: %w", err)
 	}
 
 	var changedChartDirs []string
 	for _, file := range allChangedChartFiles {
+		fmt.Printf("=> Changed chart files %v\n", file)
 		pathElements := strings.SplitN(filepath.ToSlash(file), "/", 3)
 		if len(pathElements) < 2 || util.StringSliceContains(cfg.ExcludedCharts, pathElements[1]) {
 			continue

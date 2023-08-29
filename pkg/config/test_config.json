@@ -31,5 +31,6 @@
     "release-label": "release",
     "exclude-deprecated": true,
     "kubectl-timeout": "120s",
-    "skip-clean-up": true
+    "skip-clean-up": true,
+    "use-helmignore": true
 }

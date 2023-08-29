@@ -72,6 +72,7 @@ type Configuration struct {
 	KubectlTimeout          time.Duration `mapstructure:"kubectl-timeout"`
 	PrintLogs               bool          `mapstructure:"print-logs"`
 	GithubGroups            bool          `mapstructure:"github-groups"`
+	UseHelmignore           bool          `mapstructure:"use-helmignore"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {

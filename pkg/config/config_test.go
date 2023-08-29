@@ -60,6 +60,7 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, true, cfg.ExcludeDeprecated)
 	require.Equal(t, 120*time.Second, cfg.KubectlTimeout)
 	require.Equal(t, true, cfg.SkipCleanUp)
+	require.Equal(t, true, cfg.UseHelmignore)
 }
 
 func Test_findConfigFile(t *testing.T) {

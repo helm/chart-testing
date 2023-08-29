@@ -44,6 +44,7 @@ func (p ProcessExecutor) RunProcessAndCaptureStdout(executable string, execArgs 
 }
 
 func (p ProcessExecutor) RunProcessInDirAndCaptureOutput(workingDirectory string, executable string, execArgs ...interface{}) (string, error) {
+	fmt.Printf("%s %s", executable, execArgs)
 	cmd, err := p.CreateProcess(executable, execArgs...)
 	if err != nil {
 		return "", err
