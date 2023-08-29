@@ -22,9 +22,11 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver"
+	helmignore "helm.sh/helm/v3/pkg/ignore"
 
 	"github.com/helm/chart-testing/v3/pkg/config"
 	"github.com/helm/chart-testing/v3/pkg/exec"
+	"github.com/helm/chart-testing/v3/pkg/ignore"
 	"github.com/helm/chart-testing/v3/pkg/tool"
 	"github.com/helm/chart-testing/v3/pkg/util"
 )
@@ -242,6 +244,7 @@ type Testing struct {
 	directoryLister          DirectoryLister
 	utils                    Utils
 	previousRevisionWorktree string
+	loadRules                func(string) (*helmignore.Rules, error)
 }
 
 // TestResults holds results and overall status
@@ -272,6 +275,7 @@ func NewTesting(config config.Configuration, extraSetArgs string) (Testing, erro
 		accountValidator: tool.AccountValidator{},
 		directoryLister:  util.DirectoryLister{},
 		utils:            util.Utils{},
+		loadRules:        ignore.LoadRules,
 	}
 
 	versionString, err := testing.helm.Version()
@@ -746,7 +750,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		return nil, fmt.Errorf("failed creating diff: %w", err)
 	}
 
-	var changedChartDirs []string
+	changedChartFiles := map[string][]string{}
 	for _, file := range allChangedChartFiles {
 		pathElements := strings.SplitN(filepath.ToSlash(file), "/", 3)
 		if len(pathElements) < 2 || util.StringSliceContains(cfg.ExcludedCharts, pathElements[1]) {
@@ -763,12 +767,30 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 					continue
 				}
 			}
-			// Only add it if not already in the list
-			if !util.StringSliceContains(changedChartDirs, chartDir) {
-				changedChartDirs = append(changedChartDirs, chartDir)
-			}
+			changedChartFiles[chartDir] = append(changedChartFiles[chartDir], strings.TrimPrefix(file, chartDir+"/"))
 		} else {
 			fmt.Fprintf(os.Stderr, "Directory %q is not a valid chart directory. Skipping...\n", dir)
+		}
+	}
+
+	changedChartDirs := []string{}
+	if t.config.UseHelmignore {
+		for chartDir, changedChartFiles := range changedChartFiles {
+			rules, err := t.loadRules(chartDir)
+			if err != nil {
+				return nil, err
+			}
+			filteredChartFiles, err := ignore.FilterFiles(changedChartFiles, rules)
+			if err != nil {
+				return nil, err
+			}
+			if len(filteredChartFiles) > 0 {
+				changedChartDirs = append(changedChartDirs, chartDir)
+			}
+		}
+	} else {
+		for chartDir := range changedChartFiles {
+			changedChartDirs = append(changedChartDirs, chartDir)
 		}
 	}
 
