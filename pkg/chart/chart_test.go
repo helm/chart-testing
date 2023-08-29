@@ -40,7 +40,9 @@ func (g fakeGit) MergeBase(commit1 string, commit2 string) (string, error) {
 }
 
 func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error) {
-	return []string{
+	fmt.Printf("ListChangedFilesInDirs: %s/%v", commit, dirs)
+	changed := []string{}
+	for _, file := range []string{
 		"test_charts/foo/Chart.yaml",
 		"test_charts/bar/Chart.yaml",
 		"test_charts/bar/bar_sub/templates/bar_sub.yaml",
@@ -51,7 +53,15 @@ func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string
 		"test_chart_at_multi_level/foo/excluded/Chart.yaml",
 		"some_non_chart_dir/some_non_chart_file",
 		"some_non_chart_file",
-	}, nil
+	} {
+		for _, dir := range dirs {
+			if strings.HasPrefix(file, dir) {
+				changed = append(changed, file)
+			}
+		}
+	}
+	fmt.Printf("CHANGED: %v", changed)
+	return changed, nil
 }
 
 func (g fakeGit) AddWorktree(path string, ref string) error {

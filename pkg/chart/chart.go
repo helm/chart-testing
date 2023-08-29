@@ -745,25 +745,22 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		return nil, err
 	}
 
-	chartFiles := []string{}
+	chartsFiles := []string{}
 	for _, dir := range chartDirs {
 		files, err := loader.LoadDir(dir, cfg.UseHelmignore)
 		if err != nil {
 			return nil, err
 		}
-		for _, file := range files {
-			chartFiles = append(chartFiles, filepath.Join(dir, file))
-		}
+		chartsFiles = append(chartsFiles, files...)
 	}
 
-	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, chartFiles...)
+	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, chartsFiles...)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating diff: %w", err)
 	}
 
 	var changedChartDirs []string
 	for _, file := range allChangedChartFiles {
-		fmt.Printf("=> Changed chart files %v\n", file)
 		pathElements := strings.SplitN(filepath.ToSlash(file), "/", 3)
 		if len(pathElements) < 2 || util.StringSliceContains(cfg.ExcludedCharts, pathElements[1]) {
 			continue

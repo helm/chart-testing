@@ -19,6 +19,7 @@ package loader
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -86,7 +87,7 @@ func LoadDir(dir string, useHelmignore bool) ([]string, error) {
 			return fmt.Errorf("cannot load irregular file %s as it has file mode type bits set", name)
 		}
 
-		files = append(files, n)
+		files = append(files, path.Join(dir, n))
 		return nil
 	}
 	if err = sympath.Walk(topdir, walk); err != nil {
