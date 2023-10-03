@@ -722,11 +722,12 @@ func (t *Testing) computeMergeBase() (string, error) {
 		return "", errors.New("must be in a git repository")
 	}
 
-	if !t.git.BranchExists(t.config.TargetBranch) {
-		return "", fmt.Errorf("targetBranch '%s' does not exist", t.config.TargetBranch)
+	branch := fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch)
+	if !t.git.BranchExists(branch) {
+		return "", fmt.Errorf("targetBranch '%s' does not exist", branch)
 	}
 
-	return t.git.MergeBase(fmt.Sprintf("%s/%s", t.config.Remote, t.config.TargetBranch), t.config.Since)
+	return t.git.MergeBase(branch, t.config.Since)
 }
 
 // ComputeChangedChartDirectories takes the merge base of HEAD and the configured remote and target branch and computes a
