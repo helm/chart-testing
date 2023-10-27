@@ -131,6 +131,7 @@ Notice that if no config file is specified, then `ct.yaml` (or any of the suppor
 #### Using private chart repositories
 
 When adding chart-repos you can specify additional arguments for the `helm repo add` command using `helm-repo-extra-args` on a per-repo basis.
+You can also specify OCI registries which will be added using the `helm registry login` command, they also support the `helm-repo-extra-args` for authentication.
 This could for example be used to authenticate a private chart repository.
 
 `config.yaml`:
@@ -140,6 +141,7 @@ chart-repos:
   - incubator=https://incubator.io
   - basic-auth=https://private.com
   - ssl-repo=https://self-signed.ca
+  - oci-registry=oci://nice-oci-registry.pt
 helm-repo-extra-args:
   - ssl-repo=--ca-file ./my-ca.crt
 ```
