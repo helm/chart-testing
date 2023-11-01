@@ -259,11 +259,12 @@ type TestResult struct {
 // NewTesting creates a new Testing struct with the given config.
 func NewTesting(config config.Configuration, extraSetArgs string) (Testing, error) {
 	procExec := exec.NewProcessExecutor(config.Debug)
-	extraArgs := strings.Fields(config.HelmExtraArgs)
+	helmExtraArgs := strings.Fields(config.HelmExtraArgs)
+	helmLintExtraArgs := strings.Fields(config.HelmLintExtraArgs)
 
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(procExec, extraArgs, strings.Fields(extraSetArgs)),
+		helm:             tool.NewHelm(procExec, helmExtraArgs, helmLintExtraArgs, strings.Fields(extraSetArgs)),
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec, config.KubectlTimeout),
 		linter:           tool.NewLinter(procExec),

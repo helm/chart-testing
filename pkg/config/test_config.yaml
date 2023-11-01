@@ -19,7 +19,8 @@ chart-dirs:
   - incubator
 excluded-charts:
   - common
-helm-extra-args: --timeout 300
+helm-extra-args: --timeout 300s
+helm-lint-extra-args: --quiet
 upgrade: true
 skip-missing-values: true
 namespace: default
