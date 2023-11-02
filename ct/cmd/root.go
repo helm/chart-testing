@@ -97,7 +97,10 @@ func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {
 		May be specified multiple times or separate values with commas`))
 	flags.String("helm-extra-args", "", heredoc.Doc(`
 		Additional arguments for Helm. Must be passed as a single quoted string
-		(e.g. "--timeout 500s")`))
+		(e.g. '--timeout 500s')`))
+	flags.String("helm-lint-extra-args", "", heredoc.Doc(`
+		Additional arguments for Helm lint subcommand. Must be passed as a single quoted string
+		(e.g. '--quiet')`))
 	flags.StringSlice("helm-repo-extra-args", []string{}, heredoc.Doc(`
 		Additional arguments for the 'helm repo add' command to be
 		specified on a per-repo basis with an equals sign as delimiter

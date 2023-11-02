@@ -60,6 +60,7 @@ type Configuration struct {
 	ChartDirs               []string      `mapstructure:"chart-dirs"`
 	ExcludedCharts          []string      `mapstructure:"excluded-charts"`
 	HelmExtraArgs           string        `mapstructure:"helm-extra-args"`
+	HelmLintExtraArgs       string        `mapstructure:"helm-lint-extra-args"`
 	HelmRepoExtraArgs       []string      `mapstructure:"helm-repo-extra-args"`
 	HelmDependencyExtraArgs []string      `mapstructure:"helm-dependency-extra-args"`
 	Debug                   bool          `mapstructure:"debug"`
