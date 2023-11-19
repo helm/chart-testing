@@ -69,7 +69,7 @@ ct lint-and-install [flags]
       --skip-missing-values                  When --upgrade has been passed, this flag will skip testing CI values files from the
                                              previous chart revision if they have been deleted or renamed at the current chart
                                              revision
-      --target-branch string                 The name of the target branch used to identify changed charts (default "master")
+      --target-branch string                 The name of the target branch used to identify changed charts (default "main")
       --upgrade                              Whether to test an in-place upgrade of each chart from its previous revision if the
                                              current version should not introduce a breaking change according to the SemVer spec
       --validate-chart-schema                Enable schema validation of 'Chart.yaml' using Yamale (default true)
