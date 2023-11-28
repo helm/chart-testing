@@ -21,7 +21,7 @@
 - id: ct-container
   args: []
   description: Uses container image of 'ct'
-  entry: .pre-commit/bin/pre-commit-ct-container.sh ct
+  entry: tools/bin/pre-commit-ct-container.sh ct
   files: ''
   language: script
   name: "chart testing"
@@ -51,7 +51,7 @@
 - id: ct-lint-container
   args: []
   description: Uses container image of 'ct' to lint helm charts
-  entry: .pre-commit/bin/pre-commit-ct-container.sh ct lint
+  entry: tools/bin/pre-commit-ct-container.sh ct lint
   files: ''
   language: script
   name: "chart testing lint (please wait)"
