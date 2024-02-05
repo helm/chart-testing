@@ -369,7 +369,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 			return results, fmt.Errorf("failed identifying merge base: %w", err)
 		}
 		// Add worktree for the target revision
-		worktreePath, err := os.MkdirTemp("./", "ct_previous_revision")
+		worktreePath, err := os.MkdirTemp("./", "ct-previous-revision")
 		if err != nil {
 			return results, fmt.Errorf("could not create previous revision directory: %w", err)
 		}
