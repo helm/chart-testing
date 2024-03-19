@@ -72,6 +72,7 @@ ct lint-and-install [flags]
       --target-branch string                 The name of the target branch used to identify changed charts (default "main")
       --upgrade                              Whether to test an in-place upgrade of each chart from its previous revision if the
                                              current version should not introduce a breaking change according to the SemVer spec
+      --use-helmignore                       Use .helmignore when identifying changed charts
       --validate-chart-schema                Enable schema validation of 'Chart.yaml' using Yamale (default true)
       --validate-maintainers                 Enable validation of maintainer account names in chart.yml.
                                              Works for GitHub, GitLab, and Bitbucket (default true)

@@ -80,6 +80,7 @@ func addCommonFlags(flags *pflag.FlagSet) {
 	flags.Bool("github-groups", false, heredoc.Doc(`
 		Change the delimiters for github to create collapsible groups
 		for command output`))
+	flags.Bool("use-helmignore", false, "Use .helmignore when identifying changed charts")
 }
 
 func addCommonLintAndInstallFlags(flags *pflag.FlagSet) {

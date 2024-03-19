@@ -23,6 +23,7 @@ import (
 	"github.com/helm/chart-testing/v3/pkg/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	helmignore "helm.sh/helm/v3/pkg/ignore"
 )
 
 type fakeGit struct{}
@@ -152,6 +153,26 @@ func newTestingMock(cfg config.Configuration) Testing {
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
 		helm:             new(fakeHelm),
+		loadRules: func(dir string) (*helmignore.Rules, error) {
+			rules := helmignore.Empty()
+			if dir == "test_charts/foo" {
+				var err error
+				rules, err = helmignore.Parse(strings.NewReader("Chart.yaml\n"))
+				if err != nil {
+					return nil, err
+				}
+				rules.AddDefaults()
+			}
+			if dir == "test_chart_at_multi_level/foo/baz" {
+				var err error
+				rules, err = helmignore.Parse(strings.NewReader("Chart.yaml\n"))
+				if err != nil {
+					return nil, err
+				}
+				rules.AddDefaults()
+			}
+			return rules, nil
+		},
 	}
 }
 
@@ -163,6 +184,19 @@ func TestComputeChangedChartDirectories(t *testing.T) {
 	}
 	assert.Len(t, actual, 3)
 	assert.Nil(t, err)
+}
+
+func TestComputeChangedChartDirectoriesWithHelmignore(t *testing.T) {
+	cfg := config.Configuration{
+		ExcludedCharts: []string{"excluded"},
+		ChartDirs:      []string{"test_charts", "."},
+		UseHelmignore:  true,
+	}
+	ct := newTestingMock(cfg)
+	actual, err := ct.ComputeChangedChartDirectories()
+	expected := []string{"test_charts/bar", "test_chart_at_root"}
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, expected, actual)
 }
 
 func TestComputeChangedChartDirectoriesWithMultiLevelChart(t *testing.T) {
@@ -178,6 +212,19 @@ func TestComputeChangedChartDirectoriesWithMultiLevelChart(t *testing.T) {
 	}
 	assert.Len(t, actual, 2)
 	assert.Nil(t, err)
+}
+
+func TestComputeChangedChartDirectoriesWithMultiLevelChartWithHelmIgnore(t *testing.T) {
+	cfg := config.Configuration{
+		ExcludedCharts: []string{"excluded"},
+		ChartDirs:      []string{"test_chart_at_multi_level/foo"},
+		UseHelmignore:  true,
+	}
+	ct := newTestingMock(cfg)
+	actual, err := ct.ComputeChangedChartDirectories()
+	expected := []string{"test_chart_at_multi_level/foo/bar"}
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, expected, actual)
 }
 
 func TestReadAllChartDirectories(t *testing.T) {
