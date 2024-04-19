@@ -67,7 +67,7 @@ main() {
     fi
 
     if [[ -z "$release" ]]; then
-        goreleaser_args+=(--snapshot --skip-sign)
+        goreleaser_args+=(--snapshot --skip=sign)
     fi
 
     pushd "$SCRIPT_DIR" > /dev/null
