@@ -901,7 +901,7 @@ func (t *Testing) ValidateMaintainers(chart *Chart) error {
 func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string) {
 	util.PrintDelimiterLineToWriter(os.Stdout, "=")
 
-	t.printDetails(namespace, "Events of namespace", ".", func(item string) error {
+	t.printDetails(namespace, "Events of namespace", ".", func(_ string) error {
 		return t.kubectl.GetEvents(namespace)
 	}, namespace)
 
@@ -920,7 +920,7 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 	}
 
 	for _, pod := range pods {
-		t.printDetails(pod, "Description of pod", "~", func(item string) error {
+		t.printDetails(pod, "Description of pod", "~", func(_ string) error {
 			return t.kubectl.DescribePod(namespace, pod)
 		}, pod)
 
