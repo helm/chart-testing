@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM alpine:3.19
 
 RUN apk --no-cache add \
     bash \
@@ -30,7 +30,7 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG helm_version=v3.13.3
+ARG helm_version=v3.14.4
 LABEL helm-version=$helm_version
 RUN targetArch=$(echo $TARGETPLATFORM | cut -f2 -d '/') \
     && if [ ${targetArch} = "amd64" ]; then \
