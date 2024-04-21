@@ -33,8 +33,7 @@ builds:
         -X github.com/helm/chart-testing/v3/ct/cmd.BuildDate={{ .Date }}
 
 archives:
-  - rlcp: true
-    format_overrides:
+  - format_overrides:
       - goos: windows
         format: zip
     files:

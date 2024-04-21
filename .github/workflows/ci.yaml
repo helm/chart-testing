@@ -111,4 +111,4 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@3cfe3a4abbb849e10058ce4af15d205b6da42804 # v3
         with:
-          version: v1.55
+          version: v1.57

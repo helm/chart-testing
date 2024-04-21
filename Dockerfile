@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM alpine:3.19
 
 RUN apk --no-cache add \
     bash \
@@ -8,29 +8,24 @@ RUN apk --no-cache add \
     openssh-client \
     py3-pip \
     py3-wheel \
-    python3 && \
-    pip install --upgrade pip==23.3.2
-
-# Install a YAML Linter
-ARG yamllint_version=1.33.0
-LABEL yamllint-version=$yamllint_version
-RUN pip install "yamllint==$yamllint_version"
+    python3 \
+    yamllint=1.33.0-r0
 
 # Install Yamale YAML schema validator
 ARG yamale_version=4.0.4
 LABEL yamale-version=$yamale_version
-RUN pip install "yamale==$yamale_version"
+RUN pip install --break-system-packages "yamale==$yamale_version"
 
 ARG TARGETPLATFORM
 # Install kubectl
-ARG kubectl_version=v1.28.5
+ARG kubectl_version=v1.30.0
 LABEL kubectl-version=$kubectl_version
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/$kubectl_version/bin/$TARGETPLATFORM/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG helm_version=v3.13.3
+ARG helm_version=v3.14.4
 LABEL helm-version=$helm_version
 RUN targetArch=$(echo $TARGETPLATFORM | cut -f2 -d '/') \
     && if [ ${targetArch} = "amd64" ]; then \
