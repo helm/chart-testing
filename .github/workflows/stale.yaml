@@ -22,3 +22,5 @@ jobs:
           days-before-pr-stale: 45
           days-before-issue-close: 5
           days-before-pr-close: 5
+          exempt-issue-labels: 'frozen'
+          exempt-pr-labels: 'frozen'
