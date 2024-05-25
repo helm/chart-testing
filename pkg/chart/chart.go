@@ -267,7 +267,7 @@ func NewTesting(config config.Configuration, extraSetArgs string) (Testing, erro
 
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(procExec, helmExtraArgs, helmLintExtraArgs, strings.Fields(extraSetArgs)),
+		helm:             tool.NewHelm(procExec, helmExtraArgs, helmLintExtraArgs, strings.Fields(extraSetArgs), config.UpgradeStrategy),
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec, config.KubectlTimeout),
 		linter:           tool.NewLinter(procExec),

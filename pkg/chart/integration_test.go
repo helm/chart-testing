@@ -43,7 +43,7 @@ func newTestingHelmIntegration(cfg config.Configuration, extraSetArgs string) Te
 		utils:            util.Utils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
-		helm:             tool.NewHelm(procExec, extraArgs, extraLintArgs, strings.Fields(extraSetArgs)),
+		helm:             tool.NewHelm(procExec, extraArgs, extraLintArgs, strings.Fields(extraSetArgs), cfg.UpgradeStrategy),
 		kubectl:          tool.NewKubectl(procExec, 30*time.Second),
 	}
 }
@@ -111,6 +111,12 @@ func TestInstallChart(t *testing.T) {
 }
 
 func TestUpgradeChart(t *testing.T) {
+	runUpgradeChartTest(t, tool.ResetValues)
+	runUpgradeChartTest(t, tool.ReuseValues)
+	runUpgradeChartTest(t, tool.ResetThenReuseValues)
+}
+
+func runUpgradeChartTest(t *testing.T, upgradeStrategy string) {
 	type testCase struct {
 		name string
 		old  string
@@ -119,8 +125,9 @@ func TestUpgradeChart(t *testing.T) {
 	}
 
 	cfg := config.Configuration{
-		Debug:   true,
-		Upgrade: true,
+		Debug:           true,
+		Upgrade:         true,
+		UpgradeStrategy: upgradeStrategy,
 	}
 	ct := newTestingHelmIntegration(cfg, "")
 	processError := fmt.Errorf("failed waiting for process: exit status 1")
@@ -152,6 +159,20 @@ func TestUpgradeChart(t *testing.T) {
 		},
 	}
 
+	v2UpgradeCase := testCase{
+		"upgrade nginx to v2 with breaking changes",
+		"test_charts/simple-deployment",
+		"test_charts/simple-deployment-v2",
+		nil,
+	}
+	// Expect chart upgrade with breaking changes to fail
+	// if values are reused
+	if upgradeStrategy == tool.ReuseValues {
+		v2UpgradeCase.err = processError
+	}
+
+	cases = append(cases, v2UpgradeCase)
+
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := ct.doUpgrade(mustNewChart(tc.old), mustNewChart(tc.new), true)
@@ -165,6 +186,7 @@ func TestUpgradeChart(t *testing.T) {
 			}
 		})
 	}
+
 }
 
 func mustNewChart(chartPath string) *Chart {
