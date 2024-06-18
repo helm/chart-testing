@@ -1,6 +1,7 @@
 module github.com/helm/chart-testing/v3
 
-go 1.22
+go 1.22.0
+
 toolchain go1.22.4
 
 require (
