@@ -1,6 +1,7 @@
 module github.com/helm/chart-testing/v3
 
 go 1.22
+toolchain go1.22.4
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
@@ -14,7 +15,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.14.4
+	helm.sh/helm/v3 v3.15.2
 )
 
 require (
