@@ -22,18 +22,26 @@ import (
 )
 
 type Helm struct {
-	exec          exec.ProcessExecutor
-	extraArgs     []string
-	lintExtraArgs []string
-	extraSetArgs  []string
+	exec            exec.ProcessExecutor
+	extraArgs       []string
+	lintExtraArgs   []string
+	extraSetArgs    []string
+	upgradeStrategy string
 }
 
-func NewHelm(exec exec.ProcessExecutor, extraArgs, lintExtraArgs, extraSetArgs []string) Helm {
+const (
+	ResetValues          string = "reset-values"
+	ReuseValues          string = "reuse-values"
+	ResetThenReuseValues string = "reset-then-reuse-values"
+)
+
+func NewHelm(exec exec.ProcessExecutor, extraArgs, lintExtraArgs, extraSetArgs []string, upgradeStrategy string) Helm {
 	return Helm{
-		exec:          exec,
-		extraArgs:     extraArgs,
-		lintExtraArgs: lintExtraArgs,
-		extraSetArgs:  extraSetArgs,
+		exec:            exec,
+		extraArgs:       extraArgs,
+		lintExtraArgs:   lintExtraArgs,
+		extraSetArgs:    extraSetArgs,
+		upgradeStrategy: upgradeStrategy,
 	}
 }
 
@@ -76,8 +84,9 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 }
 
 func (h Helm) Upgrade(chart string, namespace string, release string) error {
+	strategyFlag := fmt.Sprintf("--%s", h.upgradeStrategy)
 	return h.exec.RunProcess("helm", "upgrade", release, chart, "--namespace", namespace,
-		"--reuse-values", "--wait", h.extraArgs, h.extraSetArgs)
+		strategyFlag, "--wait", h.extraArgs, h.extraSetArgs)
 }
 
 func (h Helm) Test(namespace string, release string) error {
