@@ -12,7 +12,7 @@ It automatically detects charts changed against the target branch.
 
 ### Prerequisites
 
-It is recommended to use the provided Docker image which can be [found on Quay](https://quay.io/helmpack/chart-testing/).
+It is recommended to use the provided Docker image which can be [found on Quay](https://quay.io/repository/helmpack/chart-testing).
 It comes with all necessary tools installed.
 
 * [Helm](http://helm.sh)
