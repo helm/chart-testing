@@ -40,6 +40,49 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 $ brew install chart-testing
 ```
 
+### Pre-commit hook
+
+If you want to automatically run `ct` tasks such as `lint` when files in your git repo change,
+[install the pre-commit binary](https://pre-commit.com/#install), and add a [.pre-commit-config.yaml file](./.pre-commit-config.yaml)
+to your project with content similar to:
+
+Note that depending on the hook id you select for pre-commit hooks, you may need to provide the following:
+
+* The `ct` binary somewhere in your PATH in addition to the prerequisites listed above.
+
+* For the `golang` hooks, pre-commit 3.x should be able to provide [golang](https://pre-commit.com/#golang), however you are still responsible for the prerequisites listed above.
+
+* For the `container` hooks, the [Docker](https://docs.docker.com/get-docker/) CLI and a container runtime must be available.
+
+```yaml
+  - repo: https://github.com/helm/chart-testing
+    rev: v3.9.0
+    hooks:
+      - id: ct
+        entry: ct list-changed
+        args:
+        - --config=./.ct.yaml
+      # - id: ct-golang
+      # - id: ct-lint
+      # - id: ct-lint-golang
+      # - id: ct-container
+      # - id: ct-lint-container
+```
+
+Then run:
+
+```bash
+pre-commit install --install-hooks
+```
+
+or
+
+```bash
+pre-commit install
+pre-commit install-hooks
+```
+
+
 ## Usage
 
 See documentation for individual commands:
