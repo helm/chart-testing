@@ -235,6 +235,7 @@ func TestReadAllChartDirectories(t *testing.T) {
 		"test_charts/must-pass-upgrade-install",
 		"test_charts/mutating-deployment-selector",
 		"test_charts/simple-deployment",
+		"test_charts/simple-deployment-v2",
 		"test_charts/simple-deployment-different-selector",
 		"test_charts/mutating-sfs-volumeclaim",
 		"test_chart_at_root",
@@ -242,7 +243,7 @@ func TestReadAllChartDirectories(t *testing.T) {
 	for _, chart := range actual {
 		assert.Contains(t, expected, chart)
 	}
-	assert.Len(t, actual, 8)
+	assert.Len(t, actual, 9)
 	assert.Nil(t, err)
 }
 

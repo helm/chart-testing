@@ -79,6 +79,9 @@ func addInstallFlags(flags *flag.FlagSet) {
 		(e.g. "--set=name=value"`))
 	flags.Bool("skip-clean-up", false, heredoc.Doc(`
 		Skip resources clean-up. Used if need to continue other flows or keep it around.`))
+	flags.String("upgrade-strategy", "reuse-values", heredoc.Doc(`
+		When --upgrade is used, this flag configures the upgrade strategy for chart values.
+		Available options: reset-values, reuse-values, reset-then-reuse-values`))
 }
 
 func install(cmd *cobra.Command, _ []string) error {
