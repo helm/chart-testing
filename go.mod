@@ -1,8 +1,6 @@
 module github.com/helm/chart-testing/v3
 
-go 1.22.0
-
-toolchain go1.22.4
+go 1.23
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0

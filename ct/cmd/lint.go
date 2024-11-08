@@ -69,6 +69,8 @@ func addLintFlags(flags *flag.FlagSet) {
 		Enable schema validation of 'Chart.yaml' using Yamale`))
 	flags.Bool("validate-yaml", true, heredoc.Doc(`
 		Enable linting of 'Chart.yaml' and values files`))
+	flags.Bool("skip-helm-dependencies", false, heredoc.Doc(`
+		Skip running 'helm dependency build' before linting`))
 	flags.StringSlice("additional-commands", []string{}, heredoc.Doc(`
 		Additional commands to run per chart (default: [])
 		Commands will be executed in the same order as provided in the list and will

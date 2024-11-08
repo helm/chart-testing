@@ -384,17 +384,21 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 		defer t.git.RemoveWorktree(worktreePath) // nolint: errcheck
 
-		for _, chart := range charts {
-			if err := t.helm.BuildDependenciesWithArgs(t.computePreviousRevisionPath(chart.Path()), t.config.HelmDependencyExtraArgs); err != nil {
-				// Only print error (don't exit) if building dependencies for previous revision fails.
-				fmt.Printf("failed building dependencies for previous revision of chart %q: %v\n", chart, err.Error())
+		if !t.config.SkipHelmDependencies {
+			for _, chart := range charts {
+				if err := t.helm.BuildDependenciesWithArgs(t.computePreviousRevisionPath(chart.Path()), t.config.HelmDependencyExtraArgs); err != nil {
+					// Only print error (don't exit) if building dependencies for previous revision fails.
+					fmt.Printf("failed building dependencies for previous revision of chart %q: %v\n", chart, err.Error())
+				}
 			}
 		}
 	}
 
 	for _, chart := range charts {
-		if err := t.helm.BuildDependenciesWithArgs(chart.Path(), t.config.HelmDependencyExtraArgs); err != nil {
-			return nil, fmt.Errorf("failed building dependencies for chart %q: %w", chart, err)
+		if !t.config.SkipHelmDependencies {
+			if err := t.helm.BuildDependenciesWithArgs(chart.Path(), t.config.HelmDependencyExtraArgs); err != nil {
+				return nil, fmt.Errorf("failed building dependencies for chart %q: %w", chart, err)
+			}
 		}
 
 		result := action(chart)
