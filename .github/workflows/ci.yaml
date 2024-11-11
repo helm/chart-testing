@@ -28,7 +28,7 @@ jobs:
       - uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4.2.0
 
       - name: Install GoReleaser
-        uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
+        uses: goreleaser/goreleaser-action@9ed2f89a662bf1735a48bc8557fd212fa902bebf # v6.1.0
         with:
           install-only: true
 
@@ -36,7 +36,7 @@ jobs:
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
 
       - name: Install syft
-        uses: anchore/sbom-action/download-syft@251a468eed47e5082b105c3ba6ee500c0e65a764 # v0.17.6
+        uses: anchore/sbom-action/download-syft@fc46e51fd3cb168ffb36c6d1915723c47db58abb # v0.17.7
 
       - name: Install k8s Kind
         uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.3.0
