@@ -110,5 +110,5 @@ gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
-helm.sh/helm/v3 v3.16.2 h1:Y9v7ry+ubQmi+cb5zw1Llx8OKHU9Hk9NQ/+P+LGBe2o=
-helm.sh/helm/v3 v3.16.2/go.mod h1:SyTXgKBjNqi2NPsHCW5dDAsHqvGIu0kdNYNH9gQaw70=
+helm.sh/helm/v3 v3.16.3 h1:kb8bSxMeRJ+knsK/ovvlaVPfdis0X3/ZhYCSFRP+YmY=
+helm.sh/helm/v3 v3.16.3/go.mod h1:zeVWGDR4JJgiRbT3AnNsjYaX8OTJlIE9zC+Q7F7iUSU=
