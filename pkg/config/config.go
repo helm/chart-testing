@@ -25,6 +25,7 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 
+	"github.com/helm/chart-testing/v3/pkg/tool"
 	"github.com/helm/chart-testing/v3/pkg/util"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -76,6 +77,7 @@ type Configuration struct {
 	PrintLogs               bool          `mapstructure:"print-logs"`
 	GithubGroups            bool          `mapstructure:"github-groups"`
 	UseHelmignore           bool          `mapstructure:"use-helmignore"`
+	UpgradeStrategy         string        `mapstructure:"upgrade-strategy"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
@@ -141,8 +143,20 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 	// Disable upgrade (this does some expensive dependency building on previous revisions)
 	// when neither "install" nor "lint-and-install" have not been specified.
 	cfg.Upgrade = isInstall && cfg.Upgrade
-	if (cfg.TargetBranch == "" || cfg.Remote == "") && cfg.Upgrade {
-		return nil, errors.New("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
+
+	if cfg.Upgrade {
+		if cfg.TargetBranch == "" || cfg.Remote == "" {
+			return nil, errors.New("specifying '--upgrade=true' without '--target-branch' or '--remote', is not allowed")
+		}
+
+		// Ensure upgrade strategy is valid
+		switch cfg.UpgradeStrategy {
+		case tool.ResetValues:
+		case tool.ReuseValues:
+		case tool.ResetThenReuseValues:
+		default:
+			return nil, fmt.Errorf("invalid upgrade strategy %s specified", cfg.UpgradeStrategy)
+		}
 	}
 
 	chartYamlSchemaPath := cfg.ChartYamlSchema

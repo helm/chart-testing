@@ -73,6 +73,8 @@ ct lint-and-install [flags]
       --target-branch string                 The name of the target branch used to identify changed charts (default "main")
       --upgrade                              Whether to test an in-place upgrade of each chart from its previous revision if the
                                              current version should not introduce a breaking change according to the SemVer spec
+      --upgrade-strategy string              When --upgrade is used, this flag configures the upgrade strategy for chart values.
+                                             Available options: reset-values, reuse-values, reset-then-reuse-values (default "reuse-values")
       --use-helmignore                       Use .helmignore when identifying changed charts
       --validate-chart-schema                Enable schema validation of 'Chart.yaml' using Yamale (default true)
       --validate-maintainers                 Enable validation of maintainer account names in chart.yml.
