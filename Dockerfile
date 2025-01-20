@@ -9,7 +9,7 @@ RUN apk --no-cache add \
     py3-pip \
     py3-wheel \
     python3 \
-    yamllint=1.35.1-r1
+    yamllint
 
 # Install Yamale YAML schema validator
 ARG yamale_version=6.0.0
