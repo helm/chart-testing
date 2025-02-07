@@ -90,8 +90,7 @@ func lint(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed loading configuration: %w", err)
 	}
 
-	emptyExtraSetArgs := ""
-	testing, err := chart.NewTesting(*configuration, emptyExtraSetArgs)
+	testing, err := chart.NewTesting(*configuration)
 	if err != nil {
 		return err
 	}
