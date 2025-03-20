@@ -29,7 +29,7 @@ dependency:
   condition: str(required=False)
   tags: list(str(), required=False)
   enabled: bool(required=False)
-  import-values: any(list(str()), list(include('import-value')), required=False)
+  import-values: list(any(str(), include('import-value')), required=False)
   alias: str(required=False)
 ---
 import-value:
