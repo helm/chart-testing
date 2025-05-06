@@ -28,19 +28,19 @@ import (
 
 type fakeGit struct{}
 
-func (g fakeGit) FileExistsOnBranch(file string, remote string, branch string) bool {
+func (g fakeGit) FileExistsOnBranch(_ string, _ string, _ string) bool {
 	return true
 }
 
-func (g fakeGit) Show(file string, remote string, branch string) (string, error) {
+func (g fakeGit) Show(_ string, _ string, _ string) (string, error) {
 	return "", nil
 }
 
-func (g fakeGit) MergeBase(commit1 string, commit2 string) (string, error) {
+func (g fakeGit) MergeBase(_ string, _ string) (string, error) {
 	return "HEAD", nil
 }
 
-func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error) {
+func (g fakeGit) ListChangedFilesInDirs(_ string, _ ...string) ([]string, error) {
 	return []string{
 		"test_charts/foo/Chart.yaml",
 		"test_charts/bar/Chart.yaml",
@@ -55,15 +55,15 @@ func (g fakeGit) ListChangedFilesInDirs(commit string, dirs ...string) ([]string
 	}, nil
 }
 
-func (g fakeGit) AddWorktree(path string, ref string) error {
+func (g fakeGit) AddWorktree(_ string, _ string) error {
 	return nil
 }
 
-func (g fakeGit) RemoveWorktree(path string) error {
+func (g fakeGit) RemoveWorktree(_ string) error {
 	return nil
 }
 
-func (g fakeGit) GetURLForRemote(remote string) (string, error) {
+func (g fakeGit) GetURLForRemote(_ string) (string, error) {
 	return "git@github.com/helm/chart-testing", nil
 }
 
@@ -71,13 +71,13 @@ func (g fakeGit) ValidateRepository() error {
 	return nil
 }
 
-func (g fakeGit) BranchExists(branch string) bool {
+func (g fakeGit) BranchExists(_ string) bool {
 	return true
 }
 
 type fakeAccountValidator struct{}
 
-func (v fakeAccountValidator) Validate(repoDomain string, account string) error {
+func (v fakeAccountValidator) Validate(_ string, account string) error {
 	if strings.HasPrefix(account, "valid") {
 		return nil
 	}
@@ -101,23 +101,23 @@ type fakeHelm struct {
 	mock.Mock
 }
 
-func (h *fakeHelm) AddRepo(name, url string, extraArgs []string) error { return nil }
-func (h *fakeHelm) BuildDependencies(chart string) error               { return nil }
+func (h *fakeHelm) AddRepo(_, _ string, _ []string) error { return nil }
+func (h *fakeHelm) BuildDependencies(_ string) error      { return nil }
 func (h *fakeHelm) BuildDependenciesWithArgs(chart string, extraArgs []string) error {
 	h.Called(chart, extraArgs)
 	return nil
 }
-func (h *fakeHelm) LintWithValues(chart string, valuesFile string) error { return nil }
-func (h *fakeHelm) InstallWithValues(chart string, valuesFile string, namespace string, release string) error {
+func (h *fakeHelm) LintWithValues(_ string, _ string) error { return nil }
+func (h *fakeHelm) InstallWithValues(_ string, _ string, _ string, _ string) error {
 	return nil
 }
-func (h *fakeHelm) Upgrade(chart string, namespace string, release string) error {
+func (h *fakeHelm) Upgrade(_ string, _ string, _ string) error {
 	return nil
 }
-func (h *fakeHelm) Test(namespace string, release string) error {
+func (h *fakeHelm) Test(_ string, _ string) error {
 	return nil
 }
-func (h *fakeHelm) DeleteRelease(namespace string, release string) {}
+func (h *fakeHelm) DeleteRelease(_ string, _ string) {}
 
 func (h *fakeHelm) Version() (string, error) {
 	return "v3.0.0", nil

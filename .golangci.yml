@@ -1,32 +1,42 @@
 ---
+version: "2"
+run:
+  issues-exit-code: 1
 linters:
   enable:
     - asciicheck
-    - errcheck
     - errorlint
-    - gofmt
-    - goimports
-    - gosec
     - gocritic
+    - gosec
     - importas
+    - misspell
     - prealloc
     - revive
-    - misspell
-    - stylecheck
+    - staticcheck
     - unconvert
-    - unused
     - whitespace
-output:
-  uniq-by-line: false
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-        - gosec
-        - revive
   max-issues-per-linter: 0
   max-same-issues: 0
-run:
-  issues-exit-code: 1
-  timeout: 10m
+  uniq-by-line: false
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

@@ -43,7 +43,7 @@ func (v AccountValidator) Validate(repoURL string, account string) error {
 func parseOutGitRepoDomain(repoURL string) (string, error) {
 	// This works for GitHub, Bitbucket, and Gitlab
 	submatch := repoDomainPattern.FindStringSubmatch(repoURL)
-	if submatch == nil || len(submatch) < 2 {
+	if len(submatch) < 2 {
 		return "", fmt.Errorf("could not parse git repository domain for %q", repoURL)
 	}
 	return submatch[1], nil
