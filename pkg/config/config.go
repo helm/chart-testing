@@ -70,6 +70,7 @@ type Configuration struct {
 	SkipMissingValues       bool          `mapstructure:"skip-missing-values"`
 	SkipCleanUp             bool          `mapstructure:"skip-clean-up"`
 	Namespace               string        `mapstructure:"namespace"`
+	ReleaseName             string        `mapstructure:"release-name"`
 	ReleaseLabel            string        `mapstructure:"release-label"`
 	ExcludeDeprecated       bool          `mapstructure:"exclude-deprecated"`
 	KubectlTimeout          time.Duration `mapstructure:"kubectl-timeout"`
