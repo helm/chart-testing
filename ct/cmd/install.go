@@ -71,6 +71,9 @@ func addInstallFlags(flags *flag.FlagSet) {
 	flags.String("namespace", "", heredoc.Doc(`
 		Namespace to install the release(s) into. If not specified, each release will be
 		installed in its own randomly generated namespace`))
+	flags.String("release-name", "", heredoc.Doc(`
+		Name for the release. If not specified, is set to the chart name and a random 
+		identifier.`))
 	flags.String("release-label", "app.kubernetes.io/instance", heredoc.Doc(`
 		The label to be used as a selector when inspecting resources created by charts.
 		This is only used if namespace is specified`))

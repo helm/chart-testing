@@ -205,12 +205,17 @@ func (c *Chart) HasCIValuesFile(path string) bool {
 }
 
 // CreateInstallParams generates a randomized release name and namespace based on the chart path
-// and optional buildID. If a buildID is specified, it will be part of the generated namespace.
-func (c *Chart) CreateInstallParams(buildID string) (release string, namespace string) {
+// and optional buildID. If release_name is specified, the release name is set to that string instead.
+// If a buildID is specified, it will be part of the generated namespace.
+func (c *Chart) CreateInstallParams(buildID string, releaseName string) (release string, namespace string) {
 	release = filepath.Base(c.Path())
 	if release == "." || release == "/" {
-		yaml := c.Yaml()
-		release = yaml.Name
+		if releaseName != "" {
+			release = releaseName
+		} else {
+			yaml := c.Yaml()
+			release = yaml.Name
+		}
 	}
 	namespace = release
 	if buildID != "" {
@@ -686,14 +691,14 @@ func (t *Testing) testRelease(namespace, release, releaseSelector string) error 
 func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, releaseSelector string, cleanup func()) {
 	if t.config.Namespace != "" {
 		namespace = t.config.Namespace
-		release, _ = chart.CreateInstallParams(t.config.BuildID)
+		release, _ = chart.CreateInstallParams(t.config.BuildID, t.config.ReleaseName)
 		releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
 		cleanup = func() {
 			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(namespace, release)
 		}
 	} else {
-		release, namespace = chart.CreateInstallParams(t.config.BuildID)
+		release, namespace = chart.CreateInstallParams(t.config.BuildID, t.config.ReleaseName)
 		cleanup = func() {
 			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(namespace, release)
