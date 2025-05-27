@@ -111,7 +111,7 @@ func (h *fakeHelm) LintWithValues(_ string, _ string) error { return nil }
 func (h *fakeHelm) InstallWithValues(_ string, _ string, _ string, _ string) error {
 	return nil
 }
-func (h *fakeHelm) Upgrade(_ string, _ string, _ string) error {
+func (h *fakeHelm) UpgradeWithValues(_ string, _ string, _ string, _ string) error {
 	return nil
 }
 func (h *fakeHelm) Test(_ string, _ string) error {

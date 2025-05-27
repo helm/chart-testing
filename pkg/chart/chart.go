@@ -79,7 +79,8 @@ type Git interface {
 // InstallWithValues runs `helm install` for the given chart using the specified values file.
 // Pass a zero value for valuesFile in order to run install without specifying a values file.
 //
-// Upgrade runs `helm upgrade` against an existing release, and re-uses the previously computed values.
+// UpgradeWithValues runs `helm upgrade` against an existing release using the specified values file.
+// Pass a zero value for valuesFile in order to run install without specifying a values file.
 //
 // Test runs `helm test` against an existing release. Set the cleanup argument to true in order
 // to clean up test pods created by helm after the test command completes.
@@ -91,7 +92,7 @@ type Helm interface {
 	BuildDependenciesWithArgs(chart string, extraArgs []string) error
 	LintWithValues(chart string, valuesFile string) error
 	InstallWithValues(chart string, valuesFile string, namespace string, release string) error
-	Upgrade(chart string, namespace string, release string) error
+	UpgradeWithValues(chart string, valuesFile string, namespace string, release string) error
 	Test(namespace string, release string) error
 	DeleteRelease(namespace string, release string)
 	Version() (string, error)
@@ -660,7 +661,7 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 				return nil
 			}
 
-			if err := t.helm.Upgrade(newChart.Path(), namespace, release); err != nil {
+			if err := t.helm.UpgradeWithValues(newChart.Path(), valuesFile, namespace, release); err != nil {
 				return err
 			}
 
