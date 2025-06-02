@@ -63,6 +63,8 @@ ct lint-and-install [flags]
                                              expose sensitive data when helm-repo-extra-args contains passwords)
       --release-label string                 The label to be used as a selector when inspecting resources created by charts.
                                              This is only used if namespace is specified (default "app.kubernetes.io/instance")
+      --release-name string                  Name for the release. If not specified, is set to the chart name and a random 
+                                             identifier.
       --remote string                        The name of the Git remote used to identify changed charts (default "origin")
       --since string                         The Git reference used to identify changed charts (default "HEAD")
       --skip-clean-up                        Skip resources clean-up. Used if need to continue other flows or keep it around.
