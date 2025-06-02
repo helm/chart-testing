@@ -17,12 +17,13 @@ package tool
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 )
 
 type AccountValidator struct{}
 
-var repoDomainPattern = regexp.MustCompile("(?:https://(?:[^@:]+:[^@:]+@)?|git@)([^/:]+)")
+var scpStylePattern = regexp.MustCompile("^(?:[^@]+@)?(?<host>[^@/:]+):.+$")
 
 func (v AccountValidator) Validate(repoURL string, account string) error {
 	domain, err := parseOutGitRepoDomain(repoURL)
@@ -41,10 +42,15 @@ func (v AccountValidator) Validate(repoURL string, account string) error {
 }
 
 func parseOutGitRepoDomain(repoURL string) (string, error) {
-	// This works for GitHub, Bitbucket, and Gitlab
-	submatch := repoDomainPattern.FindStringSubmatch(repoURL)
-	if len(submatch) < 2 {
-		return "", fmt.Errorf("could not parse git repository domain for %q", repoURL)
+	// Git remotes can be either URLs or scp style remotes
+	parsedURL, err := url.Parse(repoURL)
+
+	if err != nil || len(parsedURL.Hostname()) < 1 {
+		submatch := scpStylePattern.FindStringSubmatch(repoURL)
+		if len(submatch) < 2 || len(submatch[1]) < 1 {
+			return "", fmt.Errorf("could not parse git repository domain for %q", repoURL)
+		}
+		return submatch[1], nil
 	}
-	return submatch[1], nil
+	return parsedURL.Hostname(), nil
 }
