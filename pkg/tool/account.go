@@ -47,7 +47,7 @@ func parseOutGitRepoDomain(repoURL string) (string, error) {
 
 	if err != nil || len(parsedURL.Hostname()) < 1 {
 		submatch := scpStylePattern.FindStringSubmatch(repoURL)
-		if submatch == nil || len(submatch) < 2 || len(submatch[1]) < 1 {
+		if len(submatch) < 2 || len(submatch[1]) < 1 {
 			return "", fmt.Errorf("could not parse git repository domain for %q", repoURL)
 		}
 		return submatch[1], nil
