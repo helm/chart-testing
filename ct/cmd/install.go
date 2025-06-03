@@ -96,11 +96,7 @@ func install(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed loading configuration: %w", err)
 	}
 
-	extraSetArgs, err := cmd.Flags().GetString("helm-extra-set-args")
-	if err != nil {
-		return err
-	}
-	testing, err := chart.NewTesting(*configuration, extraSetArgs)
+	testing, err := chart.NewTesting(*configuration)
 	if err != nil {
 		fmt.Println(err)
 	}
