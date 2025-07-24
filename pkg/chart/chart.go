@@ -488,7 +488,12 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 	}
 
 	if t.config.ValidateYaml {
-		yamlFiles := append([]string{chartYaml, valuesYaml}, valuesFiles...)
+		yamlFiles := []string{chartYaml}
+		// Only include values.yaml if it exists
+		if _, err := os.Stat(valuesYaml); err == nil {
+			yamlFiles = append(yamlFiles, valuesYaml)
+		}
+		yamlFiles = append(yamlFiles, valuesFiles...)
 		for _, yamlFile := range yamlFiles {
 			if err := t.linter.YamlLint(yamlFile, t.config.LintConf); err != nil {
 				result.Error = err
