@@ -24,6 +24,9 @@ builds:
       - linux
       - darwin
       - windows
+    ignore:
+      - goarch: arm
+        goos: windows
     flags:
       - -trimpath
     mod_timestamp: '{{ .CommitTimestamp }}'
@@ -50,58 +53,25 @@ checksum:
 snapshot:
   version_template: "{{ .Tag }}-next"
 
-dockers:
-  - skip_push: false
-    use: buildx
-    dockerfile: Dockerfile
-    image_templates:
-      - quay.io/helmpack/chart-testing:{{ .Tag }}-amd64
-      - quay.io/helmpack/chart-testing:latest-amd64
-    build_flag_templates:
-      - --platform=linux/amd64
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.revision={{ .Commit }}
-      - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.created={{ .Date }}
-      - --label=org.opencontainers.image.description=ct - The chart testing tool
-      - --label=org.opencontainers.image.vendor=Helm
-      - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --label=org.opencontainers.image.source=https://github.com/helm/chart-testing
-      - --label=org.opencontainers.image.authors=The Helm Authors
+dockers_v2:
+  - images:
+      - "quay.io/helmpack/chart-testing"
+    tags:
+      - "{{ .Tag }}"
+      - "latest"
+    labels:
+      "org.opencontainers.image.version": "{{ .Version }}"
+      "org.opencontainers.image.revision": "{{ .Commit }}"
+      "org.opencontainers.image.title": "{{ .ProjectName }}"
+      "org.opencontainers.image.created": "{{ .Date }}"
+      "org.opencontainers.image.description": "ct - The chart testing tool"
+      "org.opencontainers.image.vendor": "Helm"
+      "org.opencontainers.image.licenses": "Apache-2.0"
+      "org.opencontainers.image.source": "https://github.com/helm/chart-testing"
+      "org.opencontainers.image.authors": "The Helm Authors"
     extra_files:
       - etc/chart_schema.yaml
       - etc/lintconf.yaml
-  - skip_push: false
-    goarch: arm64
-    use: buildx
-    dockerfile: Dockerfile
-    image_templates:
-      - quay.io/helmpack/chart-testing:{{ .Tag }}-arm64
-      - quay.io/helmpack/chart-testing:latest-arm64
-    build_flag_templates:
-      - --platform=linux/arm64
-      - --label=org.opencontainers.image.version={{ .Version }}
-      - --label=org.opencontainers.image.revision={{ .Commit }}
-      - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.created={{ .Date }}
-      - --label=org.opencontainers.image.description=ct - The chart testing tool
-      - --label=org.opencontainers.image.vendor=Helm
-      - --label=org.opencontainers.image.licenses=Apache-2.0
-      - --label=org.opencontainers.image.source=https://github.com/helm/chart-testing
-      - --label=org.opencontainers.image.authors=The Helm Authors
-    extra_files:
-      - etc/chart_schema.yaml
-      - etc/lintconf.yaml
-
-docker_manifests:
-  - name_template: quay.io/helmpack/chart-testing:latest
-    image_templates:
-      - quay.io/helmpack/chart-testing:latest-amd64
-      - quay.io/helmpack/chart-testing:latest-arm64
-  - name_template: quay.io/helmpack/chart-testing:{{ .Tag }}
-    image_templates:
-      - quay.io/helmpack/chart-testing:{{ .Tag }}-amd64
-      - quay.io/helmpack/chart-testing:{{ .Tag }}-arm64
 
 signs:
   - id: all
@@ -115,7 +85,6 @@ docker_signs:
   - id: images
     cmd: cosign
     args: ["sign", "${artifact}"]
-    artifacts: manifests
 
 changelog:
   use: github-native
