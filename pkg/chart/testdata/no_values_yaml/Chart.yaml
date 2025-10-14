@@ -1,0 +1,9 @@
+apiVersion: v2
+name: no-values-yaml-test
+description: A test chart without values.yaml
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+maintainers:
+- name: validuser
+  email: validuser@example.com

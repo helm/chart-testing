@@ -396,6 +396,53 @@ func TestLintYamlValidation(t *testing.T) {
 	runTests(false, 0, 0)
 }
 
+func TestLintYamlValidationWithoutValuesYaml(t *testing.T) {
+	type testData struct {
+		name     string
+		chartDir string
+		expected bool
+	}
+
+	runTests := func(validate bool, callsYamlLint int, callsYamale int) {
+		fakeMockLinter := new(fakeLinter)
+
+		fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
+		fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
+
+		ct.linter = fakeMockLinter
+		ct.config.ValidateYaml = validate
+		ct.config.ValidateChartSchema = false
+		ct.config.ValidateMaintainers = false
+
+		var suffix string
+		if validate {
+			suffix = "with-validation"
+		} else {
+			suffix = "without-validation"
+		}
+
+		testCases := []testData{
+			{fmt.Sprintf("lint-no-values-yaml-%s", suffix), "testdata/no_values_yaml", true},
+		}
+
+		for _, testData := range testCases {
+			t.Run(testData.name, func(t *testing.T) {
+				chart, err := NewChart(testData.chartDir)
+				assert.Nil(t, err)
+				result := ct.LintChart(chart)
+				assert.Equal(t, testData.expected, result.Error == nil)
+				fakeMockLinter.AssertNumberOfCalls(t, "Yamale", callsYamale)
+				// Only Chart.yaml should be linted, not values.yaml since it doesn't exist
+				fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", callsYamlLint)
+			})
+		}
+	}
+
+	// When validation is enabled, only Chart.yaml should be linted (1 call), not values.yaml
+	runTests(true, 1, 0)
+	runTests(false, 0, 0)
+}
+
 func TestLintDependencyExtraArgs(t *testing.T) {
 	chart := "testdata/test_lints"
 	args := []string{"--skip-refresh"}
