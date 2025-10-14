@@ -396,6 +396,54 @@ func TestLintYamlValidation(t *testing.T) {
 	runTests(false, 0, 0)
 }
 
+func TestLintYamlValidationWithoutValuesYaml(t *testing.T) {
+	testCases := []struct {
+		name          string
+		chartDir      string
+		validateYaml  bool
+		callsYamlLint int
+	}{
+		{
+			name:          "no values.yaml without validation",
+			chartDir:      "testdata/no_values_yaml",
+			validateYaml:  false,
+			callsYamlLint: 0,
+		},
+		{
+			name:          "no values.yaml with validation",
+			chartDir:      "testdata/no_values_yaml",
+			validateYaml:  true,
+			callsYamlLint: 1, // Only Chart.yaml
+		},
+		{
+			name:          "with values.yaml with validation",
+			chartDir:      "testdata/test_lints",
+			validateYaml:  true,
+			callsYamlLint: 2, // Chart.yaml and values.yaml
+		},
+	}
+
+	for _, testData := range testCases {
+		t.Run(testData.name, func(t *testing.T) {
+			fakeMockLinter := new(fakeLinter)
+			fakeMockLinter.On("Yamale", mock.Anything, mock.Anything).Return(true)
+			fakeMockLinter.On("YamlLint", mock.Anything, mock.Anything).Return(true)
+
+			ct.linter = fakeMockLinter
+			ct.config.ValidateYaml = testData.validateYaml
+			ct.config.ValidateChartSchema = false
+			ct.config.ValidateMaintainers = false
+
+			chart, err := NewChart(testData.chartDir)
+			assert.Nil(t, err)
+			result := ct.LintChart(chart)
+			assert.Nil(t, result.Error)
+			fakeMockLinter.AssertNumberOfCalls(t, "Yamale", 0)
+			fakeMockLinter.AssertNumberOfCalls(t, "YamlLint", testData.callsYamlLint)
+		})
+	}
+}
+
 func TestLintDependencyExtraArgs(t *testing.T) {
 	chart := "testdata/test_lints"
 	args := []string{"--skip-refresh"}
