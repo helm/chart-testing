@@ -12,6 +12,9 @@ RUN apk --no-cache add \
     yamllint
 
 # Install Yamale YAML schema validator
+# Note: Yamale 6.0.0 supports Python 3.8+, including Python 3.13.
+# Python 3.14 compatibility requires Yamale >= 7.0.0 (when available).
+# For Python 3.14 runners, ensure Yamale is updated to a version with Python 3.14 support.
 ARG yamale_version=6.0.0
 LABEL yamale-version=$yamale_version
 RUN pip install --break-system-packages "yamale==$yamale_version"

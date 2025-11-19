@@ -40,6 +40,21 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 $ brew install chart-testing
 ```
 
+## Python Version Compatibility
+
+Chart Testing (`ct`) bundles Yamale for YAML schema validation. The currently bundled Yamale version (6.0.0) supports Python 3.8 through Python 3.13.
+
+**Python 3.14 Note**: If you are using CT on a system with Python 3.14 installed, schema validation may fail due to Yamale's use of deprecated Python AST features that were removed in Python 3.14. 
+
+**For detailed information and solutions, see [PYTHON-3.14-COMPATIBILITY.md](PYTHON-3.14-COMPATIBILITY.md)**
+
+**Quick Workaround**: When Python 3.14 is detected on your system:
+1. **Use the Docker image** (recommended): `docker run quay.io/helmpack/chart-testing:latest ct lint`
+2. **Use Python 3.13 or earlier** on your system or CI/CD pipeline
+3. **Disable schema validation** temporarily: `ct lint --validate-chart-schema=false` (not recommended)
+
+Future versions of CT will include updated Yamale versions with Python 3.14 support.
+
 ## Usage
 
 See documentation for individual commands:
@@ -183,6 +198,19 @@ Build ct using Goreleaser.
                     of a GitHub release and building and pushing the Docker image.
                     If this flag is not specified, Goreleaser is run with --snapshot
 ```
+
+## Troubleshooting
+
+### Schema Validation Fails with Python 3.14
+
+If you encounter `AttributeError: module 'ast' has no attribute 'Num'` or similar errors during schema validation when running CT on a system with Python 3.14, this is a known compatibility issue.
+
+**See [PYTHON-3.14-COMPATIBILITY.md](PYTHON-3.14-COMPATIBILITY.md) for detailed information and solutions.**
+
+Quick solutions:
+- Use the Docker image: `docker run quay.io/helmpack/chart-testing ct lint`
+- Use Python 3.13 or earlier
+- Upgrade to a future CT release with Python 3.14 support
 
 ## Releasing
 
