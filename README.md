@@ -205,8 +205,6 @@ Build ct using Goreleaser.
 
 If you encounter `AttributeError: module 'ast' has no attribute 'Num'` or similar errors during schema validation when running CT on a system with Python 3.14, this is a known compatibility issue.
 
-**See [PYTHON-3.14-COMPATIBILITY.md](PYTHON-3.14-COMPATIBILITY.md) for detailed information and solutions.**
-
 Quick solutions:
 - Use the Docker image: `docker run quay.io/helmpack/chart-testing ct lint`
 - Use Python 3.13 or earlier
