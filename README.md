@@ -40,6 +40,14 @@ available tags [here](https://quay.io/repository/helmpack/chart-testing?tab=tags
 $ brew install chart-testing
 ```
 
+### Mise-en-place
+
+If you are using [mise](https://mise.jdx.dev), the polyglot tool version manager, you can install `chart testing` by using a command like:
+
+```shell
+mise use -g helm-ct@latest
+```
+
 ## Usage
 
 See documentation for individual commands:
