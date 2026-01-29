@@ -22,18 +22,20 @@ import (
 )
 
 type Helm struct {
-	exec          exec.ProcessExecutor
-	extraArgs     []string
-	lintExtraArgs []string
-	extraSetArgs  []string
+	exec              exec.ProcessExecutor
+	extraArgs         []string
+	lintExtraArgs     []string
+	extraSetArgs      []string
+	uninstallExtraArgs []string
 }
 
-func NewHelm(exec exec.ProcessExecutor, extraArgs, lintExtraArgs, extraSetArgs []string) Helm {
+func NewHelm(exec exec.ProcessExecutor, extraArgs, lintExtraArgs, extraSetArgs, uninstallExtraArgs []string) Helm {
 	return Helm{
-		exec:          exec,
-		extraArgs:     extraArgs,
-		lintExtraArgs: lintExtraArgs,
-		extraSetArgs:  extraSetArgs,
+		exec:               exec,
+		extraArgs:          extraArgs,
+		lintExtraArgs:      lintExtraArgs,
+		extraSetArgs:       extraSetArgs,
+		uninstallExtraArgs: uninstallExtraArgs,
 	}
 }
 
@@ -91,7 +93,7 @@ func (h Helm) Test(namespace string, release string) error {
 
 func (h Helm) DeleteRelease(namespace string, release string) {
 	fmt.Printf("Deleting release %q...\n", release)
-	if err := h.exec.RunProcess("helm", "uninstall", release, "--namespace", namespace, "--wait", h.extraArgs); err != nil {
+	if err := h.exec.RunProcess("helm", "uninstall", release, "--namespace", namespace, "--wait", h.extraArgs, h.uninstallExtraArgs); err != nil {
 		fmt.Println("Error deleting Helm release:", err)
 	}
 }

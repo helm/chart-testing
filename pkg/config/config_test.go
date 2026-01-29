@@ -54,6 +54,7 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, []string{"common"}, cfg.ExcludedCharts)
 	require.Equal(t, "--timeout 300s", cfg.HelmExtraArgs)
 	require.Equal(t, "--quiet", cfg.HelmLintExtraArgs)
+	require.Equal(t, "--no-hooks --cascade background", cfg.HelmUninstallExtraArgs)
 	require.Equal(t, true, cfg.Upgrade)
 	require.Equal(t, true, cfg.SkipMissingValues)
 	require.Equal(t, "default", cfg.Namespace)

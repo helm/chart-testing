@@ -271,10 +271,11 @@ func NewTesting(config config.Configuration) (Testing, error) {
 	helmExtraArgs := strings.Fields(config.HelmExtraArgs)
 	helmExtraSetArgs := strings.Fields(config.HelmExtraSetArgs)
 	helmLintExtraArgs := strings.Fields(config.HelmLintExtraArgs)
+	helmUninstallExtraArgs := strings.Fields(config.HelmUninstallExtraArgs)
 
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(procExec, helmExtraArgs, helmLintExtraArgs, helmExtraSetArgs),
+		helm:             tool.NewHelm(procExec, helmExtraArgs, helmLintExtraArgs, helmExtraSetArgs, helmUninstallExtraArgs),
 		git:              tool.NewGit(procExec),
 		kubectl:          tool.NewKubectl(procExec, config.KubectlTimeout),
 		linter:           tool.NewLinter(procExec),
