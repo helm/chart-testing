@@ -45,10 +45,10 @@ jobs:
         uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.10.0
 
       - name: Install syft
-        uses: anchore/sbom-action/download-syft@62ad5284b8ced813296287a0b63906cb364b73ee # v0.22.0
+        uses: anchore/sbom-action/download-syft@28d71544de8eaf1b958d335707167c5f783590ad # v0.22.2
 
       - name: Install k8s Kind
-        uses: helm/kind-action@92086f6be054225fa813e0a4b13787fc9088faab # v1.3.0
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.3.0
         with:
           install_only: true
 
