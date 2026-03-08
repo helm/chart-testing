@@ -307,9 +307,9 @@ func (t *Testing) computePreviousRevisionPath(fileOrDirPath string) string {
 	return filepath.Join(t.previousRevisionWorktree, fileOrDirPath)
 }
 
-func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestResult, error) {
+func (t *Testing) processCharts(action func(chart *Chart, ciOnly bool) TestResult) ([]TestResult, error) {
 	var results []TestResult // nolint: prealloc
-	chartDirs, err := t.FindChartDirsToBeProcessed()
+	chartDirs, ciOnlyCharts, err := t.findChartDirsToBeProcessed()
 	if err != nil {
 		return nil, fmt.Errorf("failed identifying charts to process: %w", err)
 	} else if len(chartDirs) == 0 {
@@ -408,7 +408,8 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 			}
 		}
 
-		result := action(chart)
+		_, ciOnly := ciOnlyCharts[chart.Path()]
+		result := action(chart, ciOnly)
 		if result.Error != nil {
 			testResults.OverallSuccess = false
 		}
@@ -423,17 +424,19 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 
 // LintCharts lints charts (changed, all, specific) depending on the configuration.
 func (t *Testing) LintCharts() ([]TestResult, error) {
-	return t.processCharts(t.LintChart)
+	return t.processCharts(t.lintChart)
 }
 
 // InstallCharts install charts (changed, all, specific) depending on the configuration.
 func (t *Testing) InstallCharts() ([]TestResult, error) {
-	return t.processCharts(t.InstallChart)
+	return t.processCharts(func(chart *Chart, _ bool) TestResult {
+		return t.InstallChart(chart)
+	})
 }
 
 // LintAndInstallCharts first lints and then installs charts (changed, all, specific) depending on the configuration.
 func (t *Testing) LintAndInstallCharts() ([]TestResult, error) {
-	return t.processCharts(t.LintAndInstallChart)
+	return t.processCharts(t.lintAndInstallChart)
 }
 
 // PrintResults writes test results to stdout.
@@ -465,12 +468,18 @@ func (t *Testing) PrintResults(results []TestResult) {
 
 // LintChart lints the specified chart.
 func (t *Testing) LintChart(chart *Chart) TestResult {
+	return t.lintChart(chart, false)
+}
+
+func (t *Testing) lintChart(chart *Chart, ciOnly bool) TestResult {
 	fmt.Printf("Linting chart %q\n", chart)
 
 	result := TestResult{Chart: chart}
 
 	if t.config.CheckVersionIncrement {
-		if err := t.CheckVersionIncrement(chart); err != nil {
+		if ciOnly {
+			fmt.Printf("Skipping version increment check for %q because only 'ci' directory files changed\n", chart)
+		} else if err := t.CheckVersionIncrement(chart); err != nil {
 			result.Error = err
 			return result
 		}
@@ -713,7 +722,11 @@ func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, relea
 
 // LintAndInstallChart first lints and then installs the specified chart.
 func (t *Testing) LintAndInstallChart(chart *Chart) TestResult {
-	result := t.LintChart(chart)
+	return t.lintAndInstallChart(chart, false)
+}
+
+func (t *Testing) lintAndInstallChart(chart *Chart, ciOnly bool) TestResult {
+	result := t.lintChart(chart, ciOnly)
 	if result.Error != nil {
 		return result
 	}
@@ -723,13 +736,19 @@ func (t *Testing) LintAndInstallChart(chart *Chart) TestResult {
 // FindChartDirsToBeProcessed identifies charts to be processed depending on the configuration
 // (changed charts, all charts, or specific charts).
 func (t *Testing) FindChartDirsToBeProcessed() ([]string, error) {
+	dirs, _, err := t.findChartDirsToBeProcessed()
+	return dirs, err
+}
+
+func (t *Testing) findChartDirsToBeProcessed() ([]string, map[string]struct{}, error) {
 	cfg := t.config
 	if cfg.ProcessAllCharts {
-		return t.ReadAllChartDirectories()
+		dirs, err := t.ReadAllChartDirectories()
+		return dirs, nil, err
 	} else if len(cfg.Charts) > 0 {
-		return t.config.Charts, nil
+		return cfg.Charts, nil, nil
 	}
-	return t.ComputeChangedChartDirectories()
+	return t.computeChangedChartDirectories()
 }
 
 func (t *Testing) computeMergeBase() (string, error) {
@@ -749,16 +768,23 @@ func (t *Testing) computeMergeBase() (string, error) {
 // ComputeChangedChartDirectories takes the merge base of HEAD and the configured remote and target branch and computes a
 // slice of changed charts from that in the configured chart directories excluding those configured to be excluded.
 func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
+	dirs, _, err := t.computeChangedChartDirectories()
+	return dirs, err
+}
+
+// computeChangedChartDirectories is the internal implementation that also returns
+// a set of chart directories where only files in the 'ci' directory changed.
+func (t *Testing) computeChangedChartDirectories() ([]string, map[string]struct{}, error) {
 	cfg := t.config
 
 	mergeBase, err := t.computeMergeBase()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	allChangedChartFiles, err := t.git.ListChangedFilesInDirs(mergeBase, cfg.ChartDirs...)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating diff: %w", err)
+		return nil, nil, fmt.Errorf("failed creating diff: %w", err)
 	}
 
 	changedChartFiles := map[string][]string{}
@@ -784,28 +810,49 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		}
 	}
 
-	changedChartDirs := []string{}
+	// Apply helmignore filtering
 	if t.config.UseHelmignore {
-		for chartDir, changedChartFiles := range changedChartFiles {
+		for chartDir, files := range changedChartFiles {
 			rules, err := t.loadRules(chartDir)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
-			filteredChartFiles, err := ignore.FilterFiles(changedChartFiles, rules)
+			filteredFiles, err := ignore.FilterFiles(files, rules)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
-			if len(filteredChartFiles) > 0 {
-				changedChartDirs = append(changedChartDirs, chartDir)
+			if len(filteredFiles) > 0 {
+				changedChartFiles[chartDir] = filteredFiles
+			} else {
+				delete(changedChartFiles, chartDir)
 			}
-		}
-	} else {
-		for chartDir := range changedChartFiles {
-			changedChartDirs = append(changedChartDirs, chartDir)
 		}
 	}
 
-	return changedChartDirs, nil
+	// Detect charts where only 'ci' directory files changed (after helmignore filtering)
+	var ciOnlyCharts map[string]struct{}
+	if cfg.IgnoreCIChanges {
+		ciOnlyCharts = make(map[string]struct{})
+		for chartDir, files := range changedChartFiles {
+			allCI := true
+			for _, f := range files {
+				if !strings.HasPrefix(filepath.ToSlash(f), "ci/") {
+					allCI = false
+					break
+				}
+			}
+			if allCI {
+				ciOnlyCharts[chartDir] = struct{}{}
+			}
+		}
+	}
+
+	changedChartDirs := make([]string, 0, len(changedChartFiles))
+	for chartDir := range changedChartFiles {
+		changedChartDirs = append(changedChartDirs, chartDir)
+	}
+
+	return changedChartDirs, ciOnlyCharts, nil
 }
 
 // ReadAllChartDirectories returns a slice of all charts in the configured chart directories except those

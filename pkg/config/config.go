@@ -77,6 +77,7 @@ type Configuration struct {
 	PrintLogs               bool          `mapstructure:"print-logs"`
 	GithubGroups            bool          `mapstructure:"github-groups"`
 	UseHelmignore           bool          `mapstructure:"use-helmignore"`
+	IgnoreCIChanges         bool          `mapstructure:"ignore-ci-changes"`
 }
 
 func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*Configuration, error) {
