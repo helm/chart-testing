@@ -33,5 +33,6 @@
     "exclude-deprecated": true,
     "kubectl-timeout": "120s",
     "skip-clean-up": true,
-    "use-helmignore": true
+    "use-helmignore": true,
+    "ignore-ci-changes": true
 }

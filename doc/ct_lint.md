@@ -62,6 +62,7 @@ ct lint [flags]
                                              (e.g. 'myrepo=--username test --password secret'). May be specified
                                              multiple times or separate values with commas
   -h, --help                                 help for lint
+      --ignore-ci-changes                    If set, changes only in the chart's 'ci' directory will not trigger a chart version bump requirement
       --lint-conf string                     The config file for YAML linting. If not specified, 'lintconf.yaml'
                                              is searched in the current directory, '$HOME/.ct', and '/etc/ct', in
                                              that order

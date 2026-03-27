@@ -75,6 +75,19 @@ func (g fakeGit) BranchExists(_ string) bool {
 	return true
 }
 
+type fakeGitCIOnlyChanges struct{ fakeGit }
+
+func (g fakeGitCIOnlyChanges) Show(_ string, _ string, _ string) (string, error) {
+	return "name: test\nversion: 1.0.0\n", nil
+}
+
+func (g fakeGitCIOnlyChanges) ListChangedFilesInDirs(_ string, _ ...string) ([]string, error) {
+	return []string{
+		"test_charts/foo/ci/test-values.yaml",
+		"test_charts/bar/Chart.yaml",
+	}, nil
+}
+
 type fakeAccountValidator struct{}
 
 func (v fakeAccountValidator) Validate(_ string, account string) error {
@@ -225,6 +238,78 @@ func TestComputeChangedChartDirectoriesWithMultiLevelChartWithHelmIgnore(t *test
 	expected := []string{"test_chart_at_multi_level/foo/bar"}
 	assert.Nil(t, err)
 	assert.ElementsMatch(t, expected, actual)
+}
+
+func TestComputeChangedChartDirectoriesIgnoreCIChanges(t *testing.T) {
+	cfg := config.Configuration{
+		ExcludedCharts:  []string{"excluded"},
+		ChartDirs:       []string{"test_charts", "."},
+		IgnoreCIChanges: true,
+	}
+	ct := newTestingMock(cfg)
+	ct.git = fakeGitCIOnlyChanges{}
+	actual, err := ct.ComputeChangedChartDirectories()
+	assert.Nil(t, err)
+	// Both charts are still returned — CI-only charts are not excluded from change detection
+	assert.ElementsMatch(t, []string{"test_charts/foo", "test_charts/bar"}, actual)
+}
+
+func TestLintChartsIgnoreCIChanges(t *testing.T) {
+	cfg := config.Configuration{
+		ExcludedCharts:        []string{"excluded"},
+		ChartDirs:             []string{"test_charts"},
+		IgnoreCIChanges:       true,
+		CheckVersionIncrement: true,
+		SkipHelmDependencies:  true,
+	}
+	ct := newTestingMock(cfg)
+	ct.git = fakeGitCIOnlyChanges{}
+
+	results, err := ct.LintCharts()
+	// bar fails version check, so overall error is returned
+	assert.NotNil(t, err)
+	assert.Len(t, results, 2)
+
+	for _, result := range results {
+		switch result.Chart.Path() {
+		case "test_charts/foo":
+			// CI-only: version check skipped, lint passes
+			assert.Nil(t, result.Error)
+		case "test_charts/bar":
+			// Non-CI-only: version check runs and fails (fakeGit returns old version 1.0.0)
+			assert.NotNil(t, result.Error)
+		default:
+			t.Fatalf("unexpected chart: %s", result.Chart.Path())
+		}
+	}
+}
+
+func TestLintChartsVersionCheckWithoutIgnoreCIChanges(t *testing.T) {
+	cfg := config.Configuration{
+		ExcludedCharts:        []string{"excluded"},
+		ChartDirs:             []string{"test_charts"},
+		IgnoreCIChanges:       false,
+		CheckVersionIncrement: true,
+		SkipHelmDependencies:  true,
+	}
+	ct := newTestingMock(cfg)
+	ct.git = fakeGitCIOnlyChanges{}
+
+	results, err := ct.LintCharts()
+	assert.NotNil(t, err)
+	assert.Len(t, results, 2)
+
+	for _, result := range results {
+		switch result.Chart.Path() {
+		case "test_charts/foo":
+			// Without --ignore-ci-changes, CI-only chart still gets version-checked and fails
+			assert.NotNil(t, result.Error)
+		case "test_charts/bar":
+			assert.NotNil(t, result.Error)
+		default:
+			t.Fatalf("unexpected chart: %s", result.Chart.Path())
+		}
+	}
 }
 
 func TestReadAllChartDirectories(t *testing.T) {

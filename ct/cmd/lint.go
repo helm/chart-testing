@@ -71,6 +71,7 @@ func addLintFlags(flags *flag.FlagSet) {
 		Enable linting of 'Chart.yaml' and values files`))
 	flags.Bool("skip-helm-dependencies", false, heredoc.Doc(`
 		Skip running 'helm dependency build' before linting`))
+	flags.Bool("ignore-ci-changes", false, "If set, changes only in the chart's 'ci' directory will not trigger a chart version bump requirement")
 	flags.StringSlice("additional-commands", []string{}, heredoc.Doc(`
 		Additional commands to run per chart (default: [])
 		Commands will be executed in the same order as provided in the list and will
