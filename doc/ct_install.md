@@ -54,7 +54,9 @@ ct install [flags]
       --helm-extra-args string               Additional arguments for Helm. Must be passed as a single quoted string
                                              (e.g. '--timeout 500s')
       --helm-extra-set-args string           Additional arguments for Helm. Must be passed as a single quoted string
-                                             (e.g. "--set=name=value"
+                                             (e.g. "--set=name=value")
+      --helm-uninstall-extra-args string     Additional arguments for Helm uninstall. Must be passed as a single quoted string
+                                             (e.g. "--no-hooks --cascade background")
       --helm-lint-extra-args string          Additional arguments for Helm lint subcommand. Must be passed as a single quoted string
                                              (e.g. '--quiet')
       --helm-repo-extra-args strings         Additional arguments for the 'helm repo add' command to be
@@ -84,5 +86,4 @@ ct install [flags]
 
 ### SEE ALSO
 
-* [ct](ct.md)	 - The Helm chart testing tool
-
+* [ct](ct.md) - The Helm chart testing tool

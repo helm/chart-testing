@@ -35,6 +35,7 @@ func newTestingHelmIntegration(cfg config.Configuration, extraSetArgs string) Te
 	procExec := exec.NewProcessExecutor(true)
 	extraArgs := strings.Fields(cfg.HelmExtraArgs)
 	extraLintArgs := strings.Fields(cfg.HelmLintExtraArgs)
+	uninstallExtraArgs := strings.Fields(cfg.HelmUninstallExtraArgs)
 
 	return Testing{
 		config:           cfg,
@@ -43,7 +44,7 @@ func newTestingHelmIntegration(cfg config.Configuration, extraSetArgs string) Te
 		utils:            util.Utils{},
 		accountValidator: fakeAccountValidator{},
 		linter:           fakeMockLinter,
-		helm:             tool.NewHelm(procExec, extraArgs, extraLintArgs, strings.Fields(extraSetArgs)),
+		helm:             tool.NewHelm(procExec, extraArgs, extraLintArgs, strings.Fields(extraSetArgs), uninstallExtraArgs),
 		kubectl:          tool.NewKubectl(procExec, 30*time.Second),
 	}
 }
