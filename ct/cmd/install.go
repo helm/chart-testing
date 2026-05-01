@@ -80,6 +80,9 @@ func addInstallFlags(flags *flag.FlagSet) {
 	flags.String("helm-extra-set-args", "", heredoc.Doc(`
 		Additional arguments for Helm. Must be passed as a single quoted string
 		(e.g. "--set=name=value"`))
+	flags.String("helm-uninstall-extra-args", "", heredoc.Doc(`
+		Additional arguments for Helm uninstall. Must be passed as a single quoted string
+		(e.g. "--no-hooks"`))
 	flags.Bool("skip-clean-up", false, heredoc.Doc(`
 		Skip resources clean-up. Used if need to continue other flows or keep it around.`))
 }
