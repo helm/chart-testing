@@ -78,7 +78,7 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 		return err
 	}
 
-	namespaceUpdate := map[string]interface{}{}
+	namespaceUpdate := map[string]any{}
 	err = json.Unmarshal([]byte(cmdOutput), &namespaceUpdate)
 	if err != nil {
 		fmt.Println("Error in unmarshalling the payload:", err)
@@ -154,8 +154,7 @@ func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 		return err
 	}
 
-	deployments := strings.Fields(output)
-	for _, deployment := range deployments {
+	for deployment := range strings.FieldsSeq(output) {
 		deployment = strings.Trim(deployment, "'")
 		err = k.exec.RunProcess("kubectl",
 			fmt.Sprintf("--request-timeout=%s", k.timeout),
@@ -188,15 +187,15 @@ func (k Kubectl) GetPodsforDeployment(namespace string, deployment string) ([]st
 	jsonString, _ := k.exec.RunProcessAndCaptureStdout("kubectl",
 		fmt.Sprintf("--request-timeout=%s", k.timeout),
 		"get", "deployment", deployment, "--namespace", namespace, "--output=json")
-	var deploymentMap map[string]interface{}
+	var deploymentMap map[string]any
 	err := json.Unmarshal([]byte(jsonString), &deploymentMap)
 	if err != nil {
 		return nil, err
 	}
 
-	spec := deploymentMap["spec"].(map[string]interface{})
-	selector := spec["selector"].(map[string]interface{})
-	matchLabels := selector["matchLabels"].(map[string]interface{})
+	spec := deploymentMap["spec"].(map[string]any)
+	selector := spec["selector"].(map[string]any)
+	matchLabels := selector["matchLabels"].(map[string]any)
 	var ls string
 	for name, value := range matchLabels {
 		if ls != "" {
@@ -209,7 +208,8 @@ func (k Kubectl) GetPodsforDeployment(namespace string, deployment string) ([]st
 }
 
 func (k Kubectl) GetPods(args ...string) ([]string, error) {
-	kubectlArgs := []string{"get", "pods"}
+	kubectlArgs := make([]string, 0, 2+len(args))
+	kubectlArgs = append(kubectlArgs, "get", "pods")
 	kubectlArgs = append(kubectlArgs, args...)
 	pods, err := k.exec.RunProcessAndCaptureStdout("kubectl",
 		fmt.Sprintf("--request-timeout=%s", k.timeout), kubectlArgs)
