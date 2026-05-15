@@ -15,7 +15,6 @@
 package config
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -34,6 +33,7 @@ func TestUnmarshalJson(t *testing.T) {
 }
 
 func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
+	t.Helper()
 	cfg, _ := LoadConfiguration(configFile, &cobra.Command{
 		Use: "install",
 	}, true)
@@ -43,25 +43,25 @@ func loadAndAssertConfigFromFile(t *testing.T, configFile string) {
 	require.Equal(t, "pr-42", cfg.BuildID)
 	require.Equal(t, "my-lint-conf.yaml", cfg.LintConf)
 	require.Equal(t, "my-chart-yaml-schema.yaml", cfg.ChartYamlSchema)
-	require.Equal(t, true, cfg.ValidateMaintainers)
-	require.Equal(t, true, cfg.ValidateChartSchema)
-	require.Equal(t, true, cfg.ValidateYaml)
-	require.Equal(t, true, cfg.CheckVersionIncrement)
-	require.Equal(t, false, cfg.ProcessAllCharts)
+	require.True(t, cfg.ValidateMaintainers)
+	require.True(t, cfg.ValidateChartSchema)
+	require.True(t, cfg.ValidateYaml)
+	require.True(t, cfg.CheckVersionIncrement)
+	require.False(t, cfg.ProcessAllCharts)
 	require.Equal(t, []string{"incubator=https://incubator"}, cfg.ChartRepos)
 	require.Equal(t, []string{"incubator=--username test"}, cfg.HelmRepoExtraArgs)
 	require.Equal(t, []string{"stable", "incubator"}, cfg.ChartDirs)
 	require.Equal(t, []string{"common"}, cfg.ExcludedCharts)
 	require.Equal(t, "--timeout 300s", cfg.HelmExtraArgs)
 	require.Equal(t, "--quiet", cfg.HelmLintExtraArgs)
-	require.Equal(t, true, cfg.Upgrade)
-	require.Equal(t, true, cfg.SkipMissingValues)
+	require.True(t, cfg.Upgrade)
+	require.True(t, cfg.SkipMissingValues)
 	require.Equal(t, "default", cfg.Namespace)
 	require.Equal(t, "release", cfg.ReleaseLabel)
-	require.Equal(t, true, cfg.ExcludeDeprecated)
+	require.True(t, cfg.ExcludeDeprecated)
 	require.Equal(t, 120*time.Second, cfg.KubectlTimeout)
-	require.Equal(t, true, cfg.SkipCleanUp)
-	require.Equal(t, true, cfg.UseHelmignore)
+	require.True(t, cfg.SkipCleanUp)
+	require.True(t, cfg.UseHelmignore)
 }
 
 func Test_findConfigFile(t *testing.T) {
@@ -96,13 +96,7 @@ func Test_findConfigFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envVar != "" {
-				err := os.Setenv("CT_CONFIG_DIR", tt.envVar)
-				require.NoError(t, err)
-
-				t.Cleanup(func() {
-					err := os.Unsetenv("CT_CONFIG_DIR")
-					require.NoError(t, err)
-				})
+				t.Setenv("CT_CONFIG_DIR", tt.envVar)
 			}
 			configSearchLocations = []string{tt.defaultDir}
 

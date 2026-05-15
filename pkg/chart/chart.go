@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -144,7 +145,7 @@ type Linter interface {
 //
 // RunCommand renders cmdTemplate as go template using data and executes the resulting command
 type CmdExecutor interface {
-	RunCommand(cmdTemplate string, data interface{}) error
+	RunCommand(cmdTemplate string, data any) error
 }
 
 // DirectoryLister is the interface
@@ -251,12 +252,6 @@ type Testing struct {
 	utils                    Utils
 	previousRevisionWorktree string
 	loadRules                func(string) (*helmignore.Rules, error)
-}
-
-// TestResults holds results and overall status
-type TestResults struct {
-	OverallSuccess bool
-	TestResults    []TestResult
 }
 
 // TestResult holds test results for a specific chart
@@ -368,10 +363,7 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 		}
 	}
 
-	testResults := TestResults{
-		OverallSuccess: true,
-		TestResults:    results,
-	}
+	overallSuccess := true
 
 	// Checkout previous chart revisions and build their dependencies
 	if t.config.Upgrade {
@@ -410,11 +402,11 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 
 		result := action(chart)
 		if result.Error != nil {
-			testResults.OverallSuccess = false
+			overallSuccess = false
 		}
 		results = append(results, result)
 	}
-	if testResults.OverallSuccess {
+	if overallSuccess {
 		return results, nil
 	}
 
@@ -764,7 +756,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 	changedChartFiles := map[string][]string{}
 	for _, file := range allChangedChartFiles {
 		pathElements := strings.SplitN(filepath.ToSlash(file), "/", 3)
-		if len(pathElements) < 2 || util.StringSliceContains(cfg.ExcludedCharts, pathElements[1]) {
+		if len(pathElements) < 2 || slices.Contains(cfg.ExcludedCharts, pathElements[1]) {
 			continue
 		}
 		dir := filepath.Dir(file)
@@ -774,7 +766,7 @@ func (t *Testing) ComputeChangedChartDirectories() ([]string, error) {
 		if err == nil {
 			if len(chartDirElement) > 1 {
 				chartDirName := chartDirElement[len(chartDirElement)-1]
-				if util.StringSliceContains(cfg.ExcludedCharts, chartDirName) {
+				if slices.Contains(cfg.ExcludedCharts, chartDirName) {
 					continue
 				}
 			}
@@ -818,7 +810,7 @@ func (t *Testing) ReadAllChartDirectories() ([]string, error) {
 		dirs, err := t.directoryLister.ListChildDirs(chartParentDir,
 			func(dir string) bool {
 				_, err := t.utils.LookupChartDir(cfg.ChartDirs, dir)
-				return err == nil && !util.StringSliceContains(cfg.ExcludedCharts, filepath.Base(dir))
+				return err == nil && !slices.Contains(cfg.ExcludedCharts, filepath.Base(dir))
 			})
 		if err != nil {
 			return nil, fmt.Errorf("failed reading chart directories: %w", err)
