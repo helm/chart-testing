@@ -22,6 +22,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: true
 
       - name: shellcheck
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # v2.0.0
@@ -69,20 +70,23 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Tag
+        env:
+          INPUTS_VERSION: ${{ github.event.inputs.version }}
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-          tag='${{ github.event.inputs.version }}'
+          tag="${INPUTS_VERSION}"
           git tag --annotate --message "Tag for release $tag" "$tag"
           git push origin "refs/tags/$tag"
 
       - name: Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUTS_VERSION: ${{ github.event.inputs.version }}
         run: |
           set -o nounset
           set -o pipefail
 
-          echo "Building release ${{ github.event.inputs.version }}"
+          echo "Building release ${INPUTS_VERSION}"
           ./build.sh --release
