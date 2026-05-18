@@ -24,13 +24,13 @@ import (
 
 func TestFlatten(t *testing.T) {
 	var testDataSlice = []struct {
-		input    []interface{}
+		input    []any
 		expected []string
 	}{
-		{[]interface{}{"foo", "bar", []string{"bla", "blubb"}}, []string{"foo", "bar", "bla", "blubb"}},
-		{[]interface{}{"foo", "bar", "bla", "blubb"}, []string{"foo", "bar", "bla", "blubb"}},
-		{[]interface{}{"foo", "bar", []interface{}{"bla", []string{"blubb"}}}, []string{"foo", "bar", "bla", "blubb"}},
-		{[]interface{}{"foo", 42, []interface{}{"bla", []string{"blubb"}}}, nil},
+		{[]any{"foo", "bar", []string{"bla", "blubb"}}, []string{"foo", "bar", "bla", "blubb"}},
+		{[]any{"foo", "bar", "bla", "blubb"}, []string{"foo", "bar", "bla", "blubb"}},
+		{[]any{"foo", "bar", []any{"bla", []string{"blubb"}}}, []string{"foo", "bar", "bla", "blubb"}},
+		{[]any{"foo", 42, []any{"bla", []string{"blubb"}}}, nil},
 	}
 
 	for index, testData := range testDataSlice {
@@ -38,9 +38,9 @@ func TestFlatten(t *testing.T) {
 			actual, err := Flatten(testData.input)
 			assert.Equal(t, testData.expected, actual)
 			if testData.expected != nil {
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 			} else {
-				assert.NotNil(t, err)
+				assert.Error(t, err)
 			}
 		})
 	}

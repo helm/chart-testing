@@ -25,7 +25,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/Masterminds/semver"
 	"github.com/hashicorp/go-multierror"
@@ -46,15 +45,11 @@ type ChartYaml struct {
 	Maintainers []Maintainer
 }
 
-func Flatten(items []interface{}) ([]string, error) {
+func Flatten(items []any) ([]string, error) {
 	return doFlatten([]string{}, items)
 }
 
-func init() {
-	rand.New(rand.NewSource(time.Now().UnixNano())) // nolint: gosec
-}
-
-func doFlatten(result []string, items interface{}) ([]string, error) {
+func doFlatten(result []string, items any) ([]string, error) {
 	var err error
 
 	switch v := items.(type) {
@@ -62,7 +57,7 @@ func doFlatten(result []string, items interface{}) ([]string, error) {
 		result = append(result, v)
 	case []string:
 		result = append(result, v...)
-	case []interface{}:
+	case []any:
 		for _, item := range v {
 			result, err = doFlatten(result, item)
 			if err != nil {
@@ -74,15 +69,6 @@ func doFlatten(result []string, items interface{}) ([]string, error) {
 	}
 
 	return result, err
-}
-
-func StringSliceContains(slice []string, s string) bool {
-	for _, element := range slice {
-		if s == element {
-			return true
-		}
-	}
-	return false
 }
 
 func FileExists(file string) bool {
@@ -243,10 +229,10 @@ func SanitizeName(s string, maxLength int) string {
 
 func GetRandomPort() (int, error) {
 	listener, err := net.Listen("tcp", ":0") // nolint: gosec
-	defer listener.Close()                   // nolint: staticcheck
 	if err != nil {
 		return 0, err
 	}
+	defer listener.Close() // nolint: errcheck
 
 	return listener.Addr().(*net.TCPAddr).Port, nil
 }

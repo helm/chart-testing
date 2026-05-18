@@ -90,7 +90,7 @@ func LoadConfiguration(cfgFile string, cmd *cobra.Command, printConfig bool) (*C
 		if flagName != "config" && flagName != "help" {
 			if err := v.BindPFlag(flagName, flag); err != nil {
 				// can't really happen
-				panic(fmt.Sprintf("failed binding flag %q: %v\n", flagName, err.Error()))
+				panic(fmt.Sprintf("failed binding flag %q: %v\n", flagName, err))
 			}
 		}
 	})
