@@ -846,7 +846,7 @@ func (t *Testing) CheckVersionIncrement(chart *Chart) error {
 	}
 
 	if result >= 0 {
-		return errors.New("chart version not ok. Needs a version bump! ")
+		return errors.New("chart version not ok. Needs a version bump!")
 	}
 
 	fmt.Println("Chart version ok.")

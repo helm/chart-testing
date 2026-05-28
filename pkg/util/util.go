@@ -33,6 +33,8 @@ import (
 
 const chars = "1234567890abcdefghijklmnopqrstuvwxyz"
 
+var sanitizeNameRe = regexp.MustCompile("^[^a-zA-Z0-9]+")
+
 type Maintainer struct {
 	Name  string `yaml:"name"`
 	Email string `yaml:"email"`
@@ -217,14 +219,12 @@ func GithubGroupsEnd(w io.Writer) {
 }
 
 func SanitizeName(s string, maxLength int) string {
-	reg := regexp.MustCompile("^[^a-zA-Z0-9]+")
-
 	excess := len(s) - maxLength
 	result := s
 	if excess > 0 {
 		result = s[excess:]
 	}
-	return reg.ReplaceAllString(result, "")
+	return sanitizeNameRe.ReplaceAllString(result, "")
 }
 
 func GetRandomPort() (int, error) {
