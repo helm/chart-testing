@@ -207,24 +207,29 @@ func (c *Chart) HasCIValuesFile(path string) bool {
 }
 
 // CreateInstallParams generates a randomized release name and namespace based on the chart path
-// and optional buildID. If release_name is specified, the release name is set to that string instead.
+// and optional buildID. If releaseName is non-empty it is used verbatim as the release name
+// (Helm validates release-name syntax); otherwise a randomized "<name>-<suffix>" form is used.
 // If a buildID is specified, it will be part of the generated namespace.
 func (c *Chart) CreateInstallParams(buildID string, releaseName string) (release string, namespace string) {
 	release = filepath.Base(c.Path())
 	if release == "." || release == "/" {
-		if releaseName != "" {
-			release = releaseName
-		} else {
-			yaml := c.Yaml()
-			release = yaml.Name
-		}
+		yaml := c.Yaml()
+		release = yaml.Name
 	}
 	namespace = release
 	if buildID != "" {
 		namespace = fmt.Sprintf("%s-%s", namespace, buildID)
 	}
 	randomSuffix := util.RandomString(10)
-	release = util.SanitizeName(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
+	if releaseName != "" {
+		// An explicit --release-name is used verbatim so the release name is
+		// stable and predictable. Previously it was honored only when the chart
+		// path resolved to "." or "/", and a random suffix was appended
+		// unconditionally, which made --release-name appear to be ignored (#198).
+		release = releaseName
+	} else {
+		release = util.SanitizeName(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
+	}
 	namespace = util.SanitizeName(fmt.Sprintf("%s-%s", namespace, randomSuffix), maxNameLength)
 	return
 }
