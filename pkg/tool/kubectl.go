@@ -184,12 +184,14 @@ func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 }
 
 func (k Kubectl) GetPodsforDeployment(namespace string, deployment string) ([]string, error) {
-	jsonString, _ := k.exec.RunProcessAndCaptureStdout("kubectl",
+	jsonString, err := k.exec.RunProcessAndCaptureStdout("kubectl",
 		fmt.Sprintf("--request-timeout=%s", k.timeout),
 		"get", "deployment", deployment, "--namespace", namespace, "--output=json")
-	var deploymentMap map[string]any
-	err := json.Unmarshal([]byte(jsonString), &deploymentMap)
 	if err != nil {
+		return nil, err
+	}
+	var deploymentMap map[string]any
+	if err := json.Unmarshal([]byte(jsonString), &deploymentMap); err != nil {
 		return nil, err
 	}
 
