@@ -569,3 +569,23 @@ func TestChart_AdditionalCommandsAreRun(t *testing.T) {
 		})
 	}
 }
+
+func TestChart_CreateInstallParams(t *testing.T) {
+	chrt, err := NewChart("test_charts/simple-deployment")
+	assert.Nil(t, err)
+
+	// An explicit release name (--release-name) must be used verbatim, with no
+	// random suffix appended, so the resulting release name is stable and
+	// predictable (#198).
+	release, namespace := chrt.CreateInstallParams("build-id", "my-release")
+	assert.Equal(t, "my-release", release)
+	// The namespace is still derived from the chart directory and randomized,
+	// independent of --release-name.
+	assert.True(t, strings.HasPrefix(namespace, "simple-deployment-build-id-"))
+	assert.NotEqual(t, "my-release", namespace)
+
+	// Without a release name the release keeps its historical randomized form.
+	release, _ = chrt.CreateInstallParams("", "")
+	assert.True(t, strings.HasPrefix(release, "simple-deployment-"))
+	assert.NotEqual(t, "simple-deployment", release)
+}
