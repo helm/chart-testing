@@ -12,13 +12,13 @@ RUN apk --no-cache add \
     yamllint
 
 # Install Yamale YAML schema validator
-ARG yamale_version=6.0.0
+ARG yamale_version=6.1.0
 LABEL yamale-version=$yamale_version
 RUN pip install --break-system-packages "yamale==$yamale_version"
 
 ARG TARGETPLATFORM
 # Install kubectl
-ARG kubectl_version=v1.32.0
+ARG kubectl_version=v1.37.1
 LABEL kubectl-version=$kubectl_version
 RUN targetArch=$(echo $TARGETPLATFORM | cut -f2 -d '/') \
     && if [ ${targetArch} = "amd64" ]; then \
@@ -31,7 +31,7 @@ fi \
     && mv kubectl /usr/local/bin/
 
 # Install Helm
-ARG helm_version=v3.16.4
+ARG helm_version=v3.22.0
 LABEL helm-version=$helm_version
 RUN targetArch=$(echo $TARGETPLATFORM | cut -f2 -d '/') \
     && if [ ${targetArch} = "amd64" ]; then \

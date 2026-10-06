@@ -29,6 +29,29 @@ https://github.com/helm/chart-testing/releases
 
 Unpack the `ct` binary, add it to your PATH, and you are good to go!
 
+#### Verifying the release
+
+Release artifacts (archives, checksums, and SBOMs) are signed with [cosign](https://github.com/sigstore/cosign)
+using keyless signing. Each artifact has a `<artifact>.sigstore.json` bundle next to it.
+To verify a download, for example the checksums file:
+
+```console
+$ cosign verify-blob checksums.txt \
+    --bundle checksums.txt.sigstore.json \
+    --certificate-identity "https://github.com/helm/chart-testing/.github/workflows/release.yaml@refs/heads/main" \
+    --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+```
+
+The Docker image is signed as well:
+
+```console
+$ cosign verify quay.io/helmpack/chart-testing:<version> \
+    --certificate-identity "https://github.com/helm/chart-testing/.github/workflows/release.yaml@refs/heads/main" \
+    --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+```
+
+Earlier releases were signed with separate `.sig` and `.pem` files instead of a bundle.
+
 ### Docker Image
 
 A Docker image is available at `quay.io/helmpack/chart-testing` with list of
@@ -93,7 +116,7 @@ If you have a chart in current directory and ct installed on the host then you c
 
 With docker it works with:
 
-    docker run -it --network host --workdir=/data --volume ~/.kube/config:/root/.kube/config:ro --volume $(pwd):/data quay.io/helmpack/chart-testing:v3.14.0 ct install --chart-dirs . --charts .
+    docker run -it --network host --workdir=/data --volume ~/.kube/config:/root/.kube/config:ro --volume $(pwd):/data quay.io/helmpack/chart-testing:v3.15.0 ct install --chart-dirs . --charts .
 
 Notice that `workdir` param is important and must be the same as volume mounted.
 
@@ -195,7 +218,7 @@ Here's a previous one for reference: https://github.com/helm/chart-testing/pull/
 ### Create Release
 
 The release workflow is [dispatched from github actions](https://github.com/helm/chart-testing/actions)
-Versions must start with a lower-case `v`, e. g. `v3.14.0`.
+Versions must start with a lower-case `v`, e. g. `v3.15.0`.
 
 ## Supported versions
 
