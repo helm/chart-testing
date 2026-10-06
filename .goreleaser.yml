@@ -58,7 +58,7 @@ dockers_v2:
       - "quay.io/helmpack/chart-testing"
     tags:
       - "{{ .Tag }}"
-      - "latest"
+      - "{{ if not .Prerelease }}latest{{ end }}"
     labels:
       "org.opencontainers.image.version": "{{ .Version }}"
       "org.opencontainers.image.revision": "{{ .Commit }}"
@@ -75,16 +75,18 @@ dockers_v2:
 
 signs:
   - id: all
-    signature: "${artifact}.sig"
-    certificate: "${artifact}.pem"
+    signature: "${artifact}.sigstore.json"
     cmd: cosign
-    args: ["sign-blob", "--output-signature", "${artifact}.sig", "--output-certificate", "${artifact}.pem", "${artifact}"]
+    args: ["sign-blob", "--bundle=${signature}", "${artifact}", "--yes"]
     artifacts: all
 
 docker_signs:
   - id: images
     cmd: cosign
-    args: ["sign", "${artifact}"]
+    args: ["sign", "${artifact}@${digest}", "--yes"]
+
+release:
+  prerelease: auto
 
 changelog:
   use: github-native

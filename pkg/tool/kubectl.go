@@ -103,7 +103,7 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 		}
 		req.Header.Set("Content-Type", "application/json")
 
-		errMsg := "Error removing finalizer from namespace"
+		errMsg := "error removing finalizer from namespace"
 		client := retryablehttp.NewClient()
 		client.Logger = nil
 		if resp, err := client.Do(req); err != nil {
