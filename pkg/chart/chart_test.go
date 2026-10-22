@@ -199,6 +199,18 @@ func TestComputeChangedChartDirectoriesWithHelmignore(t *testing.T) {
 	assert.ElementsMatch(t, expected, actual)
 }
 
+func TestComputeChangedChartDirectoriesWithExcludedChartAtRoot(t *testing.T) {
+	cfg := config.Configuration{
+		ExcludedCharts: []string{"excluded", "test_chart_at_root"},
+		ChartDirs:      []string{"test_charts", "."},
+	}
+	ct := newTestingMock(cfg)
+	actual, err := ct.ComputeChangedChartDirectories()
+	expected := []string{"test_charts/foo", "test_charts/bar"}
+	assert.Nil(t, err)
+	assert.ElementsMatch(t, expected, actual)
+}
+
 func TestComputeChangedChartDirectoriesWithMultiLevelChart(t *testing.T) {
 	cfg := config.Configuration{
 		ExcludedCharts: []string{"excluded"},
