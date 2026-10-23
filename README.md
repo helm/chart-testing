@@ -74,6 +74,8 @@ See documentation for individual commands:
 * [ct list-changed](doc/ct_list-changed.md)
 * [ct version](doc/ct_version.md)
 
+Charts with `type: library` in their `Chart.yaml` cannot be installed, so `ct install` and `ct lint-and-install` skip the install step for them and print a message instead. They are still linted by `ct lint`.
+
 For a more extensive how-to guide, please see:
 
 * [charts-repo-actions-demo](https://github.com/helm/charts-repo-actions-demo)
