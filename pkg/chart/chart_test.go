@@ -601,3 +601,18 @@ func TestChart_CreateInstallParams(t *testing.T) {
 	assert.True(t, strings.HasPrefix(release, "simple-deployment-"))
 	assert.NotEqual(t, "simple-deployment", release)
 }
+
+func TestInstallChart_SkipsLibraryChart(t *testing.T) {
+	chrt, err := NewChart("testdata/library_chart")
+	assert.Nil(t, err)
+	assert.Equal(t, "library", chrt.Yaml().Type)
+
+	// No kubectl is configured, so any attempt to install the chart would
+	// panic; a skipped library chart returns cleanly without an error.
+	for _, upgrade := range []bool{false, true} {
+		ct := newTestingMock(config.Configuration{Upgrade: upgrade})
+		result := ct.InstallChart(chrt)
+		assert.Nil(t, result.Error)
+		assert.Equal(t, chrt, result.Chart)
+	}
+}

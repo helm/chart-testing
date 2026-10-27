@@ -531,6 +531,12 @@ func (t *Testing) LintChart(chart *Chart) TestResult {
 func (t *Testing) InstallChart(chart *Chart) TestResult {
 	var result TestResult
 
+	// Library charts cannot be installed, so there is nothing to test.
+	if chart.yaml.Type == "library" {
+		fmt.Printf("Skipping install of library chart %q\n", chart)
+		return TestResult{Chart: chart}
+	}
+
 	if t.config.Upgrade {
 		// Test upgrade from previous version
 		result = t.UpgradeChart(chart)

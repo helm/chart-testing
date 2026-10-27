@@ -42,6 +42,7 @@ type ChartYaml struct {
 	Name        string `yaml:"name"`
 	Version     string `yaml:"version"`
 	Deprecated  bool   `yaml:"deprecated"`
+	Type        string `yaml:"type"`
 	Maintainers []Maintainer
 }
 
