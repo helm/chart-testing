@@ -16,6 +16,8 @@ package util //nolint: revive
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 
@@ -117,4 +119,35 @@ func TestBreakingChangeAllowed(t *testing.T) {
 			assert.Equal(t, testData.breaking, actual, fmt.Sprintf("input: %s,%s\n", testData.left, testData.right))
 		})
 	}
+}
+
+func TestLookupChartDir(t *testing.T) {
+	tmpDir := t.TempDir()
+	chartPath := filepath.Join(tmpDir, "charts", "foo")
+	assert.NoError(t, os.MkdirAll(filepath.Join(chartPath, "templates"), 0o755))
+	assert.NoError(t, os.WriteFile(filepath.Join(chartPath, "Chart.yaml"), []byte("name: foo\n"), 0o600))
+	t.Chdir(tmpDir)
+
+	var testDataSlice = []struct {
+		name      string
+		chartDirs []string
+		dir       string
+		expected  string
+	}{
+		{"plain chart dir", []string{"charts"}, filepath.Join("charts", "foo", "templates"), filepath.Join("charts", "foo")},
+		{"trailing slash", []string{"charts/"}, filepath.Join("charts", "foo", "templates"), filepath.Join("charts", "foo")},
+		{"leading dot slash", []string{"./charts"}, filepath.Join("charts", "foo", "templates"), filepath.Join("charts", "foo")},
+		{"leading dot slash on chart dir", []string{"./charts"}, filepath.Join("charts", "foo"), filepath.Join("charts", "foo")},
+	}
+
+	for _, testData := range testDataSlice {
+		t.Run(testData.name, func(t *testing.T) {
+			actual, err := Utils{}.LookupChartDir(testData.chartDirs, testData.dir)
+			assert.NoError(t, err)
+			assert.Equal(t, testData.expected, actual)
+		})
+	}
+
+	_, err := Utils{}.LookupChartDir([]string{"./charts"}, "other")
+	assert.Error(t, err)
 }

@@ -126,7 +126,7 @@ func (u Utils) LookupChartDir(chartDirs []string, dir string) (string, error) {
 		for {
 			chartYaml := filepath.Join(currentDir, "Chart.yaml")
 			parent := filepath.Dir(filepath.Dir(chartYaml))
-			chartDir = strings.TrimRight(chartDir, "/") // remove any trailing slash from the dir
+			chartDir = filepath.Clean(chartDir) // remove any trailing slash or leading "./" from the dir
 
 			// check directory has a Chart.yaml and that it is in a
 			// direct subdirectory of a configured charts directory
