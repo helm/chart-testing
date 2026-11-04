@@ -431,6 +431,40 @@ func TestLintDependencyExtraArgs(t *testing.T) {
 	})
 }
 
+func TestLintChartsInvalidRepoConfig(t *testing.T) {
+	testCases := []struct {
+		name              string
+		chartRepos        []string
+		helmRepoExtraArgs []string
+		expectedError     string
+	}{
+		{
+			name:          "chart repo without name",
+			chartRepos:    []string{"https://charts.bitnami.com/bitnami"},
+			expectedError: `invalid chart repo "https://charts.bitnami.com/bitnami": expected format 'name=url'`,
+		},
+		{
+			name:              "helm repo extra args without repo name",
+			helmRepoExtraArgs: []string{"--force-update"},
+			expectedError:     `invalid helm repo extra args "--force-update": expected format 'name=args'`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := config.Configuration{
+				Charts:            []string{"testdata/test_lints"},
+				ChartRepos:        tc.chartRepos,
+				HelmRepoExtraArgs: tc.helmRepoExtraArgs,
+			}
+			ct := newTestingMock(cfg)
+
+			_, err := ct.LintCharts()
+			assert.EqualError(t, err, tc.expectedError)
+		})
+	}
+}
+
 func TestGenerateInstallConfig(t *testing.T) {
 	type testData struct {
 		name  string
