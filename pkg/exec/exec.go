@@ -15,7 +15,6 @@
 package exec
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -79,29 +78,25 @@ func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) 
 		return err
 	}
 
-	outReader, err := cmd.StdoutPipe()
+	// Send stdout and stderr to the same pipe so that neither can fill up
+	// while the other one is being read.
+	reader, writer, err := os.Pipe()
 	if err != nil {
-		return fmt.Errorf("failed getting StdoutPipe for command: %w", err)
+		return fmt.Errorf("failed creating pipe for command: %w", err)
 	}
-
-	errReader, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("failed getting StderrPipe for command: %w", err)
-	}
-
-	scanner := bufio.NewScanner(io.MultiReader(outReader, errReader))
-	go func() {
-		defer outReader.Close()
-		defer errReader.Close()
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-	}()
+	defer reader.Close()
+	cmd.Stdout = writer
+	cmd.Stderr = writer
 
 	err = cmd.Start()
+	writer.Close()
 	if err != nil {
 		return fmt.Errorf("failed running process: %w", err)
 	}
+
+	// Copy the output before waiting for the process; Wait must not be
+	// called before all reads from the pipe have completed.
+	_, _ = io.Copy(os.Stdout, reader)
 
 	err = cmd.Wait()
 	if err != nil {
