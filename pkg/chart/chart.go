@@ -956,22 +956,21 @@ func (t *Testing) PrintEventsPodDetailsAndLogs(namespace string, selector string
 			return t.kubectl.DescribePod(namespace, pod)
 		}, pod)
 
-		initContainers, err := t.kubectl.GetInitContainers(namespace, pod)
-		if err != nil {
-			fmt.Println("Error printing logs:", err)
-			return
-		}
-
 		if t.config.PrintLogs {
-			t.printDetails(pod, "Logs of init container", "-",
-				func(item string) error {
-					return t.kubectl.Logs(namespace, pod, item)
-				}, initContainers...)
+			initContainers, err := t.kubectl.GetInitContainers(namespace, pod)
+			if err != nil {
+				fmt.Println("Error printing logs:", err)
+			} else {
+				t.printDetails(pod, "Logs of init container", "-",
+					func(item string) error {
+						return t.kubectl.Logs(namespace, pod, item)
+					}, initContainers...)
+			}
 
 			containers, err := t.kubectl.GetContainers(namespace, pod)
 			if err != nil {
 				fmt.Printf("failed printing logs: %v\n", err.Error())
-				return
+				continue
 			}
 
 			t.printDetails(pod, "Logs of container", "-",
@@ -999,7 +998,6 @@ func (t *Testing) printDetails(resource string, text string, delimiterChar strin
 
 		if err := printFunc(item); err != nil {
 			fmt.Println("Error printing details:", err)
-			return
 		}
 
 		if !t.config.GithubGroups {
