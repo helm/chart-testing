@@ -350,18 +350,20 @@ func (t *Testing) processCharts(action func(chart *Chart) TestResult) ([]TestRes
 
 	repoArgs := map[string][]string{}
 
-	for _, repo := range t.config.HelmRepoExtraArgs {
+	// The values can hold credentials, so the errors below name the entry by
+	// position instead of printing it.
+	for i, repo := range t.config.HelmRepoExtraArgs {
 		name, extraArgs, found := strings.Cut(repo, "=")
 		if !found {
-			return nil, fmt.Errorf("invalid helm repo extra args %q: expected format 'name=args'", repo)
+			return nil, fmt.Errorf("invalid --helm-repo-extra-args entry %d: expected format 'name=args'", i+1)
 		}
 		repoArgs[name] = strings.Fields(extraArgs)
 	}
 
-	for _, repo := range t.config.ChartRepos {
+	for i, repo := range t.config.ChartRepos {
 		name, url, found := strings.Cut(repo, "=")
 		if !found {
-			return nil, fmt.Errorf("invalid chart repo %q: expected format 'name=url'", repo)
+			return nil, fmt.Errorf("invalid --chart-repos entry %d: expected format 'name=url'", i+1)
 		}
 
 		repoExtraArgs := repoArgs[name]
