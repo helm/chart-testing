@@ -55,15 +55,18 @@ func (g Git) MergeBase(commit1 string, commit2 string) (string, error) {
 }
 
 func (g Git) ListChangedFilesInDirs(commit string, dirs ...string) ([]string, error) {
-	changedChartFilesString, err :=
-		g.exec.RunProcessAndCaptureOutput("git", "diff", "--find-renames", "--name-only", commit, "--", dirs)
+	cmd, err := g.exec.CreateProcess("git", "diff", "--find-renames", "--name-only", "-z", commit, "--", dirs)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating diff: %w", err)
 	}
-	if changedChartFilesString == "" {
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("failed creating diff: %w", err)
+	}
+	if len(output) == 0 {
 		return nil, nil
 	}
-	return strings.Split(changedChartFilesString, "\n"), nil
+	return strings.Split(strings.TrimSuffix(string(output), "\x00"), "\x00"), nil
 }
 
 func (g Git) GetURLForRemote(remote string) (string, error) {
