@@ -606,6 +606,7 @@ func (t *Testing) doInstall(chart *Chart) error {
 			if !t.config.SkipCleanUp {
 				defer cleanup()
 			}
+			defer t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 
 			if t.config.Namespace == "" {
 				if err := t.kubectl.CreateNamespace(namespace); err != nil {
@@ -648,6 +649,7 @@ func (t *Testing) doUpgrade(oldChart, newChart *Chart, oldChartMustPass bool) er
 			if !t.config.SkipCleanUp {
 				defer cleanup()
 			}
+			defer t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 
 			if t.config.Namespace == "" {
 				if err := t.kubectl.CreateNamespace(namespace); err != nil {
@@ -699,13 +701,11 @@ func (t *Testing) generateInstallConfig(chart *Chart) (namespace, release, relea
 		release, _ = chart.CreateInstallParams(t.config.BuildID, t.config.ReleaseName)
 		releaseSelector = fmt.Sprintf("%s=%s", t.config.ReleaseLabel, release)
 		cleanup = func() {
-			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(namespace, release)
 		}
 	} else {
 		release, namespace = chart.CreateInstallParams(t.config.BuildID, t.config.ReleaseName)
 		cleanup = func() {
-			t.PrintEventsPodDetailsAndLogs(namespace, releaseSelector)
 			t.helm.DeleteRelease(namespace, release)
 			t.kubectl.DeleteNamespace(namespace)
 		}
