@@ -15,9 +15,35 @@
 package exec
 
 import (
+	"errors"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
+
+// runProcess runs a shell script through RunProcess and fails the test if it
+// does not return within the timeout.
+func runProcess(t *testing.T, timeout time.Duration, script string) error {
+	t.Helper()
+
+	p := NewProcessExecutor(false)
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- p.RunProcess("sh", "-c", script)
+	}()
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-time.After(timeout):
+		t.Fatal("RunProcess did not return")
+		return nil
+	}
+}
 
 func TestRunProcessDoesNotBlock(t *testing.T) {
 	tests := []struct {
@@ -36,22 +62,83 @@ func TestRunProcessDoesNotBlock(t *testing.T) {
 		},
 	}
 
-	p := NewProcessExecutor(false)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			errCh := make(chan error, 1)
-			go func() {
-				errCh <- p.RunProcess("sh", "-c", tt.script)
-			}()
-
-			select {
-			case err := <-errCh:
-				if err != nil {
-					t.Fatalf("RunProcess returned an error: %v", err)
-				}
-			case <-time.After(30 * time.Second):
-				t.Fatal("RunProcess did not return")
+			if err := runProcess(t, 30*time.Second, tt.script); err != nil {
+				t.Fatalf("RunProcess returned an error: %v", err)
 			}
 		})
+	}
+}
+
+// startBackgroundSleep returns a script fragment that starts a long sleep in
+// the background, inheriting the command's stdout and stderr, and kills it
+// when the test ends.
+func startBackgroundSleep(t *testing.T) string {
+	t.Helper()
+
+	pidFile := filepath.Join(t.TempDir(), "pid")
+	t.Cleanup(func() {
+		b, err := os.ReadFile(pidFile)
+		if err != nil {
+			return
+		}
+		if pid, err := strconv.Atoi(strings.TrimSpace(string(b))); err == nil {
+			_ = syscall.Kill(pid, syscall.SIGKILL)
+		}
+	})
+	return "sleep 60 & echo $! > " + pidFile + ";"
+}
+
+func TestRunProcessDoesNotWaitForBackgroundChildren(t *testing.T) {
+	tests := []struct {
+		name    string
+		script  string
+		wantErr bool
+	}{
+		{
+			name:   "command succeeds",
+			script: "echo started",
+		},
+		{
+			name:    "command fails",
+			script:  "exit 3",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			script := startBackgroundSleep(t) + tt.script
+			start := time.Now()
+			err := runProcess(t, 20*time.Second, script)
+			if tt.wantErr != (err != nil) {
+				t.Fatalf("RunProcess returned error %v, want error: %t", err, tt.wantErr)
+			}
+			if elapsed := time.Since(start); elapsed > 10*time.Second {
+				t.Fatalf("RunProcess took %s, it waited for the background child", elapsed)
+			}
+		})
+	}
+}
+
+func TestRunProcessReturnsWhenStdoutIsBroken(t *testing.T) {
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader.Close()
+	stdout := os.Stdout
+	os.Stdout = writer
+	t.Cleanup(func() {
+		os.Stdout = stdout
+		writer.Close()
+	})
+
+	// Much more than a pipe buffer holds, so the command blocks if nothing
+	// drains or closes its end of the pipe.
+	err = runProcess(t, 20*time.Second, `head -c 2097152 /dev/zero`)
+	if !errors.Is(err, syscall.EPIPE) {
+		t.Fatalf("RunProcess returned error %v, want the broken pipe error from writing its output", err)
 	}
 }
