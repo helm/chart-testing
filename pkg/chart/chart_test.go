@@ -602,6 +602,18 @@ func TestChart_CreateInstallParams(t *testing.T) {
 	assert.NotEqual(t, "simple-deployment", release)
 }
 
+func TestChart_CreateInstallParams_LongChartDir(t *testing.T) {
+	// Helm rejects release names longer than 53 characters, while Kubernetes
+	// allows namespaces of up to 63.
+	chrt := &Chart{path: "charts/" + strings.Repeat("a", 60), yaml: &util.ChartYaml{Name: "long"}}
+
+	release, namespace := chrt.CreateInstallParams("", "")
+	assert.LessOrEqual(t, len(release), 53)
+	assert.LessOrEqual(t, len(namespace), 63)
+	assert.Regexp(t, `-[0-9a-z]{10}$`, release)
+	assert.Regexp(t, `-[0-9a-z]{10}$`, namespace)
+}
+
 func TestInstallChart_SkipsLibraryChart(t *testing.T) {
 	chrt, err := NewChart("testdata/library_chart")
 	assert.Nil(t, err)
