@@ -32,7 +32,12 @@ import (
 	"github.com/helm/chart-testing/v3/pkg/util"
 )
 
-const maxNameLength = 63
+const (
+	// maxNameLength is the longest name Kubernetes accepts for a namespace.
+	maxNameLength = 63
+	// maxReleaseNameLength is the longest release name Helm accepts.
+	maxReleaseNameLength = 53
+)
 
 // Git is the Interface that wraps Git operations.
 //
@@ -228,7 +233,7 @@ func (c *Chart) CreateInstallParams(buildID string, releaseName string) (release
 		// unconditionally, which made --release-name appear to be ignored (#198).
 		release = releaseName
 	} else {
-		release = util.SanitizeName(fmt.Sprintf("%s-%s", release, randomSuffix), maxNameLength)
+		release = util.SanitizeName(fmt.Sprintf("%s-%s", release, randomSuffix), maxReleaseNameLength)
 	}
 	namespace = util.SanitizeName(fmt.Sprintf("%s-%s", namespace, randomSuffix), maxNameLength)
 	return
