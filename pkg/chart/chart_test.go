@@ -431,6 +431,56 @@ func TestLintDependencyExtraArgs(t *testing.T) {
 	})
 }
 
+func TestLintChartsInvalidRepoConfig(t *testing.T) {
+	testCases := []struct {
+		name              string
+		chartRepos        []string
+		helmRepoExtraArgs []string
+		expectedError     string
+		secret            string
+	}{
+		{
+			name:          "chart repo without name",
+			chartRepos:    []string{"https://charts.bitnami.com/bitnami"},
+			expectedError: "invalid --chart-repos entry 1: expected format 'name=url'",
+		},
+		{
+			name:          "chart repo with credentials in the url and no name",
+			chartRepos:    []string{"stable=https://charts.helm.sh/stable", "https://demo:s3cr3t@charts.example.com"},
+			expectedError: "invalid --chart-repos entry 2: expected format 'name=url'",
+			secret:        "s3cr3t",
+		},
+		{
+			name:              "helm repo extra args without repo name",
+			helmRepoExtraArgs: []string{"--force-update"},
+			expectedError:     "invalid --helm-repo-extra-args entry 1: expected format 'name=args'",
+		},
+		{
+			name:              "helm repo extra args with a password and no repo name",
+			helmRepoExtraArgs: []string{"--username demo --password s3cr3t"},
+			expectedError:     "invalid --helm-repo-extra-args entry 1: expected format 'name=args'",
+			secret:            "s3cr3t",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cfg := config.Configuration{
+				Charts:            []string{"testdata/test_lints"},
+				ChartRepos:        tc.chartRepos,
+				HelmRepoExtraArgs: tc.helmRepoExtraArgs,
+			}
+			ct := newTestingMock(cfg)
+
+			_, err := ct.LintCharts()
+			assert.EqualError(t, err, tc.expectedError)
+			if tc.secret != "" {
+				assert.NotContains(t, err.Error(), tc.secret)
+			}
+		})
+	}
+}
+
 func TestGenerateInstallConfig(t *testing.T) {
 	type testData struct {
 		name  string
