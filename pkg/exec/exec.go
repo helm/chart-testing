@@ -15,12 +15,13 @@
 package exec
 
 import (
-	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/helm/chart-testing/v3/pkg/util"
 )
@@ -73,38 +74,51 @@ func (p ProcessExecutor) RunProcessInDirAndCaptureStdout(workingDirectory string
 	return strings.TrimSpace(string(bytes)), nil
 }
 
+// outputDrainTimeout bounds how long RunProcess keeps reading output after
+// the command has exited. Background processes started by the command inherit
+// its stdout and stderr and can keep the pipe open indefinitely.
+const outputDrainTimeout = time.Second
+
+// processOutput forwards the combined stdout and stderr of a command and
+// remembers the first write error. It is deliberately not an *os.File, so
+// exec copies the output through a pipe that Wait closes.
+type processOutput struct {
+	w   io.Writer
+	err error
+}
+
+func (o *processOutput) Write(b []byte) (int, error) {
+	n, err := o.w.Write(b)
+	if err != nil && o.err == nil {
+		o.err = err
+	}
+	return n, err
+}
+
 func (p ProcessExecutor) RunProcess(executable string, execArgs ...interface{}) error {
 	cmd, err := p.CreateProcess(executable, execArgs...)
 	if err != nil {
 		return err
 	}
 
-	outReader, err := cmd.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("failed getting StdoutPipe for command: %w", err)
-	}
+	// Using the same writer for stdout and stderr makes exec send both to a
+	// single pipe, so neither can fill up while the other one is being read.
+	// If writing fails, exec closes the read end and the command gets EPIPE
+	// instead of blocking on a full pipe.
+	out := &processOutput{w: os.Stdout}
+	cmd.Stdout = out
+	cmd.Stderr = out
+	cmd.WaitDelay = outputDrainTimeout
 
-	errReader, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("failed getting StderrPipe for command: %w", err)
-	}
-
-	scanner := bufio.NewScanner(io.MultiReader(outReader, errReader))
-	go func() {
-		defer outReader.Close()
-		defer errReader.Close()
-		for scanner.Scan() {
-			fmt.Println(scanner.Text())
-		}
-	}()
-
-	err = cmd.Start()
-	if err != nil {
+	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed running process: %w", err)
 	}
 
 	err = cmd.Wait()
-	if err != nil {
+	if out.err != nil {
+		return fmt.Errorf("failed writing process output: %w", out.err)
+	}
+	if err != nil && !errors.Is(err, exec.ErrWaitDelay) {
 		return fmt.Errorf("failed waiting for process: %w", err)
 	}
 
